@@ -1,6 +1,6 @@
 # CS50 Nuggets
 ## Implementation Spec
-### Team name, term, year
+### windows_us, Winter 2022
 
 > This **template** includes some gray text meant to explain how to use the template; delete all of them in your document!
 

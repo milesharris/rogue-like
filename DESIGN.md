@@ -1,6 +1,6 @@
 # CS50 Nuggets
 ## Design Spec
-### Team name, term, year
+### windows_us, Winter 2022
 
 > This **template** includes some gray text meant to explain how to use the template; delete all of them in your document!
 
@@ -11,8 +11,6 @@ We do not describe the `support` library nor the modules that enable features th
 We avoid repeating information that is provided in the requirements spec.
 
 ## Player
-
-> Teams of 3 students should delete this section.
 
 The *client* acts in one of two modes:
 
