@@ -1,6 +1,6 @@
 # CS50 Nuggets
 ## Design Spec
-### windows_us, Winter 2022
+### Team name, term, year
 
 > This **template** includes some gray text meant to explain how to use the template; delete all of them in your document!
 
@@ -25,14 +25,23 @@ See the requirements spec for both the command-line and interactive UI.
 
 ### Inputs and outputs
 
-> Briefly describe the inputs (keystrokes) and outputs (display).
+Inputs: The user interacts with the game by entering 
+
 > If you write to log files, or log to stderr, describe that here.
 > Command-line arguments are not 'input'.
 
 ### Functional decomposition into modules
 
-> List and briefly describe any modules that comprise your client, other than the main module.
- 
+
+> render screen
+> join game
+> 
+> send move info to server
+> receive game state info from server
+
+
+
+
 ### Pseudo code for logic/algorithmic flow
 
 > For each function write pseudocode indented by a tab, which in Markdown will cause it to be rendered in literal form (like a code block).
@@ -43,7 +52,7 @@ See the requirements spec for both the command-line and interactive UI.
 
 ### Major data structures
 
-> A language-independent description of the major data structure(s) in this program.
+
 > Mention, but do not describe, any libcs50 data structures you plan to use.
 
 ---
@@ -58,13 +67,32 @@ There is no interaction with the user.
 
 ### Inputs and outputs
 
+collision handling: if a player moves into a spot occupied by another player, swap them.
+
+vision: each player keeps track of what it has already seen, keeping a map string that uses filler for non-seen space and copies from the grid for seen space. Note: players cannot "remember" gold location in previous rooms, nor can they see player movement in rooms they have already visited (maybe send "original" map to player).
+
 > Briefly describe the inputs (map file) and outputs (to terminal).
 > If you write to log files, or log to stderr, describe that here.
 > Command-line arguments are not 'input'.
 
 ### Functional decomposition into modules
 
-> List and briefly describe any modules that comprise your server, other than the main module.
+start server
+initialize game
+    generate maps
+    generate gold
+handle player connection
+handle player disconnect
+update clients whenever state change
+handle spectator
+game over
+move player (collision handled here)
+player picks up gold
+calculate vision for each player
+
+
+
+
 
 ### Pseudo code for logic/algorithmic flow
 
@@ -88,15 +116,45 @@ The server will run as follows:
 
 ### Major data structures
 
-> Describe each major data structure in this program: what information does it represent, how does it represent the data, and what are its members.
-> This description should be independent of the programming language.
+Player data structure: Contains all information for in-game players, such as: current gold, mode, current position, name, and current vision.
+
+A list of all players
+
+A "game" data structure to hold the state of teh current game, including number of players, remaining gold, 
+
+
+
 > Mention, but do not describe, data structures implemented by other modules (such as the new modules you detail below, or any libcs50 data structures you plan to use).
+
+A structure to keep track of a grid. 
 
 ---
 
-## XYZ module
+## Grid module
 
-> Repeat this section for each module that is included in either the client or server.
+A module to handle all functions related to loading, drawing, and redrawing the map.
+
+### Functional decomposition
+
+read map file into string
+generate numRows and numColumns
+handle changes to grid (player move, gold add, etc)
+
+
+### Pseudo code for logic/algorithmic flow
+
+> For any non-trivial function, add a level-4 #### header and provide tab-indented pseudocode.
+> This pseudocode should be independent of the programming language.
+
+### Major data structures
+
+A structure to keep track of a grid. The grid itself is stored as a string, and referencing positions is done using string parsing
+
+---
+
+## Message module
+
+A module to handle all functions related to loading, drawing, and redrawing the map.
 
 ### Functional decomposition
 
@@ -109,5 +167,4 @@ The server will run as follows:
 
 ### Major data structures
 
-> Describe each major data structure in this module: what information does it represent, how does it represent the data, and what are its members.
-> This description should be independent of the programming language.
+A structure to keep track of a grid. The grid itself is stored as a string, and referencing positions is done using string parsing
