@@ -96,19 +96,19 @@ Outputs: The server logs useful information (errors) to stderr. Usage would thus
 
 We expect our server to have the following functions:
 
-start server
-initialize game
-    generate maps from file
-    generate gold, with or without random number seed
-handle player connect
-handle player disconnect
-handleMessage
-update clients whenever state change
-handle spectator
-game over
-move player (collision handled here)
-player picks up gold
-calculate vision for each player on move
+  start server
+  initialize game
+      generate maps from file
+      generate gold, with or without random number seed
+  handle player connect
+  handle player disconnect
+  handleMessage
+  update clients whenever state change
+  handle spectator
+  game over
+  move player (collision handled here)
+  player picks up gold
+  calculate vision for each player on move
 
 
 ### Pseudo code for logic/algorithmic flow
