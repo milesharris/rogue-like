@@ -13,10 +13,15 @@ L = ../libcs50
 CFLAGS = -Wall -pedantic -std=c11 -ggdb $(FLAGS) -I$L
 CC = gcc
 MAKE = make
+VALGRIND= valgrind --leak-check=full --show-leak-kinds=all
 
 # Build $(LIB) by archiving object files
 $(LIB): $(OBJS)
 	ar cr $(LIB) $(OBJS) 
+
+gridtest: grid.c 
+	$(CC) $(CFLAGS) -DGRIDTEST grid.c $L/libcs50.a -o $@
+	$(VALGRIND) ./gridtest ../maps/edges.txt &> gridtest.out
 
 # Dependencies: object files depend on header files
 grid.o: grid.h
@@ -27,3 +32,4 @@ grid.o: grid.h
 clean:
 	rm -f core
 	rm -f $(LIB) *~ *.o
+	rm -f gridtest

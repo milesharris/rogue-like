@@ -191,6 +191,7 @@ int main(const int argc, char* argv[])
     fprintf(stderr, "can't open %s\n", argv[1]);
     exit(2);
   }
+  fclose(fp);
 
   // create grid from file
   grid = grid_new(argv[1]);
@@ -211,11 +212,12 @@ int main(const int argc, char* argv[])
 
   // make a few changes to the active map
   grid_replace(grid, 5, '!');
-  grid_replace(grid, 2 '3'); 
+  grid_replace(grid, 2, '3'); 
   
   // reprint active
   printf("Active map: \n%s\n", active);
 
+  grid_delete(grid);
   // exit successfully after test completion
   exit(0);
 }

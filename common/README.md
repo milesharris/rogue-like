@@ -46,3 +46,4 @@ For the "grid" module we assume that the number of rows or columns of an in-game
 ### Compilation
 
 To compile, simply `make`.
+To run the `grid` unit test, type `make gridtest` and refer to `gridtest.out` for results.
