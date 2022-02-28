@@ -38,6 +38,8 @@ int grid_getNumColumns(grid_t* grid);
  * takes a string as a parameter where the string is the path to the map file
  * allocates memory for the map string that must then be free'd in grid_delete 
  * also stores the number of rows and columns in the grid within the struct
+ * returns the grid if process successful
+ * returns NULL if error at any point in the process (including allocating memory)
  */
 grid_t* grid_new(char* mapFile);
 
@@ -45,6 +47,7 @@ grid_t* grid_new(char* mapFile);
 /* replace the given character at the given index position in the map string
  * modifies the "active map" of the given grid structure 
  * at the given index position, replacing it with the given character
+ * returns true if success, false if error
  */
 bool grid_replace(grid_t* grid, int pos, char newChar);
 
@@ -54,8 +57,5 @@ bool grid_replace(grid_t* grid, int pos, char newChar);
  * allows function to be called in cases when failure to allocate memory
  */
 void grid_delete(grid_t* grid);
-
-/*************** local functions **************/
-
 
 #endif
