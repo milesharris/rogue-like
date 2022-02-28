@@ -5,6 +5,8 @@
 
 #include <stdio.h>
 #include <stdlib.h>
+#include <stdbool.h>
+#include <string.h>
 #include "../libcs50/file.h"
 #include "grid.h"
 
@@ -21,7 +23,8 @@ main(const int argc, char* argv[])
   char* filepathname = NULL;
   int seed = NULL;
   parseArgs(argc, argv, &filepathname, &seed);
-  
+
+  initializeGame(filepathname, seed);
 
 
 
@@ -61,7 +64,7 @@ parseArgs(const int argc, char* argv, char** filepathname)
 }
 
 /******************* initializeGame *************/
-/* initialize game by building random gold piles with or without seed */
+/* set up data structures for game */
 static int
 initializeGame(char* filepathname, int seed)
 {
@@ -92,6 +95,8 @@ initializeGame(char* filepathname, int seed)
     }
   }
 
+
+
   /*******************************************************************************************/
   
   // Generating random piles
@@ -116,8 +121,6 @@ initializeGame(char* filepathname, int seed)
     piles[currIndex] = currPile;
     currIndex++;
   }
-  
-  
 
   return 0;
 }
