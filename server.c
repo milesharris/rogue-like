@@ -1,28 +1,71 @@
 /* 
+ * server.c - implements the server for Nuggets game
  *
  */
 
 #include <stdio.h>
 #include <stdlib.h>
 #include "../libcs50/file.h"
+#include "grid.h"
+
+// functions
+parseArgs(const int argc, char* argv, char** filepathname, int* seed);
+initializeGame(char* filepathname, int seed);
 
 
-static int
-initializeGame(char* filepathname, int seed)
+
+/******************** main *******************/
+int
+main(const int argc, char* argv[])
 {
-  // check args
-  if( filepathname == NULL ){
-    fprintf(stderr, "initializeGame: NULL arg given\n");
-    return 1;
+  char* filepathname = NULL;
+  int seed = NULL;
+  parseArgs(argc, argv, &filepathname, &seed);
+  
+
+
+
+}
+
+/****************** parseArgs ******************/
+/* Parses arguments for use in server.c */
+static void
+parseArgs(const int argc, char* argv, char** filepathname)
+{
+
+ // make sure arg count is 2 or 3 (depending on if seed is passed)
+  if (argc != 2 && argc != 3) {
+    fprintf(stderr, "parseArgs: need either 1 arg (map file) or 2 args (map and seed)");
+    exit(1);
+  }
+
+  *filepathname = argv[1];
+  if (argc == 3) {
+    *seed = argv[2];
+    // TODO: Does seed have any restrictions? (cant be negative, etc.)
+  }
+
+  // check filepathname is not NULL
+  if(*filepathname == NULL){
+    fprintf(stderr, "parseArgs: NULL arg given\n");
+    exit(1);
   }
   
   // create a filepointer and check it 
-  FILE* fp = fopen(filepathname);
+  FILE* fp = fopen(*filepathname);
   if( fp == NULL ){
-    fprintf(stderr, "initializeGame: err creating filepointer\n");
-    return 1;
+    fprintf(stderr, "parseArgs: err creating filepointer\n");
+    exit(1);
   }
 
+}
+
+/******************* initializeGame *************/
+/* initialize game by building random gold piles with or without seed */
+static int
+initializeGame(char* filepathname, int seed)
+{
+  
   // setup pseudo-random number sequence
   if( seed == NULL ){
     srand(getpid());
@@ -78,3 +121,6 @@ initializeGame(char* filepathname, int seed)
 
   return 0;
 }
+
+
+
