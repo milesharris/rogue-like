@@ -16,7 +16,7 @@ We avoid repeating information that is provided in the requirements spec.
 > Who writes the client program, the server program, each module?
 > Who is responsible for various aspects of testing, for documentation, etc?
 
-## Player
+## Client
 
 ### Data structures
 
@@ -84,6 +84,18 @@ static int parseArgs(const int argc, char* argv[]);
 ---
 
 ## Grid 
+
+> For each module, repeat the same framework above.
+
+### Data structures
+
+### Definition of function prototypes
+
+### Detailed pseudo code
+
+---
+
+## Player
 
 > For each module, repeat the same framework above.
 

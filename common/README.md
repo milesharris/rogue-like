@@ -8,10 +8,13 @@ The `common` library contains a set of modules that are used in both the client 
 Currently, it contains the `grid` module, which: 
 Implements the map used by the nuggets game and encapsulates all functions that create, delete, or modify the in-game map.
 
+It also contains the `player` module, which:
+Implements a suite of functions to handle actions involving player. It defines a player struct, and provides functions to change that player's attributes.
+
 ### Usage
 
 To build common.a, run `make`.
-
+To run the grid unit test, run `make gridtest`.
 To clean up, run `make clean`.
 
 ### grid
@@ -28,6 +31,10 @@ bool grid_replace(grid_t* grid, int pos, char newChar);
 void grid_delete(grid_t* grid);
 
 ```
+
+### player
+
+The player module 
 
 ### Implementation
 

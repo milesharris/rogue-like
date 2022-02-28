@@ -4,7 +4,7 @@
 
 #include <stdio.h>
 #include <stdlib.h>
-#include "../libcs50/file.h"
+#include "file.h"
 
 
 static int
@@ -17,7 +17,7 @@ initializeGame(char* filepathname, int seed)
   }
   
   // create a filepointer and check it 
-  FILE* fp = fopen(filepathname);
+  FILE* fp = fopen(filepathname, "r");
   if( fp == NULL ){
     fprintf(stderr, "initializeGame: err creating filepointer\n");
     return 1;
