@@ -18,8 +18,6 @@ We avoid repeating information that is provided in the requirements spec.
 
 ## Player
 
-> Teams of 3 students should delete this section.
-
 ### Data structures
 
 > For each new data structure, describe it briefly and provide a code block listing the `struct` definition(s).
@@ -85,7 +83,7 @@ static int parseArgs(const int argc, char* argv[]);
 
 ---
 
-## XYZ module
+## Grid 
 
 > For each module, repeat the same framework above.
 
@@ -101,7 +99,7 @@ static int parseArgs(const int argc, char* argv[]);
 
 ### unit testing
 
-> How will you test each unit (module) before integrating them with a main program (client or server)?
+The grid module contains a small unit test that is enabled by compiling it with the GRIDTEST flag. It reads a grid into memory from a given file, prints the intial states of both reference and active maps, then modifies the active map and reprints. The grid module was tested on a variety of map files during development.
 
 ### integration testing
 
