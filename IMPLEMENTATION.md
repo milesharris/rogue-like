@@ -85,9 +85,12 @@ static int parseArgs(const int argc, char* argv[]);
 
 ---
 
-## XYZ module
+## Grid 
 
 > For each module, repeat the same framework above.
+
+### Assumptions
+For the "grid" module we assume that the number of rows or columns of an in-game map does not exceed INT_MAX.
 
 ### Data structures
 

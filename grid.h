@@ -28,10 +28,10 @@ typedef struct grid grid_t;  // opaque to users of the module
 /**************** functions **************/
 
 /**************** getters **************/
-char* grid_getReference(grid_t*);
-char* grid_getActive(grid_t*);
-int grid_getNumRows(grid_t*);
-int grid_getNumColumns(grid_t*);
+char* grid_getReference(grid_t* grid);
+char* grid_getActive(grid_t* grid);
+int grid_getNumRows(grid_t* grid);
+int grid_getNumColumns(grid_t* grid);
 
 /**************** grid_new ***************/
 /* initialize a new "grid"
@@ -50,6 +50,8 @@ bool grid_replace(grid_t* grid, int pos, char newChar);
 
 /*************** grid_delete **************/
 /* free's all memory in use by the given grid
+ * checks for existence of strings before deleting them
+ * allows function to be called in cases when failure to allocate memory
  */
 void grid_delete(grid_t* grid);
 
