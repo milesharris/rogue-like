@@ -5,7 +5,7 @@
 # Winter 2022, CS50 team 1
 
 # object files, library dependency, and the target library
-OBJS = pagedir.o index.o word.o query.o
+OBJS = grid.o
 LIB = common.a
 L = ../libcs50
 

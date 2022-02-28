@@ -84,14 +84,16 @@ grid_t* grid_new(char* mapFile)
     }
     
     // create a copy of the reference map to use as active map
-    grid->active = strdup(grid->reference);
-
+    grid->active = mem_malloc(strlen(grid->reference) + 1);
     // clean up and return NULL if failure to allocate active map
     if (grid->active == NULL) {
       grid_delete(grid);
       return NULL;
     }
-    
+
+    // copy map into new memory
+    strcpy(grid->active, grid->reference);
+
     // number of colums == length of longest row
     grid->numColumns = findLongestRow(grid->reference);
 

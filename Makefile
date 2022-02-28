@@ -11,7 +11,7 @@ L = libcs50
 # otherwise we use the pre-built library provided by instructor.
 all: 
 	(cd $L && if [ -r set.c ]; then make $L.a; else cp $L-given.a $L.a; fi)
-	make -C support
+#	make -C support
 	make -C common
 
 ############## clean  ##########
@@ -19,4 +19,4 @@ clean:
 	rm -f *~
 	make -C libcs50 clean
 	make -C common clean
-	make -C support clean
+#	make -C support clean
