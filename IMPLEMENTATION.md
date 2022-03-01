@@ -16,7 +16,7 @@ We avoid repeating information that is provided in the requirements spec.
 > Who writes the client program, the server program, each module?
 > Who is responsible for various aspects of testing, for documentation, etc?
 
-## Player
+## Client
 
 ### Data structures
 
@@ -81,9 +81,57 @@ static int parseArgs(const int argc, char* argv[]);
 	else
 		seed the random-number generator with getpid()
 
+#### `handlePlayerConnect`:
+
+     validate name, making sure that it:
+     is not empty
+     does not exceed maxNameLength
+     if name is valid
+         check if hashtable size equals maxPlayers
+         if there's room
+             assign the player a non-used lettern as their key
+             add player to hashtable, initializing gold to 0
+             save player name for future use, replacing isspace() and isgraph() with underscores
+             add player to random valid room spot
+             update map to reflect player
+             send message to the client "OK L" where L is the player's letter
+         else
+             error message         
+      else
+        error message
+        
+             
+#### `handlePlayerDisconnect`:
+        
+    if early disconnect
+        grab player data struct from hashtable
+        free data if necessary
+        delete player struct from hashtable
+        send quit message
+        close socket
+    else
+        loop through hashtable
+        grab player data struct from hashtable
+        free data if necessary
+        delete player struct from hashtable
+        close socket
+    send game over message
+
 ---
 
 ## Grid 
+
+> For each module, repeat the same framework above.
+
+### Data structures
+
+### Definition of function prototypes
+
+### Detailed pseudo code
+
+---
+
+## Player
 
 > For each module, repeat the same framework above.
 

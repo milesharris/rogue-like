@@ -34,7 +34,7 @@ typedef struct grid {
 
 /**************** local functions ****************/
 /* not visible outside this file */
-static int findLongestRow(char* map);
+static int longestRowLength(char* map);
 
 /**************** getters *****************/
 /* returns NULL or 0 if values don't exist as appropriate */
@@ -95,7 +95,7 @@ grid_t* grid_new(char* mapFile)
     strcpy(grid->active, grid->reference);
 
     // number of colums == length of longest row
-    grid->numColumns = findLongestRow(grid->reference);
+    grid->numColumns = longestRowLength(grid->reference);
 
     // return the "complete" grid only if all operations successful
     return grid;
@@ -142,7 +142,7 @@ void grid_delete(grid_t* grid)
  * which should be the in-memory representation of the in-game map
  * and returns the length of the longest "row"
  */
-static int findLongestRow(char* map)
+static int longestRowLength(char* map)
 {
   size_t mapLen = 0;                   // length of the map string
   int rowLen = 0;                      // length of current "row" in map
