@@ -10,6 +10,7 @@
 #include "file.h"
 #include "grid.h"
 #include "mem.h"
+#include <ctype.h>
 
 const int MAXPILES = 30;
 const int MAXPLAYERS = 25;
@@ -220,5 +221,135 @@ initializeGame(char* filepathname, int seed)
   return 0;
 }
 
+/******************* pickupGold *************/
+static void 
+pickupGold(int playerID, int piles[])
+{
+  //update player gold total
+  //update total gold remainging
+  //update map to reflect absence of pile
+  //update piles[] to reflect absence of pile
+  //send GOLD message to all clients
+  //update clients to state change
+
+}
+
+/******************* movePlayer *************/
+static void 
+movePlayer(int playerID, char directionChar)
+{
+  // check if move is valid
+  if (directionChar == "h" || directionChar == "l" || directionChar == "j" || directionChar == "k" 
+  || directionChar == "y" || directionChar == "u" || directionChar == "b" || directionChar == "n") {
+
+    // if move is capitalized
+    if(isupper(directionChar)) {
+
+      // switch statement to handle all cases of repeat movement
+      switch(directionChar) {
+
+        // repeat move right case
+        case 'L' :
+
+        // CAN TURN THIS INTO A HELPER FUNCTION WHEN DONE
+
+         // while the next space is an empty room spot or empty passage spot
+
+         // while ( grid_getActive(grid)[(players[playerID])->pos)+1] == "." || grid_getActive(grid)[(players[playerID])->pos)+1] == "#" ) {
+
+           // char next = grid_getActive(grid)[(players[playerID])->pos)];
+
+           // if we land on a pile of gold
+           // if (next == "*") {
+             // pickupGold(playerID, game->piles);
+
+          // if we hit another player, handle collision
+           // if (isalpha(isupper(next))) {
+                // grab player at that spot
+                // switch player positions
+
+           //}
+           // players[playerID])->pos += 1;
+           // update map
+           // update all player vision
+
+           //}
+
+         //}
+         // break
+
+        // repeat move left case
+        case 'H' :
+          // same thing but grid_getActive(grid)[(players[playerID])->pos)-1]
+          // break
+
+        // repeat move up case 
+        case 'K' :
+          // same thing but grid_getActive(grid)[(players[playerID])->pos)-(grid->numColumns)]
+          // break
+
+        // repeat move down case
+        case 'J' :
+          // same thing but grid_getActive(grid)[(players[playerID])->pos)+(grid->numColumns)]
+          // break
+
+        // repeat move down left case
+        case 'B' :
+          // same thing but grid_getActive(grid)[(players[playerID])->pos)-(grid->numColumns)-1]
+          // break
+
+        // repeat move down right case
+        case 'N' :
+          // same thing but grid_getActive(grid)[(players[playerID])->pos)-(grid->numColumns)+1]
+          // break
+
+        // repeat move up left case
+        case 'Y' :
+          // same thing but grid_getActive(grid)[(players[playerID])->pos)+(grid->numColumns)-1]
+          // break
+
+        // repeat move up right case
+        case 'U' :
+          // same thing but grid_getActive(grid)[(players[playerID])->pos)+(grid->numColumns)+1]
+          // break
+
+      }
+
+    } else {
+      // switch statement for single space movement
+
+      // make sure to check if next space is free
+
+
+    }
+
+
+  } else {
+    fprintf(stderr, "invalid direction input\n");
+  }
+  
+//if move is capitalised: 
+    //while move is valid:
+      //  if gold pile is in new position
+      //      call goldPickup
+      //  update player location
+      //  update map
+      //  update all player vision
+//else:
+   // if gold pile is in new position
+    //    call goldPickup
+   // update player location
+   // update map
+   // update all player vision
+
+}
+
+/******************* updateClientState *************/
+static void updateClientState(char* map)
+{
+  //iterate through players
+  //  call updateVision on a player
+  //  send the player the updated map
+}
 
 
