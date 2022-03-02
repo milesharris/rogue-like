@@ -9,6 +9,7 @@
 #include <string.h>
 #include "file.h"
 #include "grid.h"
+#include "mem.h"
 
 const int MAXPILES = 30;
 const int MAXPLAYERS = 25;

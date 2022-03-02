@@ -21,7 +21,6 @@
 /* none */
 
 /**************** global types ****************/
-//TODO: document changes
 typedef struct grid {
   char* reference;                     // original map file read into a string
   char* active;                        // map string that changes during game
