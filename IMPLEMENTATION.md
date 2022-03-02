@@ -347,6 +347,7 @@ The primary data structure within the `grid` module is the `struct grid`. It sto
 typedef struct grid {
   char* reference;
   char* active;
+  size_t mapLen;
   int numColumns;
   int numRows;
 } grid_t;
@@ -409,6 +410,7 @@ open map file
 if it opens successfully
   find number of rows using file_numLines
   read reference map into memory using file_readFile
+  set mapLen by calling strLen on reference
   create active map as a copy of reference
   set number of columns using findLongestRow()
   return the grid
@@ -418,7 +420,7 @@ delete grid and return NULL in case of failure to open file or allocate memory
 
 #### `grid_replace`:
 ```
-if either string in parameters are NULL or if given index is less than 0
+if either string in parameters are NULL or if given index is out of bounds
   return false
 set the character at the given position in the given grid's active map to the given character
 return true
@@ -426,7 +428,7 @@ return true
 
 #### `grid_revertTile`
 ```
-if either string in parameters are NULL or if given index is less than 0
+if either string in parameters are NULL or if given index is out of bounds
   return false
 set the character at the given position in the given grid's active map to the character at the same position in the reference map
 return true

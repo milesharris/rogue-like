@@ -21,14 +21,13 @@
 /* none */
 
 /**************** global types ****************/
-//TODO: comment this shit
 //TODO: document changes
 typedef struct grid {
-  char* reference;
-  char* active;
-  size_t mapLen;
-  int numColumns;
-  int numRows;
+  char* reference;                     // original map file read into a string
+  char* active;                        // map string that changes during game
+  size_t mapLen;                       // length of map string
+  int numColumns;                      // number of rows in the map
+  int numRows;                         // number of columns in the map
 } grid_t;
 
 /**************** global functions ****************/
@@ -120,11 +119,15 @@ grid_t* grid_new(char* mapFile)
 /* see header file for details */
 bool grid_replace(grid_t* grid, int pos, char newChar)
 {
-  // check params
-  // TODO: check if pos out of bounds
-  if (grid->active == NULL || grid->reference == NULL || pos < 0) {
+  // check param existence
+  if (grid->active == NULL || grid->reference == NULL) {
     return false;
   }
+  // check if pos is out of bounds
+  if (pos < 0 || pos > grid->mapLen - 1) {
+    return false;
+  }
+
   // set character at given pos to given character and return success
   grid->active[pos] = newChar;
   return true;
@@ -134,11 +137,15 @@ bool grid_replace(grid_t* grid, int pos, char newChar)
 /* see header file for details */
 bool grid_revertTile(grid_t* grid, int pos)
 {
-  // check params
-  // TODO: check if pos out of bounds
-  if (grid->active == NULL || grid->reference == NULL || pos < 0) {
+  // check param existence
+  if (grid->active == NULL || grid->reference == NULL) {
     return false;
   }
+  // check if pos is out of bounds
+  if (pos < 0 || pos > grid->mapLen - 1) {
+    return false;
+  }
+
   // set 'active' character at given pos to reference value and return
   grid->active[pos] = grid->reference[pos];
   return true;
@@ -239,7 +246,13 @@ int main(const int argc, char* argv[])
   grid_replace(grid, 2, '3'); 
   
   // reprint active
-  printf("Active map: \n%s\n", active);
+  printf("Active map after replacement: \n%s\n", active);
+
+  // revert active
+  grid_revertTile(grid, 5);
+  grid_revertTile(grid, 2);
+
+  printf("Active map after reversion: \n%s\n", active);
 
   grid_delete(grid);
   // exit successfully after test completion

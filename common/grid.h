@@ -32,6 +32,7 @@ char* grid_getReference(grid_t* grid);
 char* grid_getActive(grid_t* grid);
 int grid_getNumRows(grid_t* grid);
 int grid_getNumColumns(grid_t* grid);
+size_t grid_getMapLen(grid_t* grid);
 
 /**************** grid_new ***************/
 /* initialize a new "grid"
