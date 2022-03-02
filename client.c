@@ -13,6 +13,7 @@
 
 // functions
 static int parseArgs(const int argc, char* argv[]);
+static void initCurses();
 
 static bool handleMessage(void* arg, const addr_t from, const char* message);
 static bool initialGrid(const char* gridInfo);
@@ -61,6 +62,9 @@ main(const int argc, char* argv[])
 
   // send either SPECTATE or PLAYER [playername] message to join game
   joinGame(server);
+
+  // start ncurses
+  initCurses();
 
   // loop, waiting for input or messages
   bool ok = message_loop(&server, 0, NULL, handleInput, handleMessage);
@@ -133,6 +137,32 @@ static void joinGame(const addr_t to)
   }
 }
 
+/********************** initCurses ***************/
+/* initializes ncurses */
+static void initCurses()
+{
+  
+  initscr();
+  cbreak();
+  noecho();
+  start_color();
+  init_pair(1, COLOR_RED, COLOR_BLACK);
+  attron(COLOR_PAIR(1));
+
+
+} 
+
+  // AM I DOING NCURSES RIGHT??? get help -> TA 
+  // TODO: This is the plan
+  //       initialize screen and whatever
+  //       display header and map at all times 
+  //            header: Player [letter] has [num] nuggets ([num2] nuggets unclaimed).
+  //            map: most recent display sent
+  //            updated after any GOLD or DISPLAY message respectively
+  //       other functions will print messages to header, but only briefly displayed. 
+  //       At QUIT, ncurses will exit and a final message will be sent to stdout w newline.  
+
+
 /******************** handleMessage *****************/
 /* Skeleton for distributing messages depending on message type */
 static bool handleMessage(void* arg, const addr_t from, const char* message)
@@ -170,7 +200,14 @@ static bool initialGrid(const char* gridInfo)
   sscanf(remainder, "%d %d", &nrows, &ncols);
 
   // check that display fits grid; return true if it does not, otherwise return false
+  int ly, lx, uy, ux; 
+  getbegyx(stdscr, ly, lx);
+  getmaxyx(stdscr, uy, ux);
+  if (((ux - lx) < ncols) || (ly-uy) < nrows) {
+    return true;
+  }
 
+  return false;
 
 
 }
@@ -196,8 +233,7 @@ static bool updatePlayer(const char* message, const char* first)
 {
   if (strcmp(first, "OK")) {
     // player->letter = remainder; // update player letter, however you do it (setter?)
-    // is this even necessary? client really shouldn't do anything with the letter info. I don't see any need for a response to the "OK" message
-    // if you don't need it, just change this to updateGold
+    // used in header display
     return false;
   }
 
