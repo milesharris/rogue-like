@@ -15,11 +15,11 @@
 static int parseArgs(const int argc, char* argv[]);
 
 static bool handleMessage(void* arg, const addr_t from, const char* message);
-static void initialGrid(const char* gridInfo);
-static void renderScreen(const char* mapString);
+static bool initialGrid(const char* gridInfo);
+static bool renderScreen(const char* mapString);
 static void joinGame(const addr_t to);
-static void leaveGame(const char* message);
-static void updatePlayer(const char* message, const char* first);
+static bool leaveGame(const char* message);
+static bool updatePlayer(const char* message, const char* first);
 
 static bool handleInput(void* arg);
 static bool checkInput(void* arg);
@@ -134,39 +134,107 @@ static void joinGame(const addr_t to)
 }
 
 /******************** handleMessage *****************/
+/* Skeleton for distributing messages depending on message type */
 static bool handleMessage(void* arg, const addr_t from, const char* message)
 {
+  // read first word and rest of message into separate strings
+  char* first;
+  char* remainder;
+  first = strtok_r(message, " ", &remainder);
   
+  if (strcmp(first, "GRID")) {
+    return initialGrid(remainder);
+  }
+
+  if (strcmp(first, "QUIT")) {
+    return leaveGame(remainder);
+  }
+
+  if (strcmp(first, "DISPLAY")) {
+    return renderScreen(remainder);
+    // TODO figure out render screen with ncurses (in renderScreen)
+
+  // if GOLD or OK
+  else {
+    return updatePlayer(remainder, first);
+  }  
 
 }
 
 /****************** initialGrid ******************/
-static void initialGrid(const char* gridInfo)
+/* On reception of GRID message, checks that display will fit grid. */
+static bool initialGrid(const char* gridInfo)
 {
+  // store nrows and ncols
+  int nrows, ncols;
+  sscanf(remainder, "%d %d", &nrows, &ncols);
+
+  // check that display fits grid; return true if it does not, otherwise return false
+
 
 
 }
 
 /********************** renderScreen ****************/
-static void renderScreen(const char* mapString)
+static bool renderScreen(const char* mapString)
 {
 
 
 }
 
 /******************* leaveGame *******************/
-static void leaveGame(const char* message)
+static bool leaveGame(const char* message)
 {
 
 
 
 }
 /******************** updatePlayer *****************/
-static void updatePlayer(const char* message, const char* first)
+/* Updates player info depending on what kind of info passed.
+ */
+static bool updatePlayer(const char* message, const char* first)
 {
+  if (strcmp(first, "OK")) {
+    // player->letter = remainder; // update player letter, however you do it (setter?)
+    // is this even necessary? client really shouldn't do anything with the letter info. I don't see any need for a response to the "OK" message
+    // if you don't need it, just change this to updateGold
+    return false;
+  }
+
+  if (strcmp(first, "GOLD")) {
+    // store gold info
+    int n, p, r;
+    sscanf(remainder, "%d %d %d", &n, &p, &r);
+    
+    // update player gold
+    player_setGold(player, p);
+
+    // print an update about gold collected
+    if (n != 0) {
+        // print brief message next to normal header
+    }
+
+    // update normal header 
 
 
+    //    TODO: I think you need separate 'updateHeader' and 'updateMap' functions
+    //    as well as a way to print to the header briefly (gold collection message, unknown keystroke, etc.)
+    //    updateHeader: displays last header until new header received; then, displays new header. 
+    //                  (also: modifies header based on whether player or spectator)
+    //    updateMap: displays last map until new map recieved; 
+    //
+    // TODO I think this is an ncurses thing. Figure it out!
 
+
+    return false;
+  }
+
+
+  }
+
+  // if unidentifiable message type received, don't do anything
+  else {
+    return false;
 }
 
 /********************* handleInput ******************/
