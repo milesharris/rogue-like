@@ -32,6 +32,7 @@ char* grid_getReference(grid_t* grid);
 char* grid_getActive(grid_t* grid);
 int grid_getNumRows(grid_t* grid);
 int grid_getNumColumns(grid_t* grid);
+size_t grid_getMapLen(grid_t* grid);
 
 /**************** grid_new ***************/
 /* initialize a new "grid"
@@ -50,6 +51,14 @@ grid_t* grid_new(char* mapFile);
  * returns true if success, false if error
  */
 bool grid_replace(grid_t* grid, int pos, char newChar);
+
+/**************** grid_revertTile **************/
+/* Replaces the character at the given position of the given grid's active map
+ * with the character at the same position in the given grid's reference map
+ * most often used when players move or when gold is picked up
+ * returns true if success, false if the strings in the given grid don't exist
+ */
+bool grid_revertTile(grid_t* grid, int pos);
 
 /*************** grid_delete **************/
 /* free's all memory in use by the given grid

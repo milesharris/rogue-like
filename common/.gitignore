@@ -1,3 +1,5 @@
 common.a
 grid.o
 gridtest
+player.o
+playertest

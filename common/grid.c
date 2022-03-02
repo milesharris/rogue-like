@@ -22,10 +22,11 @@
 
 /**************** global types ****************/
 typedef struct grid {
-  char* reference;
-  char* active;
-  int numColumns;
-  int numRows;
+  char* reference;                     // original map file read into a string
+  char* active;                        // map string that changes during game
+  size_t mapLen;                       // length of map string
+  int numColumns;                      // number of rows in the map
+  int numRows;                         // number of columns in the map
 } grid_t;
 
 /**************** global functions ****************/
@@ -58,6 +59,11 @@ int grid_getNumColumns(grid_t* grid)
   return grid ? grid->numColumns : 0; 
 }
 
+size_t grid_getMapLen(grid_t* grid)
+{
+  return grid ? grid->mapLen : 0;
+}
+
 /**************** grid_new *****************/
 /* see header file for details */
 grid_t* grid_new(char* mapFile)
@@ -82,7 +88,9 @@ grid_t* grid_new(char* mapFile)
       grid_delete(grid);
       return NULL;
     }
-    
+    // store length of map string
+    grid->mapLen = strlen(grid->reference);
+
     // create a copy of the reference map to use as active map
     grid->active = mem_malloc(strlen(grid->reference) + 1);
     // clean up and return NULL if failure to allocate active map
@@ -96,7 +104,6 @@ grid_t* grid_new(char* mapFile)
 
     // number of colums == length of longest row
     grid->numColumns = longestRowLength(grid->reference);
-
     // return the "complete" grid only if all operations successful
     return grid;
 
@@ -111,12 +118,35 @@ grid_t* grid_new(char* mapFile)
 /* see header file for details */
 bool grid_replace(grid_t* grid, int pos, char newChar)
 {
-  // check params
-  if (grid->active == NULL || grid->reference == NULL || pos < 0) {
+  // check param existence
+  if (grid->active == NULL || grid->reference == NULL) {
     return false;
   }
+  // check if pos is out of bounds
+  if (pos < 0 || pos > grid->mapLen - 1) {
+    return false;
+  }
+
   // set character at given pos to given character and return success
   grid->active[pos] = newChar;
+  return true;
+}
+
+/**************** grid_revertTile **************/
+/* see header file for details */
+bool grid_revertTile(grid_t* grid, int pos)
+{
+  // check param existence
+  if (grid->active == NULL || grid->reference == NULL) {
+    return false;
+  }
+  // check if pos is out of bounds
+  if (pos < 0 || pos > grid->mapLen - 1) {
+    return false;
+  }
+
+  // set 'active' character at given pos to reference value and return
+  grid->active[pos] = grid->reference[pos];
   return true;
 }
 
@@ -215,7 +245,13 @@ int main(const int argc, char* argv[])
   grid_replace(grid, 2, '3'); 
   
   // reprint active
-  printf("Active map: \n%s\n", active);
+  printf("Active map after replacement: \n%s\n", active);
+
+  // revert active
+  grid_revertTile(grid, 5);
+  grid_revertTile(grid, 2);
+
+  printf("Active map after reversion: \n%s\n", active);
 
   grid_delete(grid);
   // exit successfully after test completion

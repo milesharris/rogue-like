@@ -347,6 +347,7 @@ The primary data structure within the `grid` module is the `struct grid`. It sto
 typedef struct grid {
   char* reference;
   char* active;
+  size_t mapLen;
   int numColumns;
   int numRows;
 } grid_t;
@@ -371,10 +372,17 @@ grid_t* grid_new(char* mapFile);
 ```
 
 #### `grid_replace`
-The grid_replace function provides the ability to replace the character at the given index position in the given grid's active map with the given character. It is primarily used as a helper for other functions, but is still exported for its general functionality.
+The grid_replace function provides the ability to replace the character at the given index position in the given grid's active map with the given character.
 
 ```c
 bool grid_replace(grid_t* grid, int pos, char newChar);
+```
+
+#### `grid_revertTile`
+The grid_revertTile provides the ability to revert the tile at the given position in the active map to its value in the reference map. This is most used when players move off of tiles, when players leave a room that contains gold or other players (and therefore lose their vision of those items), and when players pick up gold.
+
+```c
+bool grid_revertTile(grid_t* grid, int pos);
 ```
 
 #### `grid_delete`
@@ -402,6 +410,7 @@ open map file
 if it opens successfully
   find number of rows using file_numLines
   read reference map into memory using file_readFile
+  set mapLen by calling strLen on reference
   create active map as a copy of reference
   set number of columns using findLongestRow()
   return the grid
@@ -411,9 +420,17 @@ delete grid and return NULL in case of failure to open file or allocate memory
 
 #### `grid_replace`:
 ```
-if either string in parameters are NULL or if given index is less than 0
+if either string in parameters are NULL or if given index is out of bounds
   return false
 set the character at the given position in the given grid's active map to the given character
+return true
+```
+
+#### `grid_revertTile`
+```
+if either string in parameters are NULL or if given index is out of bounds
+  return false
+set the character at the given position in the given grid's active map to the character at the same position in the reference map
 return true
 ```
 
@@ -482,6 +499,12 @@ The *player_new* function creates a new `struct player` with the given name, pos
 player_t* player_new(char* name);
 ```
 
+#### `player_addGold`
+The *player_addGold* function adds a given amount of gold to a given player's inventory. It returns the player's new gold total if successful, and returns -1 if the given player does not exist or if the given amount of gold is less than 0.
+```c
+int player_addGold(player_t* player, int newGold);
+```
+
 #### `player_delete`
 The *player_delete* function frees all the memory in use by a `struct player`. It free's the name and vision strings if they are not `NULL`, and always free's the struct itself.
 ```c
@@ -500,7 +523,13 @@ if name parameter not null
 else
   return NULL
 ```
-
+#### `player_addGold`
+```
+if given player NULL or given amount of gold less than 0
+  return -1
+add given amount of gold to player's total
+return player's gold total
+```
 #### `player_delete`
 ```
 if player not null
