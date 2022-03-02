@@ -9,7 +9,7 @@
 #include <string.h>
 #include "file.h"
 #include "message.h"
-// #include "player.h"
+#include "player.h"
 
 // functions
 static int parseArgs(const int argc, char* argv[]);

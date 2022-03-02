@@ -9,10 +9,10 @@
 
 
 typedef struct player {
-  char* name;
-  char* vision; // map of user vision
-  int pos;
-  int gold;
+  char* name;           // name provided by client
+  char* vision;         // map of user vision
+  int pos;              // index position in the map string
+  int gold;             // amount of gold held by player
 } player_t;
 
 /**** getter functions ***************************************/
@@ -20,37 +20,25 @@ typedef struct player {
 char* 
 player_getVision(player_t* player)
 {
-  if( player == NULL ){
-    return NULL;
-  } 
-  return player->vision;
+  return player ? player->vision : NULL;
 }
 
 char* 
 player_getName(player_t* player)
 {
-  if( player == NULL ){
-    return NULL;
-  }
-  return player->name;
+  return player ? player->name : NULL;
 }
 
 int 
 player_getPos(player_t* player)
 {
-  if( player == NULL ){
-    return -1;
-  }
-  return player->pos;
+  return player ? player->pos : -1;
 }
 
 int 
 player_getGold(player_t* player)
 {
-  if( player == NULL ){
-    return 0;
-  }
-  return player->gold;
+  return player ? player->gold : 0;
 }
 
 /***** setter functions **************************************/
@@ -58,7 +46,7 @@ player_getGold(player_t* player)
 char* 
 player_setVision(player_t* player, char* vision)
 {
-  if( player == NULL || vision == NULL ){
+  if ( player == NULL || vision == NULL ) {
     return NULL;
   }
   player->vision = vision;
@@ -68,7 +56,7 @@ player_setVision(player_t* player, char* vision)
 int 
 player_setPos(player_t* player, int pos)
 {
-  if( player == NULL || pos < 0 ){
+  if ( player == NULL || pos < 0 ) {
     return -1;
   }
   player->pos = pos;
@@ -78,7 +66,7 @@ player_setPos(player_t* player, int pos)
 int 
 player_setGold(player_t* player, int gold)
 {
-  if( player == NULL || gold < 0 ){
+  if ( player == NULL || gold < 0 ) {
     return 0;
   }
   player->gold = gold;
@@ -93,7 +81,7 @@ player_new(char* name)
 {
   player_t* player = malloc(sizeof(player_t));
 
-  if( player == NULL ){ // malloc error
+  if ( player == NULL ) { // malloc error
     return NULL;
   } else {
     player->name = name;
@@ -105,13 +93,28 @@ player_new(char* name)
   return player;
 }
 
+/***** player_addGold ****************************************/
+/* see player.h for full details */
+int
+player_addGold(player_t* player, int newGold)
+{
+  // validate params
+  if (player == NULL || newGold < 0) {
+    return -1;
+  }
+
+  // add given amount of gold to player's total and return new value
+  player->gold += newGold;
+  return player->gold;
+}
+
 /***** player_delete *****************************************/
 /* see player.h for full details */
 
 void 
 player_delete(player_t* player)
 {
-  if( player == NULL ){
+  if ( player == NULL ) {
     return;
   }
   

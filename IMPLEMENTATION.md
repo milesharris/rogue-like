@@ -499,6 +499,12 @@ The *player_new* function creates a new `struct player` with the given name, pos
 player_t* player_new(char* name);
 ```
 
+#### `player_addGold`
+The *player_addGold* function adds a given amount of gold to a given player's inventory. It returns the player's new gold total if successful, and returns -1 if the given player does not exist or if the given amount of gold is less than 0.
+```c
+int player_addGold(player_t* player, int newGold);
+```
+
 #### `player_delete`
 The *player_delete* function frees all the memory in use by a `struct player`. It free's the name and vision strings if they are not `NULL`, and always free's the struct itself.
 ```c
@@ -517,7 +523,13 @@ if name parameter not null
 else
   return NULL
 ```
-
+#### `player_addGold`
+```
+if given player NULL or given amount of gold less than 0
+  return -1
+add given amount of gold to player's total
+return player's gold total
+```
 #### `player_delete`
 ```
 if player not null

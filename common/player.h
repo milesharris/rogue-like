@@ -1,7 +1,9 @@
 /*
  * Defines the player module for out group's nuggets game
- * The player module stores necessary information relating to a player, including current gold, position, name, and current vision.
- * It also provides various functions for retrieving and altering this information, as well as for creating and removing player's
+ * The player module stores necessary information relating to a player 
+ * including current gold, position, name, and current vision.
+ * It also provides various functions for retrieving and altering this information 
+ * as well as for creating and removing player's
  *
  * Winter 2022, CS50 Team 1
  */
@@ -11,7 +13,7 @@
 
 /***** global types ******************************************/
 
-typedef struct player player_t; // opague to users of the module
+typedef struct player player_t; // opaque to users of the module
 
 /***** functions *********************************************/
 
@@ -38,12 +40,21 @@ int player_setGold(player_t* player, int gold);
 /* Initalized a new 'player' struct
  * takes a string as parameter, wherein the string refers to a player name
  * allocates memory for the player struct which must be free'd by calling player_delete
- * initializes other attributes of the player to NULL where applicable, 0 for gold, and -1 for position
+ * initializes other attributes of the player to NULL where applicable, 
+ * 0 for gold, and -1 for position
  *
  * returns player_t* if successful, otherwise NULL
  */
 
 player_t* player_new(char* name);
+
+/***** player_addGold ****************************************/
+/* Add the provided number of gold to a player's inventory
+ * takes an integer value of gold to add as a parameter
+ * returns the player's new gold total if successful
+ * returns -1 if the given player is null or given newGold < 0
+ */
+int player_addGold(player_t* player, int newGold);
 
 /***** player_delete *****************************************/
 /* Deletes a player struct free allocated memory. 
