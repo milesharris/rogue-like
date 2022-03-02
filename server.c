@@ -13,10 +13,10 @@
 int MAXPILES = 30;
 int MAXPLAYERS = 25;
 
-/***** game struc ********************************************/
+/******************** game struct ******************/
 /* see server.h for details */
 
-static typedef struct game {
+typedef struct game {
     int* piles;         // ptr to array of piles
     int* players;       // ptr to array of players
     int remainingGold;  // gold left in the game
@@ -191,10 +191,11 @@ initializeGame(char* filepathname, int seed)
   }
   
   // inserting gold piles into map
-
-  int gridSize = strlen(grid->reference); // length of map string
+  char* active = grid_getActive(grid);
+  char* reference = grid_getReference(grid);
+  int gridSize = strlen(reference); // length of map string
   int pilesInserted = 0;
-  int slot  0;
+  int slot = 0;
   tmp = 0;
   
 
@@ -203,9 +204,9 @@ initializeGame(char* filepathname, int seed)
     tmp = rand();
     slot = (tmp % gridSize);
 
-    if( grid->active[slot] == "." ){ // we only insert into valid spaces in the map
+    if( active[slot] == "." ){ // we only insert into valid spaces in the map
       if(grid_replace(grid, slot, "*")){
-        pilesInsert++;
+        pilesInserted++;
       } else {
         fprintf(stderr, "initializeGame: err inserting pile in map\n");
       }
