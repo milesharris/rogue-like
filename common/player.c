@@ -6,18 +6,19 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-
+#include "grid.h"
+#include <string.h>
 
 typedef struct player {
   char* name;           // name provided by client
-  char* vision;         // map of user vision
+  grid_t* vision;         // map of user vision
   int pos;              // index position in the map string
   int gold;             // amount of gold held by player
 } player_t;
 
 /**** getter functions ***************************************/
 
-char* 
+grid_t* 
 player_getVision(player_t* player)
 {
   return player ? player->vision : NULL;
@@ -43,8 +44,8 @@ player_getGold(player_t* player)
 
 /***** setter functions **************************************/
 
-char* 
-player_setVision(player_t* player, char* vision)
+grid_t* 
+player_setVision(player_t* player, grid_t* vision)
 {
   if ( player == NULL || vision == NULL ) {
     return NULL;
@@ -81,14 +82,22 @@ player_new(char* name)
 {
   player_t* player = malloc(sizeof(player_t));
 
-  if ( player == NULL ) { // malloc error
+  // handle malloc error, return NULL if failure to allocate
+  if ( player == NULL ) { 
     return NULL;
-  } else {
-    player->name = name;
-    player->vision = NULL;
-    player->pos = -1;
-    player->gold = 0;
+  } 
+
+  // save a copy of the name string in memory and handle malloc failure
+  if ((player->name = malloc(sizeof(name))) == NULL) {
+    return NULL;
   }
+  // copy param string into player struct
+  strcpy(player->name, name);
+
+  // initialize all other values to defaults and return
+  player->vision = NULL;
+  player->pos = -1;
+  player->gold = 0;
   
   return player;
 }
@@ -114,12 +123,19 @@ player_addGold(player_t* player, int newGold)
 void 
 player_delete(player_t* player)
 {
+  // check param
   if ( player == NULL ) {
     return;
   }
-  
+  // free internal grid/string if not null (prevent invalid free)
+  if (player->vision != NULL) {
+    grid_delete(player->vision);
+  }
+  if (player->name != NULL) {
+    free(player->name);
+  }
+  // finally free player 
   free(player);
-  return;
 }
 
 /***** unit testing ******************************************/

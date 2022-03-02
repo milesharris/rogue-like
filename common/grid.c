@@ -170,7 +170,7 @@ void grid_delete(grid_t* grid)
 /************* findLongestRow **************/
 /* Takes a given string
  * which should be the in-memory representation of the in-game map
- * and returns the length of the longest "row"
+ * and returns the length of the longest "row" (without the new line character)
  */
 static int longestRowLength(char* map)
 {
