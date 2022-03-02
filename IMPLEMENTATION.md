@@ -470,7 +470,7 @@ The primary data structure within the *player* module is the `struct player`, wh
 typedef struct player {
   char* name;
   char* letter;
-  char* vision;
+  grid_t* vision;
   int pos;
   int gold;
 } player_t
@@ -480,7 +480,7 @@ typedef struct player {
 #### Getters
 Getters are fairly self-explanatory, returning the relevant values or `NULL`/ 0 if they don't exist. 
 ```c
-char* player_getVision(player_t* player);
+grid_t* player_getVision(player_t* player);
 char* player_getName(player_t* player);
 char* player_getLetter(player_t* player);
 int player_getPos(player_t* player);
@@ -489,12 +489,12 @@ int player_getGold(player_t* player);
 #### Setters
 Setters are fairly self-explanatory, providing the ability to set member values without directly referencing them. Stylistic choice to make code more readable.
 ```c
-char* player_setVision(player_t* player, char* vision);
+grid_t* player_setVision(player_t* player, grid_t* vision);
 int player_setPos(player_t* player, int pos);
 int player_setGold(player_t* player, int gold);
 ```
 #### `player_new`
-The *player_new* function creates a new `struct player` with the given name, position, and vision. The name and vision strings are copied by the `player` so the original strings can be free'd by the user after function call. Gold is initialized to 0.
+The *player_new* function creates a new `struct player` with the given name, position, and vision. The name string and vision grid are copied by the `player` so the original strings can be free'd by the user after function call. Gold is initialized to 0.
 ```c
 player_t* player_new(char* name);
 ```
