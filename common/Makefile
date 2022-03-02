@@ -5,7 +5,7 @@
 # Winter 2022, CS50 team 1
 
 # object files, library dependency, and the target library
-OBJS = grid.o
+OBJS = grid.o player.o 
 LIB = common.a
 L = ../libcs50
 
@@ -23,8 +23,14 @@ gridtest: grid.c
 	$(CC) $(CFLAGS) -DGRIDTEST grid.c $L/libcs50.a -o $@
 	$(VALGRIND) ./gridtest ../maps/edges.txt &> gridtest.out
 
+playertest: player.c
+	$(CC) $(CFLAGS) -DPLAYERTEST player.c -o playertest
+	$(VALGRIND) ./playertest testname &> playertest.out
+
 # Dependencies: object files depend on header files
 grid.o: grid.h
+
+player.o: player.h
 
 .PHONY: clean
 
@@ -33,3 +39,4 @@ clean:
 	rm -f core
 	rm -f $(LIB) *~ *.o
 	rm -f gridtest
+	rm -f playertest
