@@ -39,7 +39,21 @@ The player module...
 
 ### game
 
-The game module...
+The game module defines, and implements a structure to hold the state of the game, allowing the struct to be used as a global variable in `server.c` and `client.c` for readability. It also provides a range of functions to interact with a `struct game`. For more information, see the corresponding `game.h`. The `game` module exports the following functions and types:
+
+```c
+typedef struct game game_t; 
+grid_t* game_getGrid(game_t* game);
+int* game_getPiles(game_t* game);
+int* game_getPlayers(game_t* game);
+int game_getRemainingGold(game_t* game);
+bool game_setRemainingGold(game_t* game, int gold);
+bool game_setGrid(game_t* game, grid_t* grid);
+game_t* game_new(int* piles, int* players, grid_t* grid);
+int game_subtractGold(game_t* game, int gold);
+void game_delete(game_t* game);
+
+```
 
 ### Implementation
 
