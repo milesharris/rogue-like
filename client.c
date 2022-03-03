@@ -32,8 +32,43 @@ static player_t* player;
  *
  * How do those void args work exactly? a little confused
  * How does handleMessage know what address its coming from?
+ * NCURSES???
  */
 
+  // AM I DOING NCURSES RIGHT??? get help -> TA 
+  // TODO: This is the plan
+  //       initialize screen and whatever
+  //       display header and map at all times 
+  //            header: Player [letter] has [num] nuggets ([num2] nuggets unclaimed).
+  //            map: most recent display sent
+  //            updated after any GOLD or DISPLAY message respectively
+  //       other functions will print messages to header, but only briefly displayed. 
+  //       At QUIT, ncurses will exit and a final message will be sent to stdout w newline
+
+  /* Solutions:
+   *
+   *    mvprintw prints to a specific location on the window. I assume it bumps everything else down. 
+   *        This should definitely solve the issue with printing briefly to the header. 
+   *    
+   *    The solution to displaying map and header permanently will be somewhere with this refresh and getch stuff. getch() feels wrong because it should update on reception of messages, not on player key press (especially spectator). 
+   *      Note: refresh() copies changes made to the display
+   *      I think mvprintw also needs refresh called to see it displayed. 
+   *
+   *      OKAY I think i got it:
+   *          
+   *          renderScreen works just like display_board, and is called every time a DISPLAY message is sent. Exactly the same, printing the header the same way. 
+   *          When the header is updated for GOLD, I mvprintw the updates to the header and refresh, which changes only the stuff I printed over (as I understand it TODO). 
+   *          That deals with the big ones (header and map display, which are always there). 
+   *          
+   *          Need to figure out
+   *              1. How to show brief messages that time out (should be an easy way built in -- just need to find the right function)
+   *              2. If my logic above is correct (ask TA)
+   *              3. WHAT TO DO WITH GETCH/characters (ask TA). 
+   *
+   *            
+   *
+   *
+   */
 
 
 
@@ -138,7 +173,7 @@ static void joinGame(const addr_t to)
 }
 
 /********************** initCurses ***************/
-/* initializes ncurses */
+/* initializes curses */
 static void initCurses()
 {
   
@@ -146,21 +181,11 @@ static void initCurses()
   cbreak();
   noecho();
   start_color();
-  init_pair(1, COLOR_RED, COLOR_BLACK);
+  init_pair(1, COLOR_YELLOW, COLOR_BLACK);
   attron(COLOR_PAIR(1));
 
-
 } 
-
-  // AM I DOING NCURSES RIGHT??? get help -> TA 
-  // TODO: This is the plan
-  //       initialize screen and whatever
-  //       display header and map at all times 
-  //            header: Player [letter] has [num] nuggets ([num2] nuggets unclaimed).
-  //            map: most recent display sent
-  //            updated after any GOLD or DISPLAY message respectively
-  //       other functions will print messages to header, but only briefly displayed. 
-  //       At QUIT, ncurses will exit and a final message will be sent to stdout w newline.  
+  
 
 
 /******************** handleMessage *****************/
@@ -200,10 +225,9 @@ static bool initialGrid(const char* gridInfo)
   sscanf(remainder, "%d %d", &nrows, &ncols);
 
   // check that display fits grid; return true if it does not, otherwise return false
-  int ly, lx, uy, ux; 
-  getbegyx(stdscr, ly, lx);
+  int uy, ux; 
   getmaxyx(stdscr, uy, ux);
-  if (((ux - lx) < ncols) || (ly-uy) < nrows) {
+  if ((ux < ncols) || (uy < nrows)) {
     return true;
   }
 
@@ -220,10 +244,21 @@ static bool renderScreen(const char* mapString)
 }
 
 /******************* leaveGame *******************/
+/* Close ncurses
+ * Print QUIT message from server
+ * Delete player struct
+ * Free anything else that needs it
+ * Return true (to close message loop). 
+ */
 static bool leaveGame(const char* message)
 {
 
+  endwin(); // close ncurses
+  printf("%s", message);
+  player_delete(player);
+  // nothing to free?
 
+  return true; // ends message loop
 
 }
 /******************** updatePlayer *****************/
