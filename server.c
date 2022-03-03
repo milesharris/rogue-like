@@ -14,6 +14,8 @@
 #include "mem.h"
 #include "game.h"
 #include "player.h"
+#include "message.h"
+#include "log.h"
 
 // global constants
 static const int goldMaxNumPiles = 40; // maximum number of gold piles
@@ -33,6 +35,7 @@ static game_t* game;
 static void parseArgs(const int argc, char* argv, char** filepathname, int* seed);
 static int initializeGame(char* filepathname, int seed);
 static int* generateGold(grid_t* grid, int seed);
+static bool handleMessage(void* arg, const addr_t from, const char* message);
 static void pickupGold(int playerID, int piles[]);
 static void movePlayer(int playerID, char directionChar);
 static void updateClientState(char* map);
@@ -41,17 +44,53 @@ static void updateClientState(char* map);
 int
 main(const int argc, char* argv[])
 {
-  char* filepathname = NULL;
-  int seed = NULL;
+  char* filepathname = NULL;           // filepath of the map file
+  int seed = NULL;                     // seed for random number gen (optional)
+  int ourPort;                         // port that server runs on
+  
+  // initialize logging
+  log_init(stderr);
+
   // validate arguments
-  parseArgs(argc, argv, &filepathname, &seed);
+  parseArgs(argc, argv, &filepathname, &seed); log_v("parseargs passed\n");
   // generate necessary data structures
-  initializeGame(filepathname, seed);
+  initializeGame(filepathname, seed); log_v("game initialized\n");
 
   // start networking and announce port number
+  ourPort = message_init(stderr);
+  // test port
+  if (ourPort == 0) {
+    fprintf(stderr, "err initializing message module\n");
+    // clean up and exit
+    game_delete(game);
+    log_done();
+    exit(1);
+  }
+  // log and send to terminal for clients 
+  log_d("server listening on port %d\n", ourPort);
+  printf("Server listening for messages on port: %d", ourPort);
 
+  // handles inbound messages until quit message or fatal error
+  if (message_loop(NULL, 0, NULL, NULL, handleMessage)) {
+    // if loop completed successfully, send quit info and close down module
+    // call quitGame
 
+    // clean up and exit
+    message_done();
+    game_delete(game);
+    log_done();
+    exit(0);
 
+  } else {
+    // if loop quits unexpectedly
+    // send quit message with error explanation
+    log_v("unexpected error in message_loop, quitting game\n");
+    // clean up and exit 
+    message_done();
+    game_delete(game);
+    log_done();
+    exit(2);
+  }
 }
 
 /****************** parseArgs ******************/
@@ -59,6 +98,7 @@ main(const int argc, char* argv[])
 static void
 parseArgs(const int argc, char* argv, char** filepathname, int* seed)
 {
+  FILE* fp;                            // file pointer to map file for testing
 
   // make sure arg count is 2 or 3 (depending on if seed is passed)
   if (argc != 2 && argc != 3) {
@@ -66,24 +106,24 @@ parseArgs(const int argc, char* argv, char** filepathname, int* seed)
     exit(1);
   }
 
-  *filepathname = argv[1];
+  // set seed if given
   if (argc == 3) {
-    *seed = argv[2];
+    *seed = argv[2];  log_d("random seed set to %d\n", *seed);
     // TODO: Does seed have any restrictions? (cant be negative, etc.)
   }
-
+  
   // check filepathname is not NULL
-  if (*filepathname == NULL) {
+  if ((*filepathname = argv[1]) == NULL) {
     fprintf(stderr, "parseArgs: NULL arg given\n");
     exit(1);
   }
   
   // create a filepointer and check it 
-  FILE* fp = fopen(*filepathname, "r");
-  if ( fp == NULL ) {
+  if ((fp = fopen(*filepathname, "r")) == NULL ) {
     fprintf(stderr, "parseArgs: err creating filepointer\n");
     exit(1);
   }
+
   fclose(fp);
 }
 
@@ -98,15 +138,15 @@ initializeGame(char* filepathname, int seed)
 
   // create the grid
   if ((serverGrid = grid_new(filepathname)) == NULL) {
-    fprintf(stderr, "err loading grid from file\n");
+    log_v("err loading grid from file\n");
     return -1;
   }
 
   // randomly distribute gold
-  goldPiles = generateGold(serverGrid, seed);
+  goldPiles = generateGold(serverGrid, seed); log_v("generated gold\n");
 
   // create global game state
-  game = game_new(goldPiles, playerList, serverGrid);
+  game = game_new(goldPiles, playerList, serverGrid); log_v("created game\n");
 
 }
 
@@ -154,7 +194,7 @@ static int* generateGold(grid_t* grid, int seed)
       totalGold -= currPile;
     }
     
-    piles[currIndex] = currPile;
+    piles[currIndex] = currPile; log_d("adding pile of %d gold to array\n", currPile);
     currIndex++;
   }
   
@@ -166,7 +206,7 @@ static int* generateGold(grid_t* grid, int seed)
     slot = (tmp % gridLen);
 
     if ( active[slot] == ROOMTILE ) { // we only insert into valid spaces in the map
-      if (grid_replace(grid, slot, GOLDTILE)) {
+      if (grid_replace(grid, slot, GOLDTILE)) {  log_d("added gold at index %d", slot);
         pilesInserted++;
       } else {
         fprintf(stderr, "initializeGame: err inserting pile in map\n");
@@ -174,6 +214,12 @@ static int* generateGold(grid_t* grid, int seed)
     } 
   }
   return piles;
+}
+
+/**************** handleMessage ***************/
+static bool handleMessage(void* arg, const addr_t from, const char* message)
+{
+
 }
 /******************* pickupGold *************/
 static void 
