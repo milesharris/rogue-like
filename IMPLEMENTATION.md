@@ -245,6 +245,7 @@ static void updateVision(int playerID);
     create grid calling grid_new
     generate random gold piles
     place piles randomly in grid, checking that they are placed in valid spots
+    generate global game state struct
         
 #### `handlePlayerConnect`:
 
@@ -500,7 +501,7 @@ player_t* player_new(char* name);
 ```
 
 #### `player_addGold`
-The *player_addGold* function adds a given amount of gold to a given player's inventory. It returns the player's new gold total if successful, and returns -1 if the given player does not exist or if the given amount of gold is less than 0.
+The *player_addGold* function adds a given amount of gold to a given player's purse. It returns the player's new gold total if successful, and returns -1 if the given player does not exist or if the given amount of gold is less than 0.
 ```c
 int player_addGold(player_t* player, int newGold);
 ```

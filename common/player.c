@@ -11,7 +11,7 @@
 
 typedef struct player {
   char* name;           // name provided by client
-  grid_t* vision;         // map of user vision
+  grid_t* vision;       // map of user vision
   int pos;              // index position in the map string
   int gold;             // amount of gold held by player
 } player_t;

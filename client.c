@@ -7,9 +7,11 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <ncurses.h>
 #include "file.h"
 #include "message.h"
 #include "player.h"
+
 
 // functions
 static int parseArgs(const int argc, char* argv[]);
@@ -183,7 +185,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
   if (strcmp(first, "DISPLAY")) {
     return renderScreen(remainder);
     // TODO figure out render screen with ncurses (in renderScreen)
-
+  }
   // if GOLD or OK
   else {
     return updatePlayer(remainder, first);
@@ -231,6 +233,7 @@ static bool leaveGame(const char* message)
  */
 static bool updatePlayer(const char* message, const char* first)
 {
+  char* remainder;
   if (strcmp(first, "OK")) {
     // player->letter = remainder; // update player letter, however you do it (setter?)
     // used in header display
