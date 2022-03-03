@@ -239,6 +239,15 @@ coordinatesToPos(grid_t* grid, int x, int y)
   return pos;
 }
 
+/***** calculateVisionHelper **********************************/
+/* helper function for the calculate vision function, helps to offload some work and allows for code not to be repeated */
+
+static void[]
+calculateVisionHelper()
+{
+
+}
+
 /***** calculateVision ****************************************/
 /* Calculates a player's current vision, returning a boolean array, the same size as our map, indicating which points are visible
  * Parameters:  pos - a player's current position
@@ -326,24 +335,77 @@ calculateVision(grid_t* grid, int pos)
 
     left--;
   }
-
+  
   // convert from integer to cartesian coordinates
   int posCoor[2] = posToCoordinates(grid, pos);
   int pointCoor[2];
   // slope of line
-  double m;
+  double m = 0.0;
   // iterate through points in the grid
   for(int i = 0; i < grid->mapLen; i++){
+    wallFound = false;
     if( vision[i] == 0 ){ // point hasn't been visited
       pointCoor = posToCoordinates(grid, i);
-      // slope formula, reflected over the x axis
-      m = -1.0 * ((double)(posCoor[1] - pointCoor[1]) / (double)(posCoor[0] - pointCoor[0]));
+      // slope formula
+      m = (double)(posCoor[1] - pointCoor[1]) / (double)(posCoor[0] - pointCoor[0]);
       
       // deciding whether the point is to the right or left of pos
-      if( posCoor[0] > pointCoor[0] ){
+      if( posCoor[0] < pointCoor[0] ){
+        int diff = pointCoor[0] - posCoor[0]; // difference between the x coords
+        int currX = 1;
+        double currY = 0.0;
+        // walk from pos to point, checking values along the way
+        while( currX i<= diff ){
+          currY = (m * currX) + posCoor[1]; // y = mx + b
+          int rounded = (int) currY;
+          double roundedD = (double) rounded;
+          
+          if( currY == roundedD ){ // the case where currY lies exactly on a point
+            int currPos = coordinatesToPos(grid, currX, (int) currY); // grab int representation
+            if( reference[currPos] == '.' && !wallFound ){      // check if room tile
+              vision[currPos] = 1;
+            }
+            else if( reference[currPos] != '.' && !wallFound ){ // check if this is the first wall we've seen
+              vision[currPos] = 1;
+              wallFound = true;
+            } else { // otherwise we've already seen a wall, so this point is not visible
+              vision[currPos] = -1;
+            }
+          } else { // the more likely case currY falls between two points and we need to check both
+            int pos1 = coordinatesToPos(grid, currX, rounded);    // the two positions in reference we need to check
+            int pos2 = coordinatesToPos(grid, currX, rounded + 1);
+            
+            if(reference[pos1] == '.' && reference[pos2] == '.' && !wallFound){ // haven't hit a wall yet, and current position is between room tiles
+              vision[pos1] = 1;
+              vision[pos2] = 1;
+            }
+            else if(!wallFound){ // haven't found a wall yet, but the current position hits a wall
+              vision[pos1] = 1;
+              vision[pos2] = 1;
+              wallFound = true;
+            } else { // we've already see a wall, current position is not visible
+              vision[pos1] = -1;
+              vision[pos2] = -1;
+            }
+          }
+          currX++; // increment current x
+        }
+      } else { // it must be the case that posCoor[0] > pointCoor[0]
+        int diff = posCoor[0] - pointCoor[0]; // difference in x values
+        int currX = diff;
+        double currY = 0.0; 
 
-      } else {
+        while( currX > 0 ){
+          currY = (m * (currX + pointCoor[0])) + posCoor[1]; // y = mx + b 
+          int rounded = (int) currY;
+          double roundedD = (double) rounded;
 
+          if( currY == roundedD ){ // we have the case where the point falls exactly on a point in a map (not between two points)
+            
+          } else { // otherwise the point falls between two points in the map and we must check both
+            
+          }
+        }
       }
     }
   }
