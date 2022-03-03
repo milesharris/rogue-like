@@ -544,13 +544,99 @@ else
 
 ---
 
+## Game
+The game module defines, and implements a structure to hold the state of the game, allowing the struct to be used as a global variable in `server.c` and `client.c` for readability. It also provides a range of functions to interact with a `struct game`. 
+
+### Data Structures
+The primary data structure for this module is the `struct game`, defined below. It contains the relevant information about the current game state, and it held by both the server and each client. It is fairly simple, just a container for a collection of information.
+
+```c
+typedef struct game {
+    int* piles;         // ptr to array of piles
+    int* players;       // ptr to array of player IDs
+    int remainingGold;  // gold left in the game
+    grid_t* grid;       // current game grid
+} game_t;
+
+```
+
+### Definition of Function Prototypes
+#### Getters
+These are self-explanatory and will not be heavily detailed. They return NULL or 0 on error when appropriate.
+```c
+grid_t* game_getGrid(game_t* game);
+int* game_getPiles(game_t* game);
+int* game_getPlayers(game_t* game);
+int game_getRemainingGold(game_t* game);
+
+```
+
+#### Setters
+Once again self-explanatory. The one detail of note is that game_setGrid calls grid_delete on that game's previous grid.
+
+```c
+bool game_setRemainingGold(game_t* game, int gold);
+bool game_setGrid(game_t* game, grid_t* grid);
+
+```
+
+#### game_new
+The game_new function creates a new `struct game`. It only allocates space for the struct itself, all parameters must be allocated before being passed into the function.
+
+```c
+game_t* game_new(int* piles, int* players, grid_t* grid);
+
+```
+
+#### game_subtractGold
+The game_subtractGold function subtracts a given amount of gold from a given game's remainingGold member. It returns the new value on success, and -1 if the game does not exist.
+
+```c
+int game_subtractGold(game_t* game, int gold);
+
+```
+
+#### game_delete
+The game_delete function free's all memory associated with a given game. It sets the arrays within the game to NULL and calls grid_delete on the grid. If the given game does not exist it does nothing.
+
+```c
+void game_delete(game_t* game);
+
+```
+### Detailed Pseudocode
+
+#### `game_new`
+```
+allocate space for a game_t
+if malloc failure, return NULL
+set game members to values given as params
+return game
+```
+
+#### `game_subtractGold`
+```
+if given game is NULL return -1
+else subtract the given amount of gold from the game's gold
+return new value of game->remainingGold
+```
+
+#### `game_delete`
+```
+if game is not NULL
+  set game->piles and game->players to NULL
+  call grid_delete on the grid
+  free the struct itself
+```
+
+---
+
 ## Testing plan
 
 ### unit testing
 
 The grid module contains a small unit test that is enabled by compiling it with the GRIDTEST flag. It reads a grid into memory from a given file, prints the intial states of both reference and active maps, then modifies the active map and reprints. The grid module was tested on a variety of map files during development.
 
-The player module is small enough that it does not require a seperate unit test. Its functionality can be determined during our larger integration and systems tests. 
+The player and game modules are small enough that they do not require a seperate unit test. Their functionality can be determined during our larger integration and systems tests. 
 
 ### integration testing
 

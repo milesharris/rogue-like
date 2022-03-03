@@ -5,7 +5,7 @@
 # Winter 2022, CS50 team 1
 
 # object files, library dependency, and the target library
-OBJS = grid.o player.o
+OBJS = grid.o player.o game.o
 LIB = common.a
 L = ../libcs50
 
@@ -30,6 +30,7 @@ playertest: player.c
 # Dependencies: object files depend on header files
 grid.o: grid.h
 player.o: player.h
+game.o: game.h
 
 .PHONY: clean
 
