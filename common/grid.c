@@ -10,6 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
+#include <bool.h>
 #include "grid.h"
 #include "mem.h"
 #include "file.h"
@@ -199,6 +200,155 @@ static int longestRowLength(char* map)
 
   return rowMax;
 }
+
+/* ************************ VISION ************************** */
+
+/***** local vision functions *********************************/
+
+/***** posToCoordinates ***************************************/
+/* converts the position integer into cartesian coordinates to make mathematic manipulation easier */
+
+static int[]
+posToCoordinates(grid_t* grid, int pos)
+{
+  // check arguments
+  if( grid == NULL || pos < 0 ){
+    return NULL;
+  } 
+  
+  // calculate coordinates, assumes pos is zero indexed
+  int x = (pos % (grid->numColumns + 1)); // add one for new line character not counter in numColumns
+  int y = (pos / (grid->numColumns + 1));
+  int tuple[2] = {x, y};
+
+  return tuple;
+}
+
+/***** coordinatesToPos ***************************************/
+/* converts cartesian coordinates back into an integer representation */
+
+static int
+coordinatesToPos(grid_t* grid, int x, int y)
+{
+  if( grid == NULL || x < 0 || y < 0 ){
+    return -1;
+  }
+  
+  // where y in the row and x is the column
+  int pos = (y * (grid->numColumns + 1)) + x; // add one to numColumns to account for the new line character
+  return pos;
+}
+
+/***** calculateVision ****************************************/
+/* Calculates a player's current vision, returning a boolean array, the same size as our map, indicating which points are visible
+ * Parameters:  pos - a player's current position
+ *              grid - the grid struct for the map
+ *
+ * Returns:     int array of size of the map, containing values 1 (signifying a visible point) or -1 (signifying a non-visible point)
+ */
+
+static int[]
+calculateVision(grid_t* grid, int pos)
+{
+  // boolean array of with values -1 (not visible), 0 (unvisited), or 1 (visible)
+  int vision[grid->mapLen];
+  // set player position to visible
+  vision[pos] = 1; 
+  // map we check values with, used reference because we don't care about players or gold at this point, but active would also work
+  char* reference = grid->reference;
+  // boolean describing whether we've hit a wall/corner
+  bool wallFound = false;
+  
+  // checking cardinal directions manually, because using our algortithm to check horizontal of vertival 'slopes' won't work
+  // up
+  int up = pos - (grid->numColumns + 1);
+  while( up > 0 ){
+    if(reference[up] == '.' && !wallFound){ // marks room squares
+      vision[up] = 1;
+    } 
+    else if(reference[up] != '.' && !wallFound){ // marks first obstruction in this direction
+      vision[up] = 1;
+      wallFound = true;
+    } else {    // marks non-visible 
+      vision[up] = -1;
+    }
+
+    up -= (grid->numColumns + 1); // parentheses for readability
+  }
+  
+  // down
+  wallFound = false;
+  int down = pos - (grid->numColumns + 1);
+  while( down < grid->mapLen ){
+    if(reference[down] == '.' && !wallFound){
+      vision[down] = 1;
+    }
+    else if(reference[down] != '.' && !wallFound){
+      vision[up] = 1;
+      wallFound = true;
+    } else {
+      vision[down] = -1;
+    }
+
+    down += (grid->numColumns + 1);
+  }
+
+  // right
+  wallFound = false;
+  int right = pos + 1;
+  while( right != '\n' || right != '\0' ){ // within the current line
+    if(reference[right] == '.' && !wallFound){
+      vision[right] = 1;
+    }
+    else if(reference[right] != '.' && !wallFound){
+      vision[right] = 1;
+      wallFound = true;
+    } else {
+      vision[right] = -1;
+    }
+
+    right++;
+  }
+
+  // left
+  wallFound = false;
+  int left = pos - 1;
+  while( left != '\n' && left >= 0 ){
+    if(reference[left] == '.' && !wallFound){
+      vision[left] = 1;
+    }
+    else if(reference[left] != '.' && !wallFound){
+      vision[left] = 1;
+      wallFound = true;
+    } else {
+      vision[left] = -1;
+    }
+
+    left--;
+  }
+
+  // convert from integer to cartesian coordinates
+  int posCoor[2] = posToCoordinates(grid, pos);
+  int pointCoor[2];
+  // slope of line
+  double m;
+  // iterate through points in the grid
+  for(int i = 0; i < grid->mapLen; i++){
+    if( vision[i] == 0 ){ // point hasn't been visited
+      pointCoor = posToCoordinates(grid, i);
+      // slope formula, reflected over the x axis
+      m = -1.0 * ((double)(posCoor[1] - pointCoor[1]) / (double)(posCoor[0] - pointCoor[0]));
+      
+      // deciding whether the point is to the right or left of pos
+      if( posCoor[0] > pointCoor[0] ){
+
+      } else {
+
+      }
+    }
+  }
+}
+
 
 /* ********************************************************** */
 /* a simple unit test of the code above */
