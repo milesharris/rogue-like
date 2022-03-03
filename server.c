@@ -11,89 +11,14 @@
 #include "grid.h"
 #include "mem.h"
 
+// global constants
 const int MAXPILES = 30;
 const int MAXPLAYERS = 25;
 const char ROOMTILE = '.';
 const char GOLDTILE = '*';
 
-/******************** game struct ******************/
-/* see server.h for details */
 
-typedef struct game {
-    int* piles;         // ptr to array of piles
-    int* players;       // ptr to array of player IDs
-    int remainingGold;  // gold left in the game
-    grid_t* grid;       // current game grid
-} game_t;
-
-/**************** game_new ***************/
-/* see server.h or details */
-
-static game_t* 
-game_new(int* piles, int* players, grid_t* grid)
-{
-  game_t* game = malloc(sizeof(game_t));
-
-  if ( game == NULL ) { // malloc issue
-    return NULL;
-  }
-  
-  game->piles = piles;
-  game->players = players;
-  game->remainingGold = 250;
-  game->grid = grid;
-
-  return game;
-}
-
-/***** game_setRemainingGold *********************************/
-/* see server.h for details */
-
-static bool
-game_setRemainingGold(game_t* game, int gold)
-{
-  if ( game == NULL || gold < 0 ) {
-    return false;
-  } else {
-    game->remainingGold = gold;
-    return true;
-  }
-}
-
-/******************* game_setGrid *******************/
-/* see server.h for details */
-
-static bool
-game_setGrid(game_t* game, grid_t* grid)
-{
-  if ( game == NULL || grid == NULL ) {
-    return false;
-  } else {
-    game->grid = grid;
-    return true;
-  }
-}
-
-/******************** game_delete ******************/
-/* see server.h for full details */
-
-static void 
-game_delete(game_t* game)
-{
-  if ( game != NULL ) {
-    game->piles = NULL;
-    game->players = NULL;
-    grid_delete(game->grid); // make sure not to free this memory twice
-    free(game);
-  } 
-  return;
-}
-
-
-/***** initializeGame ****************************************/
-/* see server.h for details */
 // function prototypes
-
 static void parseArgs(const int argc, char* argv, char** filepathname, int* seed);
 static int initializeGame(char* filepathname, int seed);
 
@@ -219,6 +144,3 @@ initializeGame(char* filepathname, int seed)
 
   return 0;
 }
-
-
-

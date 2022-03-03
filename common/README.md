@@ -35,7 +35,11 @@ void grid_delete(grid_t* grid);
 
 ### player
 
-The player module 
+The player module...
+
+### game
+
+The game module...
 
 ### Implementation
 
