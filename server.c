@@ -156,14 +156,14 @@ initializeGame(char* filepathname, int seed)
  */
 static int* generateGold(grid_t* grid, int seed)
 {
-  int piles[goldMaxNumPiles] = {-1}; // array of piles
-  int totalGold = GoldTotal;         // max gold
-  int currPile = 0;                  // value (gold) of current pile
-  int currIndex = 0;                 // index into array
-  int tmp = 0;                       // temp int
-  char* active = grid_getActive(grid);
-  char* reference = grid_getReference(grid);
-  int gridLen = grid_getMapLen(grid);    // length of map string
+  int piles[goldMaxNumPiles] = {-1};         // array of piles
+  int totalGold = GoldTotal;                 // max gold
+  int currPile = 0;                          // value (gold) of current pile
+  int currIndex = 0;                         // index into array
+  int tmp = 0;                               // temp int
+  char* active = grid_getActive(grid);       // server active map
+  char* reference = grid_getReference(grid); // server reference map
+  int gridLen = grid_getMapLen(grid);        // length of map string
   int pilesInserted = 0;
   int slot = 0;
 
@@ -193,7 +193,7 @@ static int* generateGold(grid_t* grid, int seed)
       currPile += 1;
       totalGold -= currPile;
     }
-    
+    // add gold pile to array of piles
     piles[currIndex] = currPile; log_d("adding pile of %d gold to array\n", currPile);
     currIndex++;
   }
@@ -217,8 +217,16 @@ static int* generateGold(grid_t* grid, int seed)
 }
 
 /**************** handleMessage ***************/
+/* helper for message_loop, handles when server recieves a message
+ * and then calls appropriate functions
+ */
 static bool handleMessage(void* arg, const addr_t from, const char* message)
 {
+  // if invalid message (bad address or null string) log and continue
+  if ( ! message_isAddr(from) || message == NULL) {
+    log_v("bad message received (bad addr or null string)\n");
+    return false;
+  }
 
 }
 /******************* pickupGold *************/
