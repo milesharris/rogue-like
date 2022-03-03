@@ -32,7 +32,10 @@ static game_t* game;
 // function prototypes
 static void parseArgs(const int argc, char* argv, char** filepathname, int* seed);
 static int initializeGame(char* filepathname, int seed);
-
+static int* generateGold(grid_t* grid, int seed);
+static void pickupGold(int playerID, int piles[]);
+static void movePlayer(int playerID, char directionChar);
+static void updateClientState(char* map);
 
 /******************** main *******************/
 int
@@ -111,7 +114,6 @@ initializeGame(char* filepathname, int seed)
 /* randomly generates piles of gold and adds them to the map 
  * helper for initializeGame
  */
-
 static int* generateGold(grid_t* grid, int seed)
 {
   int piles[goldMaxNumPiles] = {-1}; // array of piles
@@ -186,7 +188,7 @@ pickupGold(int playerID, int piles[])
 
 }
 
-/******************* movePlayer *************/
+/**************** movePlayer *************/
 static void 
 movePlayer(int playerID, char directionChar)
 {
