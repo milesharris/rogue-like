@@ -38,7 +38,7 @@ bool game_setGrid(game_t* game, grid_t* grid);
  * so grid_new must be called on a grid before passing it to `game`
  * All memory allocated by the game and its grid, are freed in game_delete 
  */
-game_t* game_new(int* piles, int* players, grid_t* grid);
+game_t* game_new(int* piles, grid_t* grid);
 
 /*************** game_addPlayer **************/
 /* adds a struct player to the hashtable of players within a given game struct

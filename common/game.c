@@ -62,7 +62,7 @@ player_t* game_getPlayer(game_t* game, char* playerName)
 /* see game.h or details */
 
 game_t* 
-game_new(int* piles, int* players, grid_t* grid)
+game_new(int* piles, grid_t* grid)
 {
   hashtable_t* players;                // stores players
 
@@ -73,7 +73,7 @@ game_new(int* piles, int* players, grid_t* grid)
   }
   
   // make hashtable and handle malloc fail
-  if ((players = hashtable_new(MAXPLAYERS) == NULL) {
+  if ((players = hashtable_new(MAXPLAYERS)) == NULL) {
     // free game as, currently, it's only a pointer to a struct
     free(game);
     return NULL;

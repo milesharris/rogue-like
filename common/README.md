@@ -45,11 +45,13 @@ The game module defines, and implements a structure to hold the state of the gam
 typedef struct game game_t; 
 grid_t* game_getGrid(game_t* game);
 int* game_getPiles(game_t* game);
-int* game_getPlayers(game_t* game);
+hashtable_t* game_getPlayers(game_t* game);
 int game_getRemainingGold(game_t* game);
 bool game_setRemainingGold(game_t* game, int gold);
 bool game_setGrid(game_t* game, grid_t* grid);
 game_t* game_new(int* piles, int* players, grid_t* grid);
+bool game_addPlayer(game_t* game, player_t* player);
+player_t* game_getPlayer(game_t* game, char* playerName)
 int game_subtractGold(game_t* game, int gold);
 void game_delete(game_t* game);
 
