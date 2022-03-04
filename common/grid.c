@@ -10,7 +10,7 @@
 #include <stdlib.h>
 #include <stdio.h>
 #include <string.h>
-#include <bool.h>
+#include <stdbool.h>
 #include "grid.h"
 #include "mem.h"
 #include "file.h"
@@ -208,20 +208,21 @@ static int longestRowLength(char* map)
 /***** posToCoordinates ***************************************/
 /* converts the position integer into cartesian coordinates to make mathematic manipulation easier */
 
-static int[]
-posToCoordinates(grid_t* grid, int pos)
+static void
+posToCoordinates(grid_t* grid, int pos, int* tuple)
 {
   // check arguments
   if( grid == NULL || pos < 0 ){
-    return NULL;
+    return;
   } 
   
   // calculate coordinates, assumes pos is zero indexed
   int x = (pos % (grid->numColumns + 1)); // add one for new line character not counter in numColumns
   int y = (pos / (grid->numColumns + 1));
-  int tuple[2] = {x, y};
+  tuple[0] = x;
+  tuple[1] = y;
 
-  return tuple;
+  return;
 }
 
 /***** coordinatesToPos ***************************************/
@@ -239,28 +240,22 @@ coordinatesToPos(grid_t* grid, int x, int y)
   return pos;
 }
 
-/***** calculateVisionHelper **********************************/
-/* helper function for the calculate vision function, helps to offload some work and allows for code not to be repeated */
-
-static void[]
-calculateVisionHelper()
-{
-
-}
-
 /***** calculateVision ****************************************/
 /* Calculates a player's current vision, returning a boolean array, the same size as our map, indicating which points are visible
  * Parameters:  pos - a player's current position
  *              grid - the grid struct for the map
+ *              vision - a boolean array with values -1 (not visible), 0 (unvisited) or 1 (visible)
  *
- * Returns:     int array of size of the map, containing values 1 (signifying a visible point) or -1 (signifying a non-visible point)
+ * Returns:     void
  */
 
-static int[]
-calculateVision(grid_t* grid, int pos)
-{
-  // boolean array of with values -1 (not visible), 0 (unvisited), or 1 (visible)
-  int vision[grid->mapLen];
+static void
+calculateVision(grid_t* grid, int pos, int* vision)
+{ 
+  // check parameters
+  if( grid == NULL || vision == NULL || pos < 0 ){
+    return;
+  }
   // set player position to visible
   vision[pos] = 1; 
   // map we check values with, used reference because we don't care about players or gold at this point, but active would also work
@@ -337,7 +332,8 @@ calculateVision(grid_t* grid, int pos)
   }
   
   // convert from integer to cartesian coordinates
-  int posCoor[2] = posToCoordinates(grid, pos);
+  int posCoor[2];
+  posToCoordinates(grid, pos, posCoor);
   int pointCoor[2];
   // slope of line
   double m = 0.0;
@@ -345,7 +341,7 @@ calculateVision(grid_t* grid, int pos)
   for(int i = 0; i < grid->mapLen; i++){
     wallFound = false;
     if( vision[i] == 0 ){ // point hasn't been visited
-      pointCoor = posToCoordinates(grid, i);
+      posToCoordinates(grid, i, pointCoor);
       // slope formula
       m = (double)(posCoor[1] - pointCoor[1]) / (double)(posCoor[0] - pointCoor[0]);
       
@@ -355,13 +351,13 @@ calculateVision(grid_t* grid, int pos)
         int currX = 1;
         double currY = 0.0;
         // walk from pos to point, checking values along the way
-        while( currX i<= diff ){
+        while( currX <= diff ){
           currY = (m * currX) + posCoor[1]; // y = mx + b
           int rounded = (int) currY;
           double roundedD = (double) rounded;
           
           if( currY == roundedD ){ // the case where currY lies exactly on a point
-            int currPos = coordinatesToPos(grid, currX, (int) currY); // grab int representation
+            int currPos = coordinatesToPos(grid, posCoor[0] + currX, (int) currY); // grab int representation
             if( reference[currPos] == '.' && !wallFound ){      // check if room tile
               vision[currPos] = 1;
             }
@@ -372,8 +368,8 @@ calculateVision(grid_t* grid, int pos)
               vision[currPos] = -1;
             }
           } else { // the more likely case currY falls between two points and we need to check both
-            int pos1 = coordinatesToPos(grid, currX, rounded);    // the two positions in reference we need to check
-            int pos2 = coordinatesToPos(grid, currX, rounded + 1);
+            int pos1 = coordinatesToPos(grid, posCoor[0] + currX, rounded);    // the two positions in reference we need to check
+            int pos2 = coordinatesToPos(grid, posCoor[0] + currX, rounded + 1);
             
             if(reference[pos1] == '.' && reference[pos2] == '.' && !wallFound){ // haven't hit a wall yet, and current position is between room tiles
               vision[pos1] = 1;
@@ -392,24 +388,54 @@ calculateVision(grid_t* grid, int pos)
         }
       } else { // it must be the case that posCoor[0] > pointCoor[0]
         int diff = posCoor[0] - pointCoor[0]; // difference in x values
-        int currX = diff;
+        int currX = 1;
         double currY = 0.0; 
 
-        while( currX > 0 ){
-          currY = (m * (currX + pointCoor[0])) + posCoor[1]; // y = mx + b 
+        while( currX <= diff ){
+          currY = (m * (posCoor[0]-currX)) + posCoor[1]; // y = mx + b 
           int rounded = (int) currY;
           double roundedD = (double) rounded;
 
           if( currY == roundedD ){ // we have the case where the point falls exactly on a point in a map (not between two points)
-            
+            int currPos = coordinatesToPos(grid, posCoor[0] - currX, (int)currY);
+            if( reference[currPos] == '.' && !wallFound ){
+              vision[currPos] = 1;
+            }
+            else if( reference[currPos] != '.' && !wallFound ){
+              vision[currPos] = 1;
+              wallFound = true;
+            } else {
+              vision[currPos] = -1;
+            }
           } else { // otherwise the point falls between two points in the map and we must check both
-            
+            int pos1 = coordinatesToPos(grid, posCoor[0] - currX, rounded);
+            int pos2 = coordinatesToPos(grid, posCoor[0] - currX, rounded + 1);
+
+            if(reference[pos1] == '.' && reference[pos2] == '.' && !wallFound){
+              vision[pos1] = 1;
+              vision[pos2] = 1;
+            }
+            else if(!wallFound){
+              vision[pos1] = 1;
+              vision[pos2] = 1;
+              wallFound = true;
+            } else {
+              vision[pos1] = -1;
+              vision[pos2] = -1;
+            }
           }
+          currX++;
         }
       }
     }
   }
+
+  return;
 }
+
+/***** updateVision *******************************************/
+/*   */
+
 
 
 /* ********************************************************** */
