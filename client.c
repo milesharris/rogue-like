@@ -20,11 +20,10 @@ static bool initialGrid(const char* gridInfo);
 static bool renderMap(const char* mapString);
 static void joinGame(const addr_t to);
 static bool leaveGame(const char* message);
+static bool handleError(const char* message);
 static bool updatePlayer(const char* message, const char* first);
 
 static bool handleInput(void* arg);
-static bool checkInput(char c);
-
 // static global variable, player
 static player_t* player; 
 
@@ -145,16 +144,18 @@ static void initCurses()
 
 } 
   
-
-
 /******************** handleMessage *****************/
-/* Skeleton for distributing messages depending on message type */
+/* Skeleton for distributing messages depending on message type
+ * Note: messages are parsed differently than requirements say. Make sure it works. 
+ */
 static bool handleMessage(void* arg, const addr_t from, const char* message)
 {
   // read first word and rest of message into separate strings
   char* first;
   char* remainder;
   first = strtok_r(message, " ", &remainder);
+  
+  //printf("%s", first); printf("%s", remainder); // checks that parsing is right
   
   if (strcmp(first, "GRID")) {
     return initialGrid(remainder);
@@ -166,7 +167,11 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
 
   if (strcmp(first, "DISPLAY")) {
     return renderMap(remainder);
-    // TODO figure out render screen with ncurses (in renderScreen)
+  }
+
+  if (strcmp(first, "ERROR")) {
+    return handleError(remainder);
+  }
 
   // if GOLD or OK
   else {
@@ -227,6 +232,21 @@ static bool leaveGame(const char* message)
   return true; // ends message loop
 
 }
+
+
+/************************* handleError *****************/
+/* handles ERROR message 
+ */
+static bool handleError(const char* message) 
+{
+  // prints at x = 50 because max length of normal status message is 50 char
+  // TODO also not sure if this will work well
+  mvprintw(0, 50, "%s                           ", message); 
+  return false;
+
+}
+
+
 /******************** updatePlayer *****************/
 /* Updates player info depending on what kind of info passed.
  */
@@ -286,52 +306,23 @@ static bool handleInput(void* arg)
   // if spectator
   if (strcmp("spectator", name)) {
     switch(c) {
-    case 'q': message_send(to, "KEY q"); break; // TODO how do I know the 'to' address? 
-    // default ?
+    case 'q':  message_send(to, "KEY q"); break; // TODO how do I know the 'to' address? 
     }
   }
   
   // if player
   else {
     switch(c) {
-    // cases - make sure you're doing above right before you do this one
+    case 'q':   message_send(to, "KEY q"); break;
+    case 'h':   message_send(to, "KEY h"); break;
+    // continue - lower case and upper case examples when above is resolved
+
     }
   }
   
   return false;
 
 }
-
-
-
-
-
-
-
-
-
- //  if (checkInput(c)) { 
- //  honestly idt I need a checkinput if I have switch case
   
 
-}
-
-/*********************** checkInput *****************/
-static bool checkInput(char c)
-{
-  // if spectator, only valid character input is q
-  if (strcmp("spectator", name)) {
-    return (c == "q");
-  }
-
-  // if player
-  else {
-
-
-
-
-
-
-
-}
 
