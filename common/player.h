@@ -12,7 +12,7 @@
 #define __PLAYER_H
 
 #include "grid.h"
-#include "message"
+#include "message.h"
 
 /***** global types ******************************************/
 

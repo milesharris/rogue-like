@@ -37,12 +37,6 @@ player_getName(player_t* player)
   return player ? player->name : NULL;
 }
 
-char
-player_getLetter(player_t* player)
-{
-  return player ? player->letter : NULL;
-}
-
 int 
 player_getPos(player_t* player)
 {
