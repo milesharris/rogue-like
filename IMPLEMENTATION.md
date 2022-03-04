@@ -182,7 +182,7 @@ static int initializeGame(char* filepathname, int seed);
 Initializes a new player setting their gold to 0 and placing them randomly on the map, connects player with server
 
 ```c
-static void handlePlayerConnect(char* name, int playerIndex, player_t** players);
+static void handlePlayerConnect(char* name);
 ```
 
 Handles player disconnects, if a player disconnects early, print QUIT message and remove player. If game is over, disconnects all players and sends end of game message

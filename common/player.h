@@ -12,6 +12,7 @@
 #define __PLAYER_H
 
 #include "grid.h"
+#include "message"
 
 /***** global types ******************************************/
 
@@ -24,17 +25,21 @@ typedef struct player player_t; // opaque to users of the module
 
 grid_t* player_getVision(player_t* player);
 char* player_getName(player_t* player);
-
+char player_getChar(player_t* player);
 /* player_getPos will return -1 upon receiving a NULL argument, this is the default pos value */
 int player_getPos(player_t* player);
 
 /* player_getGold will return a 0 upon receiving a NULL argument, this is the default gold value */
 int player_getGold(player_t* player);
 
+/* NOTE: This DOES NOT check for NULL within func. Only use on non-null players */
+addr_t player_getAddr(player_t* player);
+
 /***** setters ***********************************************/
 /* set the value of various attributes of a player struct and return their value */
 
 grid_t* player_setVision(player_t* player, grid_t* vision);
+char player_setChar(player_t* player, char newChar);
 int player_setPos(player_t* player, int pos);
 int player_setGold(player_t* player, int gold);
 

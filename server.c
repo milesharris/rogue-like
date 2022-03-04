@@ -108,8 +108,11 @@ parseArgs(const int argc, char* argv, char** filepathname, int* seed)
 
   // set seed if given
   if (argc == 3) {
-    *seed = argv[2];  log_d("random seed set to %d\n", *seed);
-    // TODO: Does seed have any restrictions? (cant be negative, etc.)
+    // convert seed string into an integer
+    if ( ! strToInt(argv[2], seed)) {
+      log_s("Seed: %s not a valid integer\n", argv[2]);
+      exit(2);
+    }
   }
   
   // check filepathname is not NULL
@@ -125,6 +128,18 @@ parseArgs(const int argc, char* argv, char** filepathname, int* seed)
   }
 
   fclose(fp);
+}
+
+/************* strToInt ******************/
+/* convert a given string of all numbers to an integer
+ * taken from knowledge units
+ * returns true if successful
+ * false if failure
+ */
+static bool strToInt(const char string[], int* number)
+{
+  char nextChar;
+  return (sscanf(string, "%d%c", number, &nextChar) == 1);
 }
 
 /******************* initializeGame *************/
@@ -219,6 +234,8 @@ static int* generateGold(grid_t* grid, int seed)
 /**************** handleMessage ***************/
 /* helper for message_loop, handles when server recieves a message
  * and then calls appropriate functions
+ * returns false when loop should continue
+ * returns true when loop should end 
  */
 // TODO: This must return true at some point for message_loop to end
 static bool handleMessage(void* arg, const addr_t from, const char* message)
@@ -244,15 +261,12 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
     const char* content = message + strlen("KEY ");
     sscanf(content, "%c", &key);
     handleKey(key);  log_s("received message: %s\n", message);
-  }
-  else
-  {
+  } else {
     message_send(from, "ERROR: message not PLAY SPECTATE or KEY\n");
     log_s("invalid message received: %s\n", message);
   }
   // return false to continue receiving messages
   return false;
-
 }
 
 /******************* pickupGold *************/

@@ -6,16 +6,23 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "grid.h"
+#include <ctype.h>
 #include <string.h>
+#include "message.h"
+#include "grid.h"
+
+const char DEFAULTCHAR = '?';
 
 typedef struct player {
   char* name;           // name provided by client
   grid_t* vision;       // map of user vision
+  addr_t address;       // address of player
+  char charID;          // character representation in game
   int pos;              // index position in the map string
   int gold;             // amount of gold held by player
 } player_t;
 
+//TODO: Document additions to player module in readme and specs
 /**** getter functions ***************************************/
 
 grid_t* 
@@ -40,6 +47,18 @@ int
 player_getGold(player_t* player)
 {
   return player ? player->gold : 0;
+}
+
+char
+player_getChar(player_t* player)
+{
+  return player ? player->charID : DEFAULTCHAR;
+}
+
+addr_t
+player_getAddr(player_t* player)
+{
+  return player->address;
 }
 
 /***** setter functions **************************************/
@@ -74,6 +93,18 @@ player_setGold(player_t* player, int gold)
   return player->gold;
 }
 
+char
+player_setChar(player_t* player, char newChar)
+{
+  // return '?' if invalid params
+  if (player == NULL || isalpha(newChar) == 0) {
+    return DEFAULTCHAR;
+  }
+  // set and return
+  player->charID = newChar;
+  return player->charID;
+}
+
 /***** player_new ********************************************/
 /* see player.h for details */ 
 
@@ -94,11 +125,12 @@ player_new(char* name)
   // copy param string into player struct
   strcpy(player->name, name);
 
-  // initialize all other values to defaults and return
+  // initialize all other values address to defaults and return
   player->vision = NULL;
   player->pos = -1;
   player->gold = 0;
-  
+  player->charID = DEFAULTCHAR;
+  player->address = message_noAddr();
   return player;
 }
 
