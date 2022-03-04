@@ -220,15 +220,41 @@ static int* generateGold(grid_t* grid, int seed)
 /* helper for message_loop, handles when server recieves a message
  * and then calls appropriate functions
  */
+// TODO: This must return true at some point for message_loop to end
 static bool handleMessage(void* arg, const addr_t from, const char* message)
 {
-  // if invalid message (bad address or null string) log and continue
+  char key;                            // key input from key message
+
+  // if invalid message (bad address or null string) log and continue looping
   if ( ! message_isAddr(from) || message == NULL) {
     log_v("bad message received (bad addr or null string)\n");
     return false;
   }
 
+  if (strncmp("PLAY ", message, 5) == 0) {
+    // send just name to helper func
+    const char* content = message + strlen("PLAY ");
+    handlePlayerConnect(content);  log_s("received message: %s\n", message);
+  } 
+  else if (strncmp("SPECTATE", message, 8) == 0) {
+    handleSpectator();  log_s("received message: %s\n", message);
+  }
+  else if (strncmp("KEY ", message, 4) == 0) {
+    // send just key to helper func
+    const char* content = message + strlen("KEY ");
+    sscanf(content, "%c", &key);
+    handleKey(key);  log_s("received message: %s\n", message);
+  }
+  else
+  {
+    message_send(from, "ERROR: message not PLAY SPECTATE or KEY\n");
+    log_s("invalid message received: %s\n", message);
+  }
+  // return false to continue receiving messages
+  return false;
+
 }
+
 /******************* pickupGold *************/
 static void 
 pickupGold(int playerID, int piles[])
