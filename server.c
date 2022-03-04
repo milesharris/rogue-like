@@ -32,12 +32,13 @@ static game_t* game;
 
 // function prototypes
 static void parseArgs(const int argc, char* argv, char** filepathname, int* seed);
-static int initializeGame(char* filepathname, int seed);
+static bool initializeGame(char* filepathname, int seed);
 static int* generateGold(grid_t* grid, int seed);
 static bool handleMessage(void* arg, const addr_t from, const char* message);
 static void pickupGold(int playerID, int piles[]);
 static void movePlayer(int playerID, char directionChar);
 static void updateClientState(char* map);
+static bool handlePlayerConnect(const char* playerName, const addr_t from);
 
 /******************** main *******************/
 int
@@ -53,20 +54,24 @@ main(const int argc, char* argv[])
   // validate arguments
   parseArgs(argc, argv, &filepathname, &seed); log_v("parseargs passed\n");
   // generate necessary data structures
-  initializeGame(filepathname, seed); log_v("game initialized\n");
+  if (! initializeGame(filepathname, seed); log_v("game initialized\n")) {
+    log_v("failed to initialize game, exiting non-zero");
+    log_done();
+    exit(3);
+  }
 
   // start networking and announce port number
   ourPort = message_init(stderr);
   // test port
   if (ourPort == 0) {
-    fprintf(stderr, "err initializing message module\n");
+    fprintf(stderr, "err initializing message module");
     // clean up and exit
     game_delete(game);
     log_done();
     exit(1);
   }
   // log and send to terminal for clients 
-  log_d("server listening on port %d\n", ourPort);
+  log_d("server listening on port %d", ourPort);
   printf("Server listening for messages on port: %d", ourPort);
 
   // handles inbound messages until quit message or fatal error
@@ -83,7 +88,7 @@ main(const int argc, char* argv[])
   } else {
     // if loop quits unexpectedly
     // send quit message with error explanation
-    log_v("unexpected error in message_loop, quitting game\n");
+    log_v("unexpected error in message_loop, quitting game");
     // clean up and exit 
     message_done();
     game_delete(game);
@@ -109,20 +114,20 @@ parseArgs(const int argc, char* argv, char** filepathname, int* seed)
   if (argc == 3) {
     // convert seed string into an integer
     if ( ! strToInt(argv[2], seed)) {
-      log_s("Seed: %s not a valid integer\n", argv[2]);
+      log_s("Seed: %s not a valid integer", argv[2]);
       exit(2);
     }
   }
   
   // check filepathname is not NULL
   if ((*filepathname = argv[1]) == NULL) {
-    fprintf(stderr, "parseArgs: NULL arg given\n");
+    fprintf(stderr, "parseArgs: NULL arg given");
     exit(1);
   }
   
   // create a filepointer and check it 
   if ((fp = fopen(*filepathname, "r")) == NULL ) {
-    fprintf(stderr, "parseArgs: err creating filepointer\n");
+    fprintf(stderr, "parseArgs: err creating filepointer");
     exit(1);
   }
 
@@ -143,25 +148,25 @@ static bool strToInt(const char string[], int* number)
 
 /******************* initializeGame *************/
 /* set up data structures for game */
-static int
+static bool
 initializeGame(char* filepathname, int seed)
 {
   grid_t* serverGrid = NULL;           // master grid held by server
   int* goldPiles = NULL;               // array of gold piles
-  int playerList[MaxPlayers] = {0};    // array of player IDs
 
   // create the grid
   if ((serverGrid = grid_new(filepathname)) == NULL) {
-    log_v("err loading grid from file\n");
-    return -1;
+    log_v("err loading grid from file");
+    return false;
   }
 
   // randomly distribute gold
-  goldPiles = generateGold(serverGrid, seed); log_v("generated gold\n");
+  goldPiles = generateGold(serverGrid, seed); log_v("generated gold");
 
   // create global game state
-  game = game_new(goldPiles, playerList, serverGrid); log_v("created game\n");
+  game = game_new(goldPiles, serverGrid); log_v("created game");
 
+  return true;
 }
 
 /************* generateGold **************/
@@ -208,7 +213,7 @@ static int* generateGold(grid_t* grid, int seed)
       totalGold -= currPile;
     }
     // add gold pile to array of piles
-    piles[currIndex] = currPile; log_d("adding pile of %d gold to array\n", currPile);
+    piles[currIndex] = currPile; log_d("adding pile of %d gold to array", currPile);
     currIndex++;
   }
   
@@ -223,7 +228,7 @@ static int* generateGold(grid_t* grid, int seed)
       if (grid_replace(grid, slot, GOLDTILE)) {  log_d("added gold at index %d", slot);
         pilesInserted++;
       } else {
-        fprintf(stderr, "initializeGame: err inserting pile in map\n");
+        fprintf(stderr, "initializeGame: err inserting pile in map");
       }
     } 
   }
@@ -243,31 +248,80 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
 
   // if invalid message (bad address or null string) log and continue looping
   if ( ! message_isAddr(from) || message == NULL) {
-    log_v("bad message received (bad addr or null string)\n");
+    log_v("bad message received (bad addr or null string)");
     return false;
   }
 
-  if (strncmp("PLAY ", message, 5) == 0) {
+  if (strncmp("PLAY ", message, 5) == 0) { log_s("received message: %s", message);
     // send just name to helper func
     const char* content = message + strlen("PLAY ");
-    handlePlayerConnect(content);  log_s("received message: %s\n", message);
+    // returns false on failure to create player
+    if ( ! handlePlayerConnect(content, from)) {
+      message_send(from, "ERROR failed to add you to game\n");
+    }
   } 
   else if (strncmp("SPECTATE", message, 8) == 0) {
-    handleSpectator();  log_s("received message: %s\n", message);
+    handleSpectator();  log_s("received message: %s", message);
   }
   else if (strncmp("KEY ", message, 4) == 0) {
     // send just key to helper func
     const char* content = message + strlen("KEY ");
     sscanf(content, "%c", &key);
-    handleKey(key);  log_s("received message: %s\n", message);
+    handleKey(key);  log_s("received message: %s", message);
   } else {
-    message_send(from, "ERROR: message not PLAY SPECTATE or KEY\n");
-    log_s("invalid message received: %s\n", message);
+    message_send(from, "ERROR message not PLAY SPECTATE or KEY\n");
+    log_s("invalid message received: %s", message);
   }
   // return false to continue receiving messages
   return false;
 }
 
+/************ handlePlayerConnect ************/
+/* takes a given playername, which is received from a message in handleMessage
+ * and create a new player struct with the given playerName
+ * randomizes player's initial position and assigns a letter representation
+ * then generates vision based on that position
+ * sends approriate messages to all clients
+ * returns true on success
+ * false if error at any point in the function
+ */
+static bool handlePlayerConnect(const char* playerName, addr_t from)
+{
+  player_t* player;                    // stores information for given player
+
+  // check params
+  if (playerName == NULL) {
+    log_v("NULL playername in handleConnect");
+    return false;
+  }
+  if ( ! message_isAddr(from)) {
+    log_v("invalid address in handleConnect");
+    return false;
+  }
+
+  // initialize player and add to hashtable
+  // TODO: truncate name if too long
+  if ((player = player_new(playerName)) == NULL) {
+    log_s("could not create player named: %s", playerName);
+    return false;
+  }
+  if ( ! game_addPlayer(game, player)) {
+    log_s("failed to add player named: %s to game", playerName);
+    player_delete(player)
+    return false;
+  }
+  // set attributes
+  player_setAddr(player, from);
+  // TODO: get next char from server list
+  player_setChar(player, );
+  // TODO: randomize initial position
+  player_setPos(player, );
+  // TODO: calculate their vision and send it to player
+  player_setVision(player, );
+
+  // return after successfully initializing all player values
+  return true;
+}
 /******************* pickupGold *************/
 static void 
 pickupGold(int playerID, int piles[])
