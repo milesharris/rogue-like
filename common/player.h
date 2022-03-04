@@ -25,7 +25,9 @@ typedef struct player player_t; // opaque to users of the module
 
 grid_t* player_getVision(player_t* player);
 char* player_getName(player_t* player);
+
 char player_getChar(player_t* player);
+
 /* player_getPos will return -1 upon receiving a NULL argument, this is the default pos value */
 int player_getPos(player_t* player);
 
@@ -40,8 +42,10 @@ addr_t player_getAddr(player_t* player);
 
 grid_t* player_setVision(player_t* player, grid_t* vision);
 char player_setChar(player_t* player, char newChar);
+
 int player_setPos(player_t* player, int pos);
 int player_setGold(player_t* player, int gold);
+addr_t* player_setServer(player_t* player, addr_t* server);
 
 /***** player_new ********************************************/
 /* Initalized a new 'player' struct

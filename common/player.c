@@ -37,6 +37,12 @@ player_getName(player_t* player)
   return player ? player->name : NULL;
 }
 
+char
+player_getLetter(player_t* player)
+{
+  return player ? player->letter : NULL;
+}
+
 int 
 player_getPos(player_t* player)
 {
@@ -91,6 +97,13 @@ player_setGold(player_t* player, int gold)
   }
   player->gold = gold;
   return player->gold;
+}
+
+addr_t
+player_setAddr(player_t* player, addr_t address)
+{
+  player->address = address;
+  return player->address;
 }
 
 char
