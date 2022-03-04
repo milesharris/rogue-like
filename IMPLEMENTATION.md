@@ -25,7 +25,7 @@ All: Server (split by function), Server Testing, Documentation.
 
 ### Data structures
 
-Client will use the `struct player`, as defined below. 
+Client will use the static `struct player`, as defined below. 
 
 ### Definition of function prototypes
 
@@ -33,6 +33,11 @@ Client will use the `struct player`, as defined below.
 static int parseArgs(const int argc, char* argv[]);
 ```
 Parses arguments to make sure they are valid. Decide if client is player or spectator. 
+
+```c
+static void initCurses();
+```
+Initializes curses. 
 
 ```c
 static bool handleMessage(void* arg, const addr_t from, const char* message);
@@ -45,46 +50,47 @@ static bool handleInput(void* arg);
 Reads lines from stdin and sends them to server if valid. Returns true if message loop should end. 
 
 ```c
-static bool checkInput(void* arg);
+static bool handleError(const char* message);
 ```
-Checks input to ensure it is valid. Returns true if yes, false if no. Helper to handleInput. 
+Responds to ERROR message. 
 
 ```c
-static void initialGrid(const char* gridInfo);
+static bool initialGrid(const char* gridInfo);
 ```
-Deals with initial GRID message (checks size of display). 
+Deals with initial GRID message (checks size of display). Calls initCurses(). 
 
 ```c
-static void renderScreen(const char* mapString, player_t* player);
+static bool renderMap(const char* mapString);
 ```
-Renders the map. 
+Renders the map in response to DISPLAY message. 
 
 ```c
-static void joinGame(void* arg, player_t* player);
+static bool joinGame(const addr_t to);
 ```
 Sends message containing player's 'real name' (taken from the command line) and initializes player. If there was no player name passed in from the command line (so the client is a spectator) send the `SPECTATOR` message.
 
 ```c
-static void leaveGame(const char* message, player_t* player);
+static bool leaveGame(const char* message);
 ```
-Prints disconnect message from server and frees all data structures. 
+Prints disconnect message from server, closes curses and frees all data structures. 
 
 ```c
-static void updatePlayer(const char* message, const char* first, player_t* player);
+static bool updatePlayer(const char* message, const char* first);
 ```
-Updates player struct as new information (GOLD, OK, DISPLAY) comes in. 
+Updates player struct as new information (GOLD, OK, or unknown message) comes in. 
 
 
 ### Detailed pseudo code
 
-
 #### `parseArgs`:
 
 	validate commandline
-	initialize message module
-	print assigned port number
 	decide whether spectator or player
     initialize player
+
+#### `initCurses`:
+
+  initialize everything needed for curses
     
 #### `handleMessage`:
     
@@ -93,36 +99,30 @@ Updates player struct as new information (GOLD, OK, DISPLAY) comes in.
     if first is GRID
         pass message to initialGrid
         call joinGame
-    if first is GOLD or DISPLAY or OK
-        pass message, first, player to updatePlayer
+    if first is DISPLAY
+        pass message to renderMap
+    if first is ERROR
+        pass message to handleError
+    if first is GOLD or OK
+        pass message, first to updatePlayer
     if first is QUIT
-        pass message, player to leaveGame
+        pass message to leaveGame
 
 #### `handleInput`:
 
-    checkInput
     allocate buffer
     read input into buffer
         strip newline
     send message to server in 'KEY [key]' format as in requirements
-
-#### `checkInput`:
-
-    check that arg is not null
-    check that server exists
-    read input
-    check that input is a valid command (keystroke)
-        if spectator, q is only valid keystroke
 
 #### `initialGrid`:
 
     read string into two integers, row num and column num
     check that display fits grid
     
-#### `renderScreen`:
+#### `renderMap`:
 
-    print "header string" with information described in requirements spec
-    print local map string (stored in player) to console 
+   print local map string to console 
     
 #### `joinGame`:
 
@@ -136,16 +136,14 @@ Updates player struct as new information (GOLD, OK, DISPLAY) comes in.
     
 #### `updatePlayer`:
 
-
     if GOLD message
         read string into variables
         update player gold
-        print all gold info
-    if DISPLAY message
-        update player display
-        call renderScreen with map string
+        print all gold info to display
     if OK message
         update player letter
+    if unknown message type
+        do nothing
 
 #### `leaveGame`:
 
@@ -153,6 +151,10 @@ Updates player struct as new information (GOLD, OK, DISPLAY) comes in.
     delete player struct
     free everything else
     
+#### `handleError`:
+
+    print error message from server
+
 ---
 
 ## Server
