@@ -10,6 +10,8 @@
 #include <stdbool.h>
 #include "grid.h"
 #include "hashtable.h"
+#include "player.h"
+
 
 /**************** global types ****************/
 typedef struct game game_t;  // opaque to users of the module
@@ -38,7 +40,7 @@ bool game_setGrid(game_t* game, grid_t* grid);
  * so grid_new must be called on a grid before passing it to `game`
  * All memory allocated by the game and its grid, are freed in game_delete 
  */
-game_t* game_new(int* piles, int* players, grid_t* grid);
+game_t* game_new(int* piles, grid_t* grid);
 
 /*************** game_addPlayer **************/
 /* adds a struct player to the hashtable of players within a given game struct
@@ -53,7 +55,7 @@ bool game_addPlayer(game_t* game, player_t* player);
 /* returns a pointer to the player struct corresponding to the given name
  * returns NULL if given string or game invalid
  */
-player_t* game_getPlayer(char* playerName);
+player_t* game_getPlayer(game_t* game, char* playerName);
 
 /*************** game_subtractGold ***********/
 /* Simple function to reduce a game's remaining gold by the given amount

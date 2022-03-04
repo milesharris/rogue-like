@@ -15,7 +15,7 @@
 //TODO: Document, change player storage to hashtable
 // file-local constants (consistent with those in server)
 static const int MAXPLAYERS = 26;      // max # players in game
-static const int MAXGOLD = 250         // max # gold in game
+static const int MAXGOLD = 250;        // max # gold in game
 
 /******************** game struct ******************/
 /* see game.h for details */
@@ -62,7 +62,7 @@ player_t* game_getPlayer(game_t* game, char* playerName)
 /* see game.h or details */
 
 game_t* 
-game_new(int* piles, int* players, grid_t* grid)
+game_new(int* piles, grid_t* grid)
 {
   hashtable_t* players;                // stores players
 
@@ -73,7 +73,7 @@ game_new(int* piles, int* players, grid_t* grid)
   }
   
   // make hashtable and handle malloc fail
-  if ((players = hashtable_new(MAXPLAYERS) == NULL) {
+  if ((players = hashtable_new(MAXPLAYERS)) == NULL) {
     // free game as, currently, it's only a pointer to a struct
     free(game);
     return NULL;
@@ -156,7 +156,8 @@ game_delete(game_t* game)
     game->piles = NULL;
     // delete all players in game
     if (game->players != NULL) {
-      hashtable_delete(game->players, player_delete);
+      // casts player_delete to satisfy hashtable_delete
+      hashtable_delete(game->players, (void (*)(void*))player_delete);
     }
     grid_delete(game->grid); // make sure not to free this memory twice
     free(game);
