@@ -17,13 +17,13 @@ static void initCurses();
 
 static bool handleMessage(void* arg, const addr_t from, const char* message);
 static bool initialGrid(const char* gridInfo);
-static bool renderScreen(const char* mapString);
+static bool renderMap(const char* mapString);
 static void joinGame(const addr_t to);
 static bool leaveGame(const char* message);
 static bool updatePlayer(const char* message, const char* first);
 
 static bool handleInput(void* arg);
-static bool checkInput(void* arg);
+static bool checkInput(char c);
 
 // static global variable, player
 static player_t* player; 
@@ -32,45 +32,7 @@ static player_t* player;
  *
  * How do those void args work exactly? a little confused
  * How does handleMessage know what address its coming from?
- * NCURSES???
  */
-
-  // AM I DOING NCURSES RIGHT??? get help -> TA 
-  // TODO: This is the plan
-  //       initialize screen and whatever
-  //       display header and map at all times 
-  //            header: Player [letter] has [num] nuggets ([num2] nuggets unclaimed).
-  //            map: most recent display sent
-  //            updated after any GOLD or DISPLAY message respectively
-  //       other functions will print messages to header, but only briefly displayed. 
-  //       At QUIT, ncurses will exit and a final message will be sent to stdout w newline
-
-  /* Solutions:
-   *
-   *    mvprintw prints to a specific location on the window. I assume it bumps everything else down. 
-   *        This should definitely solve the issue with printing briefly to the header. 
-   *    
-   *    The solution to displaying map and header permanently will be somewhere with this refresh and getch stuff. getch() feels wrong because it should update on reception of messages, not on player key press (especially spectator). 
-   *      Note: refresh() copies changes made to the display
-   *      I think mvprintw also needs refresh called to see it displayed. 
-   *
-   *      OKAY I think i got it:
-   *          
-   *          renderScreen works just like display_board, and is called every time a DISPLAY message is sent. Exactly the same, printing the header the same way. 
-   *          When the header is updated for GOLD, I mvprintw the updates to the header and refresh, which changes only the stuff I printed over (as I understand it TODO). 
-   *          That deals with the big ones (header and map display, which are always there). 
-   *          
-   *          Need to figure out
-   *              1. How to show brief messages that time out (should be an easy way built in -- just need to find the right function)
-   *              2. If my logic above is correct (ask TA)
-   *              3. WHAT TO DO WITH GETCH/characters (ask TA). 
-   *
-   *            
-   *
-   *
-   */
-
-
 
 
 /********************* main ********************/
@@ -97,9 +59,6 @@ main(const int argc, char* argv[])
 
   // send either SPECTATE or PLAYER [playername] message to join game
   joinGame(server);
-
-  // start ncurses
-  initCurses();
 
   // loop, waiting for input or messages
   bool ok = message_loop(&server, 0, NULL, handleInput, handleMessage);
@@ -206,7 +165,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
   }
 
   if (strcmp(first, "DISPLAY")) {
-    return renderScreen(remainder);
+    return renderMap(remainder);
     // TODO figure out render screen with ncurses (in renderScreen)
 
   // if GOLD or OK
@@ -217,29 +176,36 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
 }
 
 /****************** initialGrid ******************/
-/* On reception of GRID message, checks that display will fit grid. */
+/* On reception of GRID message, start ncurses and check that display will fit grid. */
 static bool initialGrid(const char* gridInfo)
 {
   // store nrows and ncols
   int nrows, ncols;
   sscanf(remainder, "%d %d", &nrows, &ncols);
 
+  // start ncurses
+  initCurses();
+
   // check that display fits grid; return true if it does not, otherwise return false
   int uy, ux; 
   getmaxyx(stdscr, uy, ux);
   if ((ux < ncols) || (uy < nrows)) {
+    fprintf(stderr, "Window must be expanded to play Nuggets. Window is %d by %d and must be %d by %d.", uy, ux, nrows, ncols);
     return true;
   }
 
   return false;
 
-
 }
 
-/********************** renderScreen ****************/
-static bool renderScreen(const char* mapString)
+/********************** renderMap ****************/
+/* updates map */
+static bool renderMap(const char* mapString)
 {
-
+  // print map starting at 1, 0 (header starts at 0, 0)
+  mvprintw(1, 0, mapString); // TODO correct way to print it? Or should I do line by line like in life example
+  refresh();
+  return false;
 
 }
 
@@ -267,8 +233,8 @@ static bool leaveGame(const char* message)
 static bool updatePlayer(const char* message, const char* first)
 {
   if (strcmp(first, "OK")) {
-    // player->letter = remainder; // update player letter, however you do it (setter?)
-    // used in header display
+    char letter = message[0];
+    player_setLetter(player, letter); // TODO put into player module
     return false;
   }
 
@@ -277,48 +243,93 @@ static bool updatePlayer(const char* message, const char* first)
     int n, p, r;
     sscanf(remainder, "%d %d %d", &n, &p, &r);
     
-    // update player gold
-    player_setGold(player, p);
+    const char* name = player_getName(player);
 
-    // print an update about gold collected
-    if (n != 0) {
-        // print brief message next to normal header
+    // if spectator
+    if (strcmp("spectator", name)) {
+      mvprintw(0,0, "Spectator: %d nuggets unclaimed.", r);
     }
 
-    // update normal header 
+    // if player
+    else {
 
+      // update player gold
+      player_setGold(player, p);
 
-    //    TODO: I think you need separate 'updateHeader' and 'updateMap' functions
-    //    as well as a way to print to the header briefly (gold collection message, unknown keystroke, etc.)
-    //    updateHeader: displays last header until new header received; then, displays new header. 
-    //                  (also: modifies header based on whether player or spectator)
-    //    updateMap: displays last map until new map recieved; 
-    //
-    // TODO I think this is an ncurses thing. Figure it out!
-
-
+      char letter = player_getLetter(player); // TODO put into player module
+      // if player collected gold
+      if (n != 0) {
+        mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d", letter, p, r, n); // TODO check with the overlapping, etc. I think the new line might do it, but need to try some stuff
+      }
+      // if player did not collect any gold
+      else {
+        mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed).                        ", letter, p, r);
+      }
+    }
+    refresh();
     return false;
-  }
-
-
   }
 
   // if unidentifiable message type received, don't do anything
   else {
     return false;
+  }
 }
 
 /********************* handleInput ******************/
+/* sends all valid input to server */
 static bool handleInput(void* arg)
 {
 
+  int c = getch();
 
+  // if spectator
+  if (strcmp("spectator", name)) {
+    switch(c) {
+    case 'q': message_send(to, "KEY q"); break; // TODO how do I know the 'to' address? 
+    // default ?
+    }
+  }
+  
+  // if player
+  else {
+    switch(c) {
+    // cases - make sure you're doing above right before you do this one
+    }
+  }
+  
+  return false;
+
+}
+
+
+
+
+
+
+
+
+
+ //  if (checkInput(c)) { 
+ //  honestly idt I need a checkinput if I have switch case
+  
 
 }
 
 /*********************** checkInput *****************/
-static bool checkInput(void* arg)
+static bool checkInput(char c)
 {
+  // if spectator, only valid character input is q
+  if (strcmp("spectator", name)) {
+    return (c == "q");
+  }
+
+  // if player
+  else {
+
+
+
+
 
 
 
