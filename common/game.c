@@ -9,15 +9,22 @@
 #include <stdbool.h>
 #include "game.h"
 #include "grid.h"
+#include "hashtable.h"
+#include "player.h"
+
+//TODO: Document, change player storage to hashtable
+// file-local constants (consistent with those in server)
+static const int MAXPLAYERS = 26;      // max # players in game
+static const int MAXGOLD = 250         // max # gold in game
 
 /******************** game struct ******************/
 /* see game.h for details */
 
 typedef struct game {
-    int* piles;         // ptr to array of piles
-    int* players;       // ptr to array of player IDs
-    int remainingGold;  // gold left in the game
-    grid_t* grid;       // current game grid
+    int* piles;           // ptr to array of piles
+    hashtable_t* players; // hashtable of player IDs
+    int remainingGold;    // gold left in the game
+    grid_t* grid;         // current game grid
 } game_t;
 
 /**************** getters ****************/
@@ -31,7 +38,7 @@ int* game_getPiles(game_t* game)
   return game ? game->piles : NULL;
 }
 
-int* game_getPlayers(game_t* game) 
+hashtable_t* game_getPlayers(game_t* game) 
 {
   return game ? game->players : NULL;
 }
@@ -41,13 +48,23 @@ int game_getRemainingGold(game_t* game)
   return game ? game->remainingGold : 0;
 }
 
+player_t* game_getPlayer(game_t* game, char* playerName)
+{
+  // check params
+  if (game == NULL || playerName == NULL) {
+    return NULL;
+  }
+
+  return hashtable_find(game->players, playerName);
+}
+
 /**************** game_new ***************/
 /* see game.h or details */
 
 game_t* 
 game_new(int* piles, int* players, grid_t* grid)
 {
-  const int MAXGOLD = 250;             // max amount of gold in game
+  hashtable_t* players;                // stores players
 
   game_t* game = malloc(sizeof(game_t));
 
@@ -55,8 +72,14 @@ game_new(int* piles, int* players, grid_t* grid)
     return NULL;
   }
   
+  // make hashtable and handle malloc fail
+  if ((players = hashtable_new(MAXPLAYERS) == NULL) {
+    // free game as, currently, it's only a pointer to a struct
+    free(game);
+    return NULL;
+  }
+
   game->piles = piles;
-  game->players = players;
   game->remainingGold = MAXGOLD;
   game->grid = grid;
 
@@ -77,18 +100,6 @@ game_setRemainingGold(game_t* game, int gold)
   }
 }
 
-/***************** game_subtractGold **************/
-/* see game.h for details */
-int
-game_subtractGold(game_t* game, int gold) 
-{
-  if (game == NULL) {
-    return -1;
-  }
-  game->remainingGold -= gold;
-  return game->remainingGold;
-}
-
 /******************* game_setGrid *******************/
 /* see game.h for details */
 
@@ -105,6 +116,36 @@ game_setGrid(game_t* game, grid_t* grid)
   }
 }
 
+/***************** game_subtractGold **************/
+/* see game.h for details */
+int
+game_subtractGold(game_t* game, int gold) 
+{
+  if (game == NULL) {
+    return -1;
+  }
+  game->remainingGold -= gold;
+  return game->remainingGold;
+}
+
+/************** game_addPlayer **************/
+bool game_addPlayer(game_t* game, player_t* player)
+{
+  char* playerName;                    // name of player being added (keys HT)
+  // check params
+  if (game == NULL || player == NULL) {
+    return false;
+  }
+
+  // get name for key and add to hashtable
+  playerName = player_getName(player);
+  if (hashtable_insert(game->players, playerName, player)) {
+    return true;
+  } else {
+    return false;
+  }
+}
+
 /******************** game_delete ******************/
 /* see game.h for full details */
 
@@ -113,7 +154,10 @@ game_delete(game_t* game)
 {
   if ( game != NULL ) {
     game->piles = NULL;
-    game->players = NULL;
+    // delete all players in game
+    if (game->players != NULL) {
+      hashtable_delete(game->players, player_delete);
+    }
     grid_delete(game->grid); // make sure not to free this memory twice
     free(game);
   } 
