@@ -1,5 +1,5 @@
 /* 
- * client.c - implements the client for Nuggets game
+ * client.c - implements the client for Nuggets game, windows_us team
  *
  */
 
@@ -24,14 +24,15 @@ static bool handleError(const char* message);
 static bool updatePlayer(const char* message, const char* first);
 
 static bool handleInput(void* arg);
+
 // static global variable, player
 static player_t* player; 
 
-/* NOTES:
+/* NOTES
  *
- * How do those void args work exactly? a little confused
- * How does handleMessage know what address its coming from?
+ * - need to do logging
  */
+
 
 
 /********************* main ********************/
@@ -254,7 +255,7 @@ static bool updatePlayer(const char* message, const char* first)
 {
   if (strcmp(first, "OK")) {
     char letter = message[0];
-    player_setLetter(player, letter); // TODO put into player module
+    player_setLetter(player, letter);
     return false;
   }
 
@@ -276,7 +277,7 @@ static bool updatePlayer(const char* message, const char* first)
       // update player gold
       player_setGold(player, p);
 
-      char letter = player_getLetter(player); // TODO put into player module
+      char letter = player_getLetter(player); 
       // if player collected gold
       if (n != 0) {
         mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d", letter, p, r, n); // TODO check with the overlapping, etc. I think the new line might do it, but need to try some stuff
@@ -302,21 +303,39 @@ static bool handleInput(void* arg)
 {
 
   int c = getch();
+  addr_t to = *player_getServer(player); // am I using the * and & right? TODO need to free later?
 
   // if spectator
   if (strcmp("spectator", name)) {
     switch(c) {
-    case 'q':  message_send(to, "KEY q"); break; // TODO how do I know the 'to' address? 
+    case 'q':  message_send(to, "KEY q"); break; 
+    default: mvprintw(0, 50, "unknown keystroke");
     }
   }
   
   // if player
   else {
+    // send char if valid keystroke
     switch(c) {
     case 'q':   message_send(to, "KEY q"); break;
     case 'h':   message_send(to, "KEY h"); break;
-    // continue - lower case and upper case examples when above is resolved
-
+    case 'H':   message_send(to, "KEY H"); break;
+    case 'l':   message_send(to, "KEY l"); break;
+    case 'L':   message_send(to, "KEY L"); break;
+    case 'j':   message_send(to, "KEY j"); break;
+    case 'J':   message_send(to, "KEY J"); break;
+    case 'k':   message_send(to, "KEY k"); break;
+    case 'K':   message_send(to, "KEY K"); break;
+    case 'y':   message_send(to, "KEY y"); break;
+    case 'Y':   message_send(to, "KEY Y"); break;
+    case 'u':   message_send(to, "KEY u"); break;
+    case 'U':   message_send(to, "KEY U"); break;
+    case 'b':   message_send(to, "KEY b"); break;
+    case 'B':   message_send(to, "KEY B"); break;
+    case 'n':   message_send(to, "KEY n"); break;
+    case 'N':   message_send(to, "KEY N"); break;
+    // if not valid, print error 
+    default: mvprintw(0, 50, "unknown keystroke               ");
     }
   }
   
