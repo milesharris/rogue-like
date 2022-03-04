@@ -7,9 +7,11 @@
 #include <stdlib.h>
 #include <stdbool.h>
 #include <string.h>
+#include <ncurses.h>
 #include "file.h"
 #include "message.h"
 #include "player.h"
+
 
 // functions
 static int parseArgs(const int argc, char* argv[]);
@@ -253,6 +255,7 @@ static bool handleError(const char* message)
  */
 static bool updatePlayer(const char* message, const char* first)
 {
+  char* remainder;
   if (strcmp(first, "OK")) {
     char letter = message[0];
     player_setLetter(player, letter);
