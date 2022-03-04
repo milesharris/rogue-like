@@ -6,19 +6,23 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "grid.h"
+#include <ctype.h>
 #include <string.h>
 #include "message.h"
+#include "grid.h"
+
+const char DEFAULTCHAR = '?';
 
 typedef struct player {
   char* name;           // name provided by client
-  char letter;          // letter representation of player
-  grid_t* vision;         // map of user vision
+  grid_t* vision;       // map of user vision
+  addr_t address;       // address of player
+  char charID;          // character representation in game
   int pos;              // index position in the map string
   int gold;             // amount of gold held by player
-  addr_t* server;       // server address
 } player_t;
 
+//TODO: Document additions to player module in readme and specs
 /**** getter functions ***************************************/
 
 grid_t* 
@@ -33,12 +37,6 @@ player_getName(player_t* player)
   return player ? player->name : NULL;
 }
 
-char
-player_getLetter(player_t* player)
-{
-  return player ? player->letter : NULL;
-}
-
 int 
 player_getPos(player_t* player)
 {
@@ -51,10 +49,16 @@ player_getGold(player_t* player)
   return player ? player->gold : 0;
 }
 
-addr_t*
-player_getServer(player_t* player)
+char
+player_getChar(player_t* player)
 {
-  return player ? player->server : NULL;
+  return player ? player->charID : DEFAULTCHAR;
+}
+
+addr_t
+player_getAddr(player_t* player)
+{
+  return player->address;
 }
 
 /***** setter functions **************************************/
@@ -68,18 +72,6 @@ player_setVision(player_t* player, grid_t* vision)
   player->vision = vision;
   return player->vision;
 }
-
-
-char 
-player_setLetter(player_t* player, char letter)
-{
-  if ( player == NULL || letter == NULL ) {
-    return NULL;
-  }
-  player->letter = letter;
-  return player->letter;
-}
-
 
 int 
 player_setPos(player_t* player, int pos)
@@ -101,16 +93,24 @@ player_setGold(player_t* player, int gold)
   return player->gold;
 }
 
-addr_t* 
-player_setServer(player_t* player, addr_t* server)
+addr_t
+player_setAddr(player_t* player, addr_t address)
 {
-  if ( player == NULL || server == NULL ) {
-    return NULL;
-  }
-  player->server = server;
-  return player->server;
+  player->address = address;
+  return player->address;
 }
 
+char
+player_setChar(player_t* player, char newChar)
+{
+  // return '?' if invalid params
+  if (player == NULL || isalpha(newChar) == 0) {
+    return DEFAULTCHAR;
+  }
+  // set and return
+  player->charID = newChar;
+  return player->charID;
+}
 
 /***** player_new ********************************************/
 /* see player.h for details */ 
@@ -132,11 +132,12 @@ player_new(char* name)
   // copy param string into player struct
   strcpy(player->name, name);
 
-  // initialize all other values to defaults and return
+  // initialize all other values address to defaults and return
   player->vision = NULL;
   player->pos = -1;
   player->gold = 0;
-  
+  player->charID = DEFAULTCHAR;
+  player->address = message_noAddr();
   return player;
 }
 

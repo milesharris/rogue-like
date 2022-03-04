@@ -182,7 +182,7 @@ static int initializeGame(char* filepathname, int seed);
 Initializes a new player setting their gold to 0 and placing them randomly on the map, connects player with server
 
 ```c
-static void handlePlayerConnect(char* name, int playerIndex, player_t** players);
+static void handlePlayerConnect(char* name);
 ```
 
 Handles player disconnects, if a player disconnects early, print QUIT message and remove player. If game is over, disconnects all players and sends end of game message
@@ -245,6 +245,7 @@ static void updateVision(int playerID);
     create grid calling grid_new
     generate random gold piles
     place piles randomly in grid, checking that they are placed in valid spots
+    generate global game state struct
         
 #### `handlePlayerConnect`:
 
@@ -471,6 +472,7 @@ typedef struct player {
   char* name;
   char* letter;
   grid_t* vision;
+  addr_t address;
   int pos;
   int gold;
 } player_t
@@ -500,7 +502,7 @@ player_t* player_new(char* name);
 ```
 
 #### `player_addGold`
-The *player_addGold* function adds a given amount of gold to a given player's inventory. It returns the player's new gold total if successful, and returns -1 if the given player does not exist or if the given amount of gold is less than 0.
+The *player_addGold* function adds a given amount of gold to a given player's purse. It returns the player's new gold total if successful, and returns -1 if the given player does not exist or if the given amount of gold is less than 0.
 ```c
 int player_addGold(player_t* player, int newGold);
 ```
@@ -552,10 +554,10 @@ The primary data structure for this module is the `struct game`, defined below. 
 
 ```c
 typedef struct game {
-    int* piles;         // ptr to array of piles
-    int* players;       // ptr to array of player IDs
-    int remainingGold;  // gold left in the game
-    grid_t* grid;       // current game grid
+    int* piles;            // ptr to array of piles
+    hashtable_t* players;  // hashtable of player structs
+    int remainingGold;     // gold left in the game
+    grid_t* grid;          // current game grid
 } game_t;
 
 ```
@@ -566,7 +568,7 @@ These are self-explanatory and will not be heavily detailed. They return NULL or
 ```c
 grid_t* game_getGrid(game_t* game);
 int* game_getPiles(game_t* game);
-int* game_getPlayers(game_t* game);
+hashtable_t* game_getPlayers(game_t* game);
 int game_getRemainingGold(game_t* game);
 
 ```
@@ -584,10 +586,15 @@ bool game_setGrid(game_t* game, grid_t* grid);
 The game_new function creates a new `struct game`. It only allocates space for the struct itself, all parameters must be allocated before being passed into the function.
 
 ```c
-game_t* game_new(int* piles, int* players, grid_t* grid);
+game_t* game_new(int* piles, grid_t* grid);
 
 ```
+#### game_addPlayer
+The game_addPlayer function adds a given player struct with a given playerName key to the inner hashtable of a game. It leverages hashtable_insert. It returns false if failure and true if success.
+```c
+bool game_addPlayer(game_t* game, player_t* player);
 
+```
 #### game_subtractGold
 The game_subtractGold function subtracts a given amount of gold from a given game's remainingGold member. It returns the new value on success, and -1 if the game does not exist.
 
@@ -595,7 +602,13 @@ The game_subtractGold function subtracts a given amount of gold from a given gam
 int game_subtractGold(game_t* game, int gold);
 
 ```
+#### game_getPlayer
+The game_getPlayer function returns a player_t* corresponding to the given playername in the parameters. It leverages hashtable_find.
 
+```c
+player_t* game_getPlayer(game_t* game, char* playerName);
+
+```
 #### game_delete
 The game_delete function free's all memory associated with a given game. It sets the arrays within the game to NULL and calls grid_delete on the grid. If the given game does not exist it does nothing.
 
@@ -609,6 +622,7 @@ void game_delete(game_t* game);
 ```
 allocate space for a game_t
 if malloc failure, return NULL
+create players hashtable, return NULL if failure
 set game members to values given as params
 return game
 ```
@@ -620,6 +634,19 @@ else subtract the given amount of gold from the game's gold
 return new value of game->remainingGold
 ```
 
+#### `game_addPlayer`
+```
+if params NULL return false
+call hashtable_insert with given params on the inner hashtable
+return true if success
+false if otherwise
+```
+
+#### `game_getPlayer`
+```
+if null params return null
+return the result of hashtable_find(playerName)
+```
 #### `game_delete`
 ```
 if game is not NULL

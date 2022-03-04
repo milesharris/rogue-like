@@ -9,6 +9,9 @@
 
 #include <stdbool.h>
 #include "grid.h"
+#include "hashtable.h"
+#include "player.h"
+
 
 /**************** global types ****************/
 typedef struct game game_t;  // opaque to users of the module
@@ -18,7 +21,7 @@ typedef struct game game_t;  // opaque to users of the module
 /**************** getters **************/
 grid_t* game_getGrid(game_t* game);
 int* game_getPiles(game_t* game);
-int* game_getPlayers(game_t* game);
+hashtable_t* game_getPlayers(game_t* game);
 int game_getRemainingGold(game_t* game);
 
 /**************** setters ***************/
@@ -37,7 +40,22 @@ bool game_setGrid(game_t* game, grid_t* grid);
  * so grid_new must be called on a grid before passing it to `game`
  * All memory allocated by the game and its grid, are freed in game_delete 
  */
-game_t* game_new(int* piles, int* players, grid_t* grid);
+game_t* game_new(int* piles, grid_t* grid);
+
+/*************** game_addPlayer **************/
+/* adds a struct player to the hashtable of players within a given game struct
+ * the player is keyed by their name, which is copied into the hashtable's memory
+ * thus, in the game module's memory. All "players" are free'd with game_delete 
+ * the function false if invalid params or if failure to add player
+ * true on success
+ */
+bool game_addPlayer(game_t* game, player_t* player);
+
+/************** game_getPlayer ***************/
+/* returns a pointer to the player struct corresponding to the given name
+ * returns NULL if given string or game invalid
+ */
+player_t* game_getPlayer(game_t* game, char* playerName);
 
 /*************** game_subtractGold ***********/
 /* Simple function to reduce a game's remaining gold by the given amount
@@ -48,7 +66,8 @@ int game_subtractGold(game_t* game, int gold);
 
 /************** game_delete ****************/
 /* free's all memory assosciated with a `game` 
- * sets the int arrays to NULL
+ * sets the int array of gold piles to NULL
+ * calls hashtable_delete on the table of players
  * calls grid_delete on the grid
  * then free's the game itself
  */
