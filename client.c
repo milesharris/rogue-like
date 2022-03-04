@@ -56,7 +56,7 @@ main(const int argc, char* argv[])
   addr_t server; 
   if (!message_setAddr(serverHost, serverPort, &server)) {
     fprintf(stderr, "Failed to form address from %s %s\n", serverHost, serverPort);
-    return 4;
+    exit(4);
   }
 
   // send either SPECTATE or PLAYER [playername] message to join game

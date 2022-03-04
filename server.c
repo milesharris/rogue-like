@@ -22,6 +22,7 @@ static const int goldMaxNumPiles = 40; // maximum number of gold piles
 static const int goldMinNumPiles = 5;  // minimum number of gold piles
 static const char ROOMTILE = '.';      // char representation of room floor
 static const char GOLDTILE = '*';      // char representation of gold
+static const char PLAYERCHAR = '@';    // player's view of themself
 static const int MaxNameLength = 50;   // max number of chars in playerName
 static const int MaxPlayers = 26;      // maximum number of players
 static const int GoldTotal = 250;      // amount of gold in the game

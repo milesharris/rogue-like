@@ -45,7 +45,7 @@ char player_setChar(player_t* player, char newChar);
 
 int player_setPos(player_t* player, int pos);
 int player_setGold(player_t* player, int gold);
-addr_t* player_setServer(player_t* player, addr_t* server);
+addr_t* player_setAddr(player_t* player, addr_t* address);
 
 /***** player_new ********************************************/
 /* Initalized a new 'player' struct
