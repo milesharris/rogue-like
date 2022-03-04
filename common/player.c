@@ -8,12 +8,15 @@
 #include <stdio.h>
 #include "grid.h"
 #include <string.h>
+#include "message.h"
 
 typedef struct player {
   char* name;           // name provided by client
+  char letter;          // letter representation of player
   grid_t* vision;         // map of user vision
   int pos;              // index position in the map string
   int gold;             // amount of gold held by player
+  addr_t* server;       // server address
 } player_t;
 
 /**** getter functions ***************************************/
@@ -30,6 +33,12 @@ player_getName(player_t* player)
   return player ? player->name : NULL;
 }
 
+char
+player_getLetter(player_t* player)
+{
+  return player ? player->letter : NULL;
+}
+
 int 
 player_getPos(player_t* player)
 {
@@ -40,6 +49,12 @@ int
 player_getGold(player_t* player)
 {
   return player ? player->gold : 0;
+}
+
+addr_t*
+player_getServer(player_t* player)
+{
+  return player ? player->server : NULL;
 }
 
 /***** setter functions **************************************/
@@ -53,6 +68,18 @@ player_setVision(player_t* player, grid_t* vision)
   player->vision = vision;
   return player->vision;
 }
+
+
+char 
+player_setLetter(player_t* player, char letter)
+{
+  if ( player == NULL || letter == NULL ) {
+    return NULL;
+  }
+  player->letter = letter;
+  return player->letter;
+}
+
 
 int 
 player_setPos(player_t* player, int pos)
@@ -73,6 +100,17 @@ player_setGold(player_t* player, int gold)
   player->gold = gold;
   return player->gold;
 }
+
+addr_t* 
+player_setServer(player_t* player, addr_t* server)
+{
+  if ( player == NULL || server == NULL ) {
+    return NULL;
+  }
+  player->server = server;
+  return player->server;
+}
+
 
 /***** player_new ********************************************/
 /* see player.h for details */ 
