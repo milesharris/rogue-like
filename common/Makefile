@@ -8,9 +8,9 @@
 OBJS = grid.o player.o game.o
 LIB = common.a
 L = ../libcs50
+LLIB = ../support
 
-
-CFLAGS = -Wall -pedantic -std=c11 -ggdb $(FLAGS) -I$L
+CFLAGS = -Wall -pedantic -std=c11 -ggdb $(FLAGS) -I$L -I$(LLIB)
 CC = gcc
 MAKE = make
 VALGRIND= valgrind --leak-check=full --show-leak-kinds=all
@@ -30,7 +30,7 @@ playertest: player.c
 # Dependencies: object files depend on header files
 grid.o: grid.h
 player.o: player.h
-game.o: game.h
+game.o: game.h 
 
 .PHONY: clean
 

@@ -10,6 +10,8 @@
 #include <stdbool.h>
 #include "grid.h"
 #include "hashtable.h"
+#include "player.h"
+
 
 /**************** global types ****************/
 typedef struct game game_t;  // opaque to users of the module
@@ -53,7 +55,7 @@ bool game_addPlayer(game_t* game, player_t* player);
 /* returns a pointer to the player struct corresponding to the given name
  * returns NULL if given string or game invalid
  */
-player_t* game_getPlayer(char* playerName);
+player_t* game_getPlayer(game_t* game, char* playerName);
 
 /*************** game_subtractGold ***********/
 /* Simple function to reduce a game's remaining gold by the given amount
