@@ -76,4 +76,14 @@ bool grid_containsEmptyTile(grid_t* grid);
  */
 void grid_delete(grid_t* grid);
 
+/********** grid_calculateVision ***********/
+/* Calculates a player's current vision, in the form of a boolean array the same size as our map
+ * indicating which points are visible with a 1 indicating visibility or -1 indicating non-visibility
+ * Parameters:  grid - the grid of the map we are playing the game on 
+ *              pos - a players position within the map (int)
+ *              vision - the int array which stores corresponding visibility information 
+ * Returns:     void
+ */
+void grid_calculateVision(grid_t* grid, int pos, int* vision);
+
 #endif

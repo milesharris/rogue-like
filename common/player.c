@@ -156,6 +156,46 @@ player_addGold(player_t* player, int newGold)
   return player->gold;
 }
 
+/***** player_updateVision ***********************************/
+/* see player.h for full details */
+
+void
+player_updateVision(player_t* player, grid_t* grid, int pos)
+{
+  // check parameters
+  if( player == NULL || grid == NULL || pos < 0 ){
+    return;
+  }
+  // initialize the vision array
+  size_t mapLen = grid_getMapLen(grid);
+  int vision[mapLen];
+  // populate vision array
+  grid_calculateVision(grid, pos, vision);
+  
+  // grabbing necessary map copies
+  grid_t* currPlayerVision = player_getVision(player);
+  char* playerActive = grid_getActive(currPlayerVision);
+  char* globalActive = grid_getActive(currPlayerVision);
+
+  if( playerActive == NULL || globalActive == NULL || currPlayerVision == NULL ){
+    return;
+  }
+
+  // updating PAST player vision to reference map values
+  for(int i = 0; i < mapLen; i++){
+    if( isblank(playerActive[i]) == 0 ){ // is slot is not whitespace, revert it to its reference map tile
+      grid_revertTile(currPlayerVision, i);
+    } 
+    // check if the corresponding value in vision has a value of 1, in which case we use the active map value for this position
+    if( vision[i] == 1 ){
+      char newChar =  globalActive[i];
+      grid_replace(currPlayerVision, i, newChar);
+    }
+  }
+
+  return;
+}
+
 /***** player_delete *****************************************/
 /* see player.h for full details */
 
