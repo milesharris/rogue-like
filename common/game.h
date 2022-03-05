@@ -23,6 +23,8 @@ grid_t* game_getGrid(game_t* game);
 int* game_getPiles(game_t* game);
 hashtable_t* game_getPlayers(game_t* game);
 int game_getRemainingGold(game_t* game);
+int game_getLastCharID(game_t* game);
+int game_getNumPlayers(game_t* game);
 
 /**************** setters ***************/
 /* return false on failure, true on success */
@@ -32,6 +34,17 @@ bool game_setRemainingGold(game_t* game, int gold);
  * to avoid memory leaks
  */
 bool game_setGrid(game_t* game, grid_t* grid);
+
+/* returns new value, or -1 if failure.
+ * integer input constrained to range of capital letter ASCII codes, [65-90]
+ */
+int game_setLastCharID(game_t* game, int charID);
+
+/* sets the number of players to the given value
+ * returns the new number on success
+ * returns -1 when game NULL or numPlayers exceeds MAXPLAYERS
+ * */
+int game_setNumPlayers(game_t* game, int numPlayers);
 
 /**************** game_new *****************/
 /* The game_new function allocates space for a new 'struct game' 

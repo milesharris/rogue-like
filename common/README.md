@@ -47,11 +47,15 @@ grid_t* game_getGrid(game_t* game);
 int* game_getPiles(game_t* game);
 hashtable_t* game_getPlayers(game_t* game);
 int game_getRemainingGold(game_t* game);
+int game_getLastCharID(game_t* game);
+int game_getNumPlayers(game_t* game);
+int game_setNumPlayers(game_t* game, int numPlayers);
 bool game_setRemainingGold(game_t* game, int gold);
 bool game_setGrid(game_t* game, grid_t* grid);
-game_t* game_new(int* piles, int* players, grid_t* grid);
+int game_setLastCharID(game_t* game, int charID);
+game_t* game_new(int* piles, grid_t* grid);
 bool game_addPlayer(game_t* game, player_t* player);
-player_t* game_getPlayer(game_t* game, char* playerName)
+player_t* game_getPlayer(game_t* game, char* playerName);
 int game_subtractGold(game_t* game, int gold);
 void game_delete(game_t* game);
 
@@ -75,3 +79,5 @@ For the "grid" module we assume that the number of rows or columns of an in-game
 
 To compile, simply `make`.
 To run the `grid` unit test, type `make gridtest` and refer to `gridtest.out` for results.
+To run a test of player vision, which is included in the grid module, run `make visiontest` and refer to `visiontest.out` for results.
+To run the `player` unit test, type `make playertest` and refer to `playertest.out` for results.

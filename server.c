@@ -38,7 +38,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message);
 static void pickupGold(int playerID, int piles[]);
 static void movePlayer(int playerID, char directionChar);
 static void updateClientState(char* map);
-static bool handlePlayerConnect(const char* playerName, const addr_t from);
+static bool handlePlayerConnect(char* playerName, const addr_t from);
 
 /******************** main *******************/
 int
@@ -54,11 +54,11 @@ main(const int argc, char* argv[])
   // validate arguments
   parseArgs(argc, argv, &filepathname, &seed); log_v("parseargs passed\n");
   // generate necessary data structures
-  if (! initializeGame(filepathname, seed); log_v("game initialized\n")) {
+  if (! initializeGame(filepathname, seed)) { 
     log_v("failed to initialize game, exiting non-zero");
     log_done();
     exit(3);
-  }
+  } log_v("game initialized\n"); 
 
   // start networking and announce port number
   ourPort = message_init(stderr);
@@ -285,10 +285,14 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
  * returns true on success
  * false if error at any point in the function
  */
-static bool handlePlayerConnect(const char* playerName, addr_t from)
+static bool handlePlayerConnect(char* playerName, addr_t from)
 {
   player_t* player;                    // stores information for given player
-
+  int randPos;                         // random position to drop player
+  int mapLen;                          // length of in game map
+  grid_t*  grid;                       // game grid
+  char* activeMap;                     // active map of current game
+  int lastCharID;                      // most recently assigned player 'character'
   // check params
   if (playerName == NULL) {
     log_v("NULL playername in handleConnect");
@@ -300,22 +304,50 @@ static bool handlePlayerConnect(const char* playerName, addr_t from)
   }
 
   // initialize player and add to hashtable
-  // TODO: truncate name if too long
+  // truncate name if too long
+  if (strlen(playerName) > MaxNameLength) {
+    playerName[MaxNameLength] = '\0';
+  }
+
+  // create and check player
   if ((player = player_new(playerName)) == NULL) {
     log_s("could not create player named: %s", playerName);
     return false;
   }
+  
+  // add to game and check
   if ( ! game_addPlayer(game, player)) {
     log_s("failed to add player named: %s to game", playerName);
-    player_delete(player)
+    player_delete(player);
     return false;
   }
+
   // set attributes
   player_setAddr(player, from);
-  // TODO: get next char from server list
-  player_setChar(player, );
-  // TODO: randomize initial position
-  player_setPos(player, );
+  // game holds charID as int so must be cast to char
+  lastCharID = game_getLastCharID(game);
+  player_setChar(player, (char)(lastCharID));
+  
+  // randomize initial position
+  // get length of map and map itself
+  grid = game_getGrid(game);
+  mapLen = grid_getMapLen(grid);
+  activeMap = grid_getActive(grid);
+
+  // loop until valid pos found
+  while (true) {
+    // constrain rand to the length of the map string
+    // TODO: check math here
+    randPos = (rand() % mapLen);
+    // if empty room tile
+    if (activeMap[randPos] == ROOMTILE) {
+      // set player pos and update server active map
+      player_setPos(player, randPos);
+      grid_replace(grid, randPos, player_getChar(player));
+      break;
+    }
+  }
+  
   // TODO: calculate their vision and send it to player
   player_setVision(player, );
 
