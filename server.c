@@ -33,10 +33,11 @@ static const int GoldTotal = 250;      // amount of gold in the game
 static game_t* game;
 
 // function prototypes
-// initialization functions
+// initialization functions and utilities
 static void parseArgs(const int argc, char* argv, char** filepathname, int* seed);
 static bool initializeGame(char* filepathname, int seed);
 static int* generateGold(grid_t* grid, int seed);
+static bool strToInt(const char string[], int* number);
 // game state changes
 static bool handlePlayerConnect(char* playerName, const addr_t from);
 static void pickupGold(player_t* player, int piles[]);
@@ -44,6 +45,8 @@ static void movePlayer(grid_t* grid, player_t* player, game_t* game, char direct
 static void updateClientState(char* map);
 static bool handleSpectator(addr_t from);
 static void handlePlayerQuit(player_t* player);
+static void gameOver(bool normalExit);
+static void gameOverHelper(void* arg, const char* key, void* item);
 
 // messaging functions
 static void sendGrid(addr_t to);
@@ -87,14 +90,14 @@ main(const int argc, char* argv[])
   log_d("server listening on port %d", ourPort);
   printf("Server listening for messages on port: %d", ourPort);
 
-  // handles inbound messages until quit message or fatal error
+  // handles inbound messages until gameOver or fatal error
   if (message_loop(NULL, 0, NULL, NULL, handleMessage)) {
     // if loop completed successfully, send quit info and close down module
     // call quitGame
 
     // clean up and exit
+    gameOver(true);
     message_done();
-    game_delete(game);
     log_done();
     exit(0);
 
@@ -103,8 +106,8 @@ main(const int argc, char* argv[])
     // send quit message with error explanation
     log_v("unexpected error in message_loop, quitting game");
     // clean up and exit 
+    gameOver(false);
     message_done();
-    game_delete(game);
     log_done();
     exit(2);
   }
@@ -443,7 +446,7 @@ static bool handleSpectator(addr_t from)
 /* handles the entire process of "removing" a player from the game 
  * the function removes the players character from the in-game map
  * and sends them an appropriate quit message
- * 
+ * does nothing if the player does not exist
  */
 static void handlePlayerQuit(player_t* player) 
 {
@@ -457,6 +460,61 @@ static void handlePlayerQuit(player_t* player)
   // remove player from the game map and send message
   grid_revertTile(gameGrid, player_getPos);
   message_send(player_getAddr(player), "QUIT Thanks for playing!\n");
+}
+
+/*************** gameOver ******************/
+/* the gameOver function encapsulates the process of ending the game
+ * it takes a boolean parameter that indicates the circumstances the game ending
+ * if its true, the game is exiting because the all the gold was collected
+ * if false, the game is exiting due to a critical error
+ */ 
+static void gameOver(bool normalExit)
+{
+  hashtable_t* playerTable;            // table of players in game
+  playerTable = game_getPlayers(game);
+  char* gameSummary;                   // game over summary table
+
+  //TODO clean this up, make consistent with func below
+  // exit process if error
+  if ( ! normalExit) {
+    // log, send message, and clean up memory then return to main
+    log_v("calling gameOver(error)");
+    hashtable_iterate(playerTable, &normalExit, gameOverHelper);
+    game_delete(game);
+    return;
+  }
+
+  log_v("calling gameOver(success)");
+  // exit process if game successfully completed
+  // build summary table
+  gameSummary = game_buildSummary(game);
+  // send to all clients using DISPLAY
+
+  // clean up and return to main
+
+}
+
+/************** gameOverHelper *************/
+/* sends appropriate messages to all players
+ * for use in gameOver, passed to hashtable_iterate
+ */
+static void gameOverHelper(void* arg, const char* key, void* item)
+{
+  char* gameSummary;                   // summary of game for normal exit
+  // extract player and exit status from param
+  player_t* player = item;
+  bool* normalExit = arg;
+
+  // send current player a quit message
+  if (! *normalExit) {
+    message_send(player_getAddr(player), 
+               "QUIT server encountered a critical error\n");
+  } else {
+    // dont do this here actually, runtime too long
+    gameSummary = buildGameSummary(game);
+    message_send(player_getAddr(player), gameSummary);
+  }
+  
 }
 
 /***************** pickupGold *************/
@@ -534,6 +592,7 @@ movePlayerHelper(grid_t* grid, player_t* player, game_t* game, char directionCha
       // iterate over the hashtable to find the player bumped into
       player_t* bumpedPlayer;
       hashtable_t* playerHash = game_getPlayers(game);
+      //TODO: fix bug here, currently assigning bumpedPLayer to a function pointer
       hashtable_iterate(playerHash, next, bumpedPlayer = moveIterateHelper);
 
       // update map with the new positions of both players

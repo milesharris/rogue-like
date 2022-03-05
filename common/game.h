@@ -70,6 +70,14 @@ game_t* game_new(int* piles, grid_t* grid);
  */
 bool game_addPlayer(game_t* game, player_t* player);
 
+/***************** game_buildSummary ***************/
+/* builds the summary table displayed to players when the game ends nomrmally
+ * also includes the corresponding QUIT message
+ * returns a malloc'd string, caller is responsible for free'ing it
+ * returns NULL if malloc failure or game does not exist
+ */
+char* game_buildSummary(game_t* game); 
+
 /************** game_getPlayer ***************/
 /* returns a pointer to the player struct corresponding to the given name
  * returns NULL if given string or game invalid, or if player not in hashtable

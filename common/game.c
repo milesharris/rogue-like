@@ -166,8 +166,19 @@ game_new(int* piles, grid_t* grid)
   return game;
 }
 
+/**************** game_buildSummary ***************/
+/* see header file for details */
+char* game_buildSummary(game_t* game) 
+{
+  char* gameSummary;                   // summary string to return
+  // check param
+  if (game == NULL) {
+    return NULL;
+  }
 
+  
 
+}
 /***************** game_subtractGold **************/
 /* see game.h for details */
 int
@@ -242,7 +253,6 @@ static void game_getAtAddrHelper(void* arg, const char* key, void* item) {
 
 /******************** game_delete ******************/
 /* see game.h for full details */
-
 void 
 game_delete(game_t* game)
 {
