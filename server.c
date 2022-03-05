@@ -21,6 +21,7 @@
 static const int goldMaxNumPiles = 40; // maximum number of gold piles
 static const int goldMinNumPiles = 5;  // minimum number of gold piles
 static const char ROOMTILE = '.';      // char representation of room floor
+static const char PASSAGETILE = '#';    // char representation of passage tile
 static const char GOLDTILE = '*';      // char representation of gold
 static const char PLAYERCHAR = '@';    // player's view of themself
 static const int MaxNameLength = 50;   // max number of chars in playerName
@@ -37,8 +38,8 @@ static bool initializeGame(char* filepathname, int seed);
 static int* generateGold(grid_t* grid, int seed);
 // game state changes
 static bool handlePlayerConnect(char* playerName, const addr_t from);
-static void pickupGold(int playerID, int piles[]);
-static void movePlayer(int playerID, char directionChar);
+static void pickupGold(player_t* player, int piles[]);
+static void movePlayer(grid_t* grid, player_t* player, game_t* game, char directionChar);
 static void updateClientState(char* map);
 static bool handleSpectator(addr_t from);
 
@@ -483,7 +484,7 @@ static bool handleSpectator(addr_t from)
  * more to come later
  */
 static void 
-pickupGold(int playerID, int piles[])
+pickupGold(player_t* player, int piles[])
 {
   //update player gold total
   //update total gold remainging
@@ -494,9 +495,83 @@ pickupGold(int playerID, int piles[])
 
 }
 
+/************** moveIterateHelper*********/
+static player_t*
+moveIterateHelper(void* arg, const char* word, void* item)
+{
+  player_t* player = item;
+  if (player_getChar(player) == arg) {
+    return player;
+  }
+return NULL;
+}
+
+/************* repeatMovePlayerHelper **********/
+static void
+repeatMovePlayerHelper(grid_t* grid, player_t* player, game_t* game, char directionChar, int directionValue)
+{
+  // as long as we encounter a roomtile/passagetile/goldtile/player, move
+  while (grid_getActive(grid)[player_getPos(player)+directionValue] == ROOMTILE 
+    || grid_getActive(grid)[player_getPos(player)+directionValue] == PASSAGETILE
+    || grid_getActive(grid)[player_getPos(player)+directionValue] == GOLDTILE 
+    || isalpha(isupper(grid_getActive(grid)[player_getPos(player)+directionValue])) != 0) {
+          
+    char next = grid_getActive(grid)[player_getPos(player)+directionValue];
+
+    // if we land on a pile of gold
+    if (next == GOLDTILE) {
+
+    // update player gold and the game's piles
+    pickupGold(player, game_getPiles(game));
+
+    // update map with removed gold pile and new player position
+    grid_replace(grid, player_getPos(player), ROOMTILE);
+    grid_replace(grid, player_getPos(player)+directionValue, PLAYERCHAR);
+
+    // update player's position
+    player_setPos(player, player_getPos(player)+directionValue);
+
+    // if we hit another player, handle collision
+
+    } else if (isalpha(isupper(next))) {
+
+      // iterate over the hashtable to find the player bumped into
+      player_t* bumpedPlayer;
+      hashtable_t* playerHash = game_getPlayers(game);
+      hashtable_iterate(playerHash, next, bumpedPlayer = moveIterateHelper);
+
+      // update map with the new positions of both players
+      char bumpedPlayerSymbol = player_getChar(bumpedPlayer);
+      grid_replace(grid, player_getPos(player), bumpedPlayerSymbol);
+      grid_replace(grid, player_getPos(bumpedPlayer), PLAYERCHAR);
+
+      // switch the positions of the colliding players
+      int currentPos = player_getPos(player);
+      int bumpedPos = player_getPos(bumpedPlayer);
+      player_setPos(player, bumpedPos);
+      player_setPos(bumpedPlayer, currentPos);
+
+      } else {
+        // update player position
+        player_setPos(player, player_getPos(player)+directionValue);
+      }
+
+  }
+
+}
+
+/************** movePlayerHelper ********/
+static void
+movePlayerHelper(grid_t* grid, player_t* player, game_t* game, char directionChar, int directionValue)
+{
+
+}
+
 /**************** movePlayer *************/
+//TODO : ACCOUNT FOR /N AT END OF LINE? 
+//TODO : UPDATE ALL PLAYER VISION?
 static void 
-movePlayer(int playerID, char directionChar)
+movePlayer(grid_t* grid, player_t* player, game_t* game, char directionChar)
 {
   // check if move is valid
   if (directionChar == "h" || directionChar == "l" || directionChar == "j" || directionChar == "k" 
@@ -510,73 +585,49 @@ movePlayer(int playerID, char directionChar)
 
         // repeat move right case
         case 'L' :
-
-        // CAN TURN THIS INTO A HELPER FUNCTION WHEN DONE
-
-         // while the next space is an empty room spot or empty passage spot
-
-         // while ( grid_getActive(grid)[(players[playerID])->pos)+1] == "." || grid_getActive(grid)[(players[playerID])->pos)+1] == "#" ) {
-
-           // char next = grid_getActive(grid)[(players[playerID])->pos)];
-
-           // if we land on a pile of gold
-           // if (next == "*") {
-             // pickupGold(playerID, game->piles);
-
-          // if we hit another player, handle collision
-           // if (isalpha(isupper(next))) {
-                // grab player at that spot
-                // switch player positions
-
-           //}
-           // players[playerID])->pos += 1;
-           // update map
-           // update all player vision
-
-           //}
-
-         //}
-         // break
+          repeatMovePlayerHelper(grid, player, game, directionChar, 1);
+          break;
 
         // repeat move left case
         case 'H' :
-          // same thing but grid_getActive(grid)[(players[playerID])->pos)-1]
-          // break
+          repeatMovePlayerHelper(grid, player, game, directionChar, -1);
+          break;
 
         // repeat move up case 
         case 'K' :
-          // same thing but grid_getActive(grid)[(players[playerID])->pos)-(grid->numColumns)]
-          // break
+          repeatMovePlayerHelper(grid, player, game, directionChar, -grid_getNumColumns(grid));
+          break;
 
         // repeat move down case
         case 'J' :
-          // same thing but grid_getActive(grid)[(players[playerID])->pos)+(grid->numColumns)]
-          // break
+          repeatMovePlayerHelper(grid, player, game, directionChar, +grid_getNumColumns(grid));
+          break;
 
         // repeat move down left case
         case 'B' :
-          // same thing but grid_getActive(grid)[(players[playerID])->pos)-(grid->numColumns)-1]
-          // break
+          repeatMovePlayerHelper(grid, player, game, directionChar, -grid_getNumColumns(grid)-1);
+          break;
 
         // repeat move down right case
         case 'N' :
-          // same thing but grid_getActive(grid)[(players[playerID])->pos)-(grid->numColumns)+1]
-          // break
+          repeatMovePlayerHelper(grid, player, game, directionChar, -grid_getNumColumns(grid)+1);
+          break;
 
         // repeat move up left case
         case 'Y' :
-          // same thing but grid_getActive(grid)[(players[playerID])->pos)+(grid->numColumns)-1]
-          // break
+          repeatMovePlayerHelper(grid, player, game, directionChar, +grid_getNumColumns(grid)-1);
+          break;
 
         // repeat move up right case
         case 'U' :
-          // same thing but grid_getActive(grid)[(players[playerID])->pos)+(grid->numColumns)+1]
-          // break
+          repeatMovePlayerHelper(grid, player, game, directionChar, +grid_getNumColumns(grid)+1);
+          break;
 
       }
 
     } else {
       // switch statement for single space movement
+
 
       // make sure to check if next space is free
 
@@ -603,6 +654,8 @@ movePlayer(int playerID, char directionChar)
    // update all player vision
 
 }
+
+
 
 /******************* updateClientState *************/
 static void updateClientState(char* map)
