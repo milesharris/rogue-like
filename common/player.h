@@ -66,6 +66,14 @@ player_t* player_new(char* name);
  */
 int player_addGold(player_t* player, int newGold);
 
+/***** player_updateVision ***********************************/
+/* Updates a player's vision to that of a given position
+ * Takes a point to a player struct, a pointer to a grid struct, and a position integer
+ * Returns void
+ */
+
+void player_updateVision(player_t* player, grid_t* grid, int pos);
+
 /***** player_delete *****************************************/
 /* Deletes a player struct allocated memory. 
  * Takes a pointer to a player struct, to be deleted, as parameter
