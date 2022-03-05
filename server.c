@@ -43,6 +43,7 @@ static void pickupGold(player_t* player, int piles[]);
 static void movePlayer(grid_t* grid, player_t* player, game_t* game, char directionChar);
 static void updateClientState(char* map);
 static bool handleSpectator(addr_t from);
+static void handlePlayerQuit(player_t* player);
 
 // messaging functions
 static void sendGrid(addr_t to);
@@ -438,6 +439,26 @@ static bool handleSpectator(addr_t from)
 
 }
 
+/************* handlePlayerQuit ************/
+/* handles the entire process of "removing" a player from the game 
+ * the function removes the players character from the in-game map
+ * and sends them an appropriate quit message
+ * 
+ */
+static void handlePlayerQuit(player_t* player) 
+{
+  grid_t* gameGrid = game_getGrid(game);  // global game's grid
+
+  // check params
+  if (player == NULL) {
+    return;
+  }
+
+  // remove player from the game map and send message
+  grid_revertTile(gameGrid, player_getPos);
+  message_send(player_getAddr(player), "QUIT Thanks for playing!\n");
+}
+
 /***************** pickupGold *************/
 /* handles case where client picks up gold
  * more to come later
@@ -767,7 +788,7 @@ static bool handleKey(char key, addr_t from)
     // quit if appropriate
     if (key == quitKey) {
       message_send(from, "QUIT Thanks for playing!");
-      handlePlayerDisconnect(player);
+      handlePlayerQuit(player);
       return true;
     } else {
       // all keys except 'Q' are movement keys
