@@ -488,7 +488,7 @@ pickupGold(player_t* player, int piles[])
 {
   //update player gold total
   //update total gold remainging
-  //update map to reflect absence of pile
+  //update map to reflect absence of pile - DONE IN PLAYER MOVEMENT
   //update piles[] to reflect absence of pile
   //send GOLD message to all clients
   //update clients to state change
@@ -554,6 +554,10 @@ repeatMovePlayerHelper(grid_t* grid, player_t* player, game_t* game, char direct
       } else {
         // update player position
         player_setPos(player, player_getPos(player)+directionValue);
+
+        // update map
+        grid_replace(grid, player_getPos(player), ROOMTILE);
+        grid_replace(grid, player_getPos(player)+ directionValue, PLAYERCHAR);
       }
 
   }
@@ -564,6 +568,58 @@ repeatMovePlayerHelper(grid_t* grid, player_t* player, game_t* game, char direct
 static void
 movePlayerHelper(grid_t* grid, player_t* player, game_t* game, char directionChar, int directionValue)
 {
+  if (grid_getActive(grid)[player_getPos(player)+directionValue] == ROOMTILE 
+    || grid_getActive(grid)[player_getPos(player)+directionValue] == PASSAGETILE
+    || grid_getActive(grid)[player_getPos(player)+directionValue] == GOLDTILE 
+    || isalpha(isupper(grid_getActive(grid)[player_getPos(player)+directionValue])) != 0) {
+
+    char next = grid_getActive(grid)[player_getPos(player)+directionValue];
+
+    // if we land on a pile of gold
+    if (next == GOLDTILE) {
+
+    // update player gold and the game's piles
+    pickupGold(player, game_getPiles(game));
+
+    // update map with removed gold pile and new player position
+    grid_replace(grid, player_getPos(player), ROOMTILE);
+    grid_replace(grid, player_getPos(player)+directionValue, PLAYERCHAR);
+
+    // update player's position
+    player_setPos(player, player_getPos(player)+directionValue);
+
+    // if we hit another player, handle collision
+
+    } else if (isalpha(isupper(next))) {
+
+      // iterate over the hashtable to find the player bumped into
+      player_t* bumpedPlayer;
+      hashtable_t* playerHash = game_getPlayers(game);
+      hashtable_iterate(playerHash, next, bumpedPlayer = moveIterateHelper);
+
+      // update map with the new positions of both players
+      char bumpedPlayerSymbol = player_getChar(bumpedPlayer);
+      grid_replace(grid, player_getPos(player), bumpedPlayerSymbol);
+      grid_replace(grid, player_getPos(bumpedPlayer), PLAYERCHAR);
+
+      // switch the positions of the colliding players
+      int currentPos = player_getPos(player);
+      int bumpedPos = player_getPos(bumpedPlayer);
+      player_setPos(player, bumpedPos);
+      player_setPos(bumpedPlayer, currentPos);
+
+    } else {
+      // update player position
+      player_setPos(player, player_getPos(player)+directionValue);
+
+      // update map
+      grid_replace(grid, player_getPos(player), ROOMTILE);
+      grid_replace(grid, player_getPos(player)+ directionValue, PLAYERCHAR);
+    }
+
+    } else {
+      fprintf(stderr, "Invalid move");
+    }
 
 }
 
@@ -627,13 +683,51 @@ movePlayer(grid_t* grid, player_t* player, game_t* game, char directionChar)
 
     } else {
       // switch statement for single space movement
+      switch(directionChar) {
 
+        // single move right case
+        case 'l' :
+          movePlayerHelper(grid, player, game, directionChar, 1);
+          break;
 
-      // make sure to check if next space is free
+        // single move left case
+        case 'h' :
+          movePlayerHelper(grid, player, game, directionChar, -1);
+          break;
 
+        // single move up case 
+        case 'k' :
+          movePlayerHelper(grid, player, game, directionChar, -grid_getNumColumns(grid));
+          break;
+
+        // single move down case
+        case 'j' :
+          movePlayerHelper(grid, player, game, directionChar, +grid_getNumColumns(grid));
+          break;
+
+        // single move down left case
+        case 'b' :
+          movePlayerHelper(grid, player, game, directionChar, -grid_getNumColumns(grid)-1);
+          break;
+
+        // single move down right case
+        case 'n' :
+          movePlayerHelper(grid, player, game, directionChar, -grid_getNumColumns(grid)+1);
+          break;
+
+        // single move up left case
+        case 'y' :
+          movePlayerHelper(grid, player, game, directionChar, +grid_getNumColumns(grid)-1);
+          break;
+
+        // single move up right case
+        case 'u' :
+          movePlayerHelper(grid, player, game, directionChar, +grid_getNumColumns(grid)+1);
+          break;
+
+      }
 
     }
-
 
   } else {
     fprintf(stderr, "invalid direction input\n");
