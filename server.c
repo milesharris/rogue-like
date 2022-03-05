@@ -448,8 +448,9 @@ static bool handleSpectator(addr_t from)
     message_send(player_getAddr(spectator), "QUIT another spectator connected");
     // set spectator's address to new spectator
     player_setAddr(spectator, from);
-    // TODO: send GRID GOLD and DISPLAY message to new spectator
-    // 
+    // TODO: send DISPLAY message to new spectator
+    sendGold(spectator, 0);
+    sendGrid(from);
     return true;
   }
 
@@ -614,6 +615,7 @@ static void updateClientState(char* map)
 
 /************** MESSAGING FUNCTIONS ***************/
 /* These functions handle the process of sending messages to clients
+ * or handling messages received from clients
  * They are called throughout the "game functions"
  * The only message not handled here is "QUIT"
  * as the quit message varies every time 
