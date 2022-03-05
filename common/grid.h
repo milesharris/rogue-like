@@ -60,6 +60,15 @@ bool grid_replace(grid_t* grid, int pos, char newChar);
  */
 bool grid_revertTile(grid_t* grid, int pos);
 
+/************ grid_containsEmptyTile *********/
+/* allows a user to determine whether or not a given grid's active map 
+ * contains an empty room tile. Most useful when adding a player
+ * because it determines whether a player can be added or not
+ * returns true if there is at least one ROOMTILE ('.')
+ * false if there is not
+ */
+bool grid_containsEmptyTile(grid_t* grid);
+
 /*************** grid_delete **************/
 /* free's all memory in use by the given grid
  * checks for existence of strings before deleting them

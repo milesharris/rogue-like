@@ -28,6 +28,7 @@ int grid_getNumRows(grid_t* grid);
 int grid_getNumColumns(grid_t* grid);
 grid_t* grid_new(char* mapFile);
 bool grid_replace(grid_t* grid, int pos, char newChar);
+bool grid_containsEmptyTile(grid_t* grid);
 bool grid_revertTile(grid_t* grid, int pos);
 void grid_delete(grid_t* grid);
 

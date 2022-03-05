@@ -39,6 +39,7 @@ static void pickupGold(int playerID, int piles[]);
 static void movePlayer(int playerID, char directionChar);
 static void updateClientState(char* map);
 static bool handlePlayerConnect(char* playerName, const addr_t from);
+static bool handleSpectator(addr_t from);
 
 /******************** main *******************/
 int
@@ -252,7 +253,9 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
     return false;
   }
 
-  if (strncmp("PLAY ", message, 5) == 0) { log_s("received message: %s", message);
+  log_s("received message: %s", message);
+
+  if (strncmp("PLAY ", message, 5) == 0) { 
     // send just name to helper func
     const char* content = message + strlen("PLAY ");
     // returns false on failure to create player
@@ -261,13 +264,15 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
     }
   } 
   else if (strncmp("SPECTATE", message, 8) == 0) {
-    handleSpectator();  log_s("received message: %s", message);
+    if ( ! handleSpectator(from)) { 
+      message_send(from, "ERROR could not add you to game\n");
+    }  
   }
   else if (strncmp("KEY ", message, 4) == 0) {
     // send just key to helper func
     const char* content = message + strlen("KEY ");
     sscanf(content, "%c", &key);
-    handleKey(key);  log_s("received message: %s", message);
+    handleKey(key);
   } else {
     message_send(from, "ERROR message not PLAY SPECTATE or KEY\n");
     log_s("invalid message received: %s", message);
@@ -275,6 +280,12 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
   // return false to continue receiving messages
   return false;
 }
+
+/************* GAME FUNCTIONS ****************/
+/* the functions below modify the game state
+ * many of the functions are "message handlers"
+ * and do things like move players, adding players to the game, etc.
+ */
 
 /************ handlePlayerConnect ************/
 /* takes a given playername, which is received from a message in handleMessage
@@ -290,9 +301,11 @@ static bool handlePlayerConnect(char* playerName, addr_t from)
   player_t* player;                    // stores information for given player
   int randPos;                         // random position to drop player
   int mapLen;                          // length of in game map
-  grid_t*  grid;                       // game grid
+  grid_t* grid;                        // game grid
   char* activeMap;                     // active map of current game
   int lastCharID;                      // most recently assigned player 'character'
+  bool emptySpace = false;             // true iff there is > 1 ROOMTILE in map
+
   // check params
   if (playerName == NULL) {
     log_v("NULL playername in handleConnect");
@@ -302,7 +315,14 @@ static bool handlePlayerConnect(char* playerName, addr_t from)
     log_v("invalid address in handleConnect");
     return false;
   }
-
+  
+  // check for maxPlayers
+  if (game_getNumPlayers(game) == MaxPlayers) {
+    log_v("ignoring player connect, MAXPLAYERS already reached");
+    message_send(from, "QUIT Game is full: no more players can join.\n")
+    return false;
+  }
+  
   // initialize player and add to hashtable
   // truncate name if too long
   if (strlen(playerName) > MaxNameLength) {
@@ -334,6 +354,15 @@ static bool handlePlayerConnect(char* playerName, addr_t from)
   mapLen = grid_getMapLen(grid);
   activeMap = grid_getActive(grid);
 
+  // check for existence of empty spaces, true if there is at least 1
+  emptySpace = grid_containsEmptyTile(grid);
+
+  // clean up and return if no space to add player
+  if (! emptySpace) {
+    log_s("no room in map to add player: %s", playerName);
+    player_delete(player);
+    return false;
+  }
   // loop until valid pos found
   while (true) {
     // constrain rand to the length of the map string
@@ -349,12 +378,68 @@ static bool handlePlayerConnect(char* playerName, addr_t from)
   }
   
   // TODO: calculate their vision and send it to player
-  player_setVision(player, );
+  //player_setVision(player, );
+  //TODO: send new game map to players
 
   // return after successfully initializing all player values
   return true;
 }
-/******************* pickupGold *************/
+
+/**************** handleSpectator **************/
+/* handles case where spectator asks to connect
+ * takes an address as a parameter
+ * creates a spectator player and adds them to the player list
+ * with some special behavior
+ * returns true if successful
+ * false if otherwise
+ * NOTE: since spectator is in hashtable
+ * if looping over all players be sure to ignore those named "spectator" when appropriate
+ */
+static bool handleSpectator(addr_t from)
+{ 
+  player_t* spectator;                 // struct to hold the spectator
+
+  // check params
+  if ( ! message_isAddr(from)) {
+    log_v("invalid address in handleSpectator");
+    return false;
+  }
+
+  // disconnect current spectator if they exist
+  if ((spectator = game_getPlayer(game, "spectator")) != NULL) {
+    // send quit message to current spectator
+    message_send(player_getAddr(spectator), "QUIT another spectator connected");
+    // set spectator's address to new spectator
+    player_setAddr(spectator, from);
+    // TODO: send GRID GOLD and DISPLAY message to new spectator
+    // 
+    return true;
+  }
+
+  // create special spectator player if one not present
+  if ((spectator = player_new("spectator")) == NULL) {
+    log_v("could not allocate player struct for spectator");
+    return false;
+  }
+  // add to game and check
+  if (game_addPlayer(game, spectator) == false){
+    player_delete(spectator);
+    log_v("could not add spectator to game");
+    return false;
+  }
+  
+  // set relevant attributes if added to game
+  player_setAddr(spectator, from);
+  player_setVision(spectator, grid_getActive(game_getGrid(game)));
+
+  // TODO: send GRID GOLD and DISPLAY messages to spectator
+  return true;
+
+}
+/***************** pickupGold *************/
+/* handles case where client picks up gold
+ * more to come later
+ */
 static void 
 pickupGold(int playerID, int piles[])
 {

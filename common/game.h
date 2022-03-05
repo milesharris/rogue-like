@@ -59,14 +59,14 @@ game_t* game_new(int* piles, grid_t* grid);
 /* adds a struct player to the hashtable of players within a given game struct
  * the player is keyed by their name, which is copied into the hashtable's memory
  * thus, in the game module's memory. All "players" are free'd with game_delete 
- * the function false if invalid params or if failure to add player
+ * the function returns false if invalid params or if failure to add player
  * true on success
  */
 bool game_addPlayer(game_t* game, player_t* player);
 
 /************** game_getPlayer ***************/
 /* returns a pointer to the player struct corresponding to the given name
- * returns NULL if given string or game invalid
+ * returns NULL if given string or game invalid, or if player not in hashtable
  */
 player_t* game_getPlayer(game_t* game, char* playerName);
 
