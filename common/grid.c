@@ -221,6 +221,9 @@ posToCoordinates(grid_t* grid, int pos, int* tuple)
   int y = (pos / (grid->numColumns + 1));
   tuple[0] = x;
   tuple[1] = y;
+  
+  // test print statement
+  //fprintf(stdout, "pos %d -> coord: (%d,%d)\n", pos, x, y);
 
   return;
 }
@@ -237,6 +240,10 @@ coordinatesToPos(grid_t* grid, int x, int y)
   
   // where y in the row and x is the column
   int pos = (y * (grid->numColumns + 1)) + x; // add one to numColumns to account for the new line character
+  
+  // test print statement
+  //fprintf(stdout, "coord (%d,%d) -> pos: %d\n", x, y, pos);
+
   return pos;
 }
 
@@ -249,23 +256,36 @@ coordinatesToPos(grid_t* grid, int x, int y)
  * Returns:     void
  */
 
-static void
+void
 calculateVision(grid_t* grid, int pos, int* vision)
 { 
   // check parameters
   if( grid == NULL || vision == NULL || pos < 0 ){
     return;
   }
+
+  fprintf(stdout, "initial pos is %d\n\n", pos);
+
+  // testing print statement
+  fprintf(stdout, "Grid NC: %d, NR: %d, mapLen: %ld\n\n", grid->numColumns, grid->numRows, grid->mapLen);
+
+
   // set player position to visible
   vision[pos] = 1; 
   // map we check values with, used reference because we don't care about players or gold at this point, but active would also work
-  char* reference = grid->reference;
+  char* reference = grid_getReference(grid);
+  if( reference == NULL ){
+    fprintf(stderr, "calculateVision: error grabbing reference map\n");
+    return;
+  }
+
   // boolean describing whether we've hit a wall/corner
   bool wallFound = false;
   
   // checking cardinal directions manually, because using our algortithm to check horizontal of vertival 'slopes' won't work
-  // up
+
   int up = pos - (grid->numColumns + 1);
+
   while( up > 0 ){
     if(reference[up] == '.' && !wallFound){ // marks room squares
       vision[up] = 1;
@@ -279,10 +299,12 @@ calculateVision(grid_t* grid, int pos, int* vision)
 
     up -= (grid->numColumns + 1); // parentheses for readability
   }
+
   
+ 
   // down
   wallFound = false;
-  int down = pos - (grid->numColumns + 1);
+  int down = pos + (grid->numColumns + 1);
   while( down < grid->mapLen ){
     if(reference[down] == '.' && !wallFound){
       vision[down] = 1;
@@ -296,11 +318,14 @@ calculateVision(grid_t* grid, int pos, int* vision)
 
     down += (grid->numColumns + 1);
   }
-
+  
   // right
   wallFound = false;
-  int right = pos + 1;
-  while( right != '\n' || right != '\0' ){ // within the current line
+  int right = pos;
+  // fixes as bug where reference is unexpectedly not referenced
+  reference = grid_getReference(grid);
+
+  while( reference[right] != '\n' ){ // within the current line
     if(reference[right] == '.' && !wallFound){
       vision[right] = 1;
     }
@@ -312,12 +337,13 @@ calculateVision(grid_t* grid, int pos, int* vision)
     }
 
     right++;
+    fprintf(stdout, "right = %d\n", right);
   }
 
   // left
   wallFound = false;
   int left = pos - 1;
-  while( left != '\n' && left >= 0 ){
+  while( reference[left] != '\n' && left >= 0 ){
     if(reference[left] == '.' && !wallFound){
       vision[left] = 1;
     }
@@ -329,8 +355,8 @@ calculateVision(grid_t* grid, int pos, int* vision)
     }
 
     left--;
-  }
-  
+  }  
+ 
   // convert from integer to cartesian coordinates
   int posCoor[2];
   posToCoordinates(grid, pos, posCoor);
@@ -342,14 +368,20 @@ calculateVision(grid_t* grid, int pos, int* vision)
     wallFound = false;
     if( vision[i] == 0 ){ // point hasn't been visited
       posToCoordinates(grid, i, pointCoor);
+
       // slope formula
-      m = (double)(posCoor[1] - pointCoor[1]) / (double)(posCoor[0] - pointCoor[0]);
+      m = (double)(pointCoor[1] - posCoor[1]) / (double)(pointCoor[0] - posCoor[0]);
+
+      fprintf(stdout, "pointCoor: (%d,%d) \n", pointCoor[0],pointCoor[1]);
       
       // deciding whether the point is to the right or left of pos
       if( posCoor[0] < pointCoor[0] ){
         int diff = pointCoor[0] - posCoor[0]; // difference between the x coords
         int currX = 1;
         double currY = 0.0;
+
+        fprintf(stdout, "diff %d\n\n",diff);
+
         // walk from pos to point, checking values along the way
         while( currX <= diff ){
           currY = (m * currX) + posCoor[1]; // y = mx + b
@@ -358,6 +390,9 @@ calculateVision(grid_t* grid, int pos, int* vision)
           
           if( currY == roundedD ){ // the case where currY lies exactly on a point
             int currPos = coordinatesToPos(grid, posCoor[0] + currX, (int) currY); // grab int representation
+
+            fprintf(stdout, "currPos: %d  coord: (%d,%d)\n",currPos,posCoor[0] +currX, (int) currY);
+
             if( reference[currPos] == '.' && !wallFound ){      // check if room tile
               vision[currPos] = 1;
             }
@@ -365,11 +400,15 @@ calculateVision(grid_t* grid, int pos, int* vision)
               vision[currPos] = 1;
               wallFound = true;
             } else { // otherwise we've already seen a wall, so this point is not visible
-              vision[currPos] = -1;
+              if(vision[currPos] == 0){
+                vision[currPos] = -1;
+              }
             }
           } else { // the more likely case currY falls between two points and we need to check both
             int pos1 = coordinatesToPos(grid, posCoor[0] + currX, rounded);    // the two positions in reference we need to check
             int pos2 = coordinatesToPos(grid, posCoor[0] + currX, rounded + 1);
+
+            fprintf(stdout, "pos1: %d pos2: %d, coord: (%d,[%d,%d])\n",pos1,pos2,posCoor[0]+currX,rounded,rounded+1);
             
             if(reference[pos1] == '.' && reference[pos2] == '.' && !wallFound){ // haven't hit a wall yet, and current position is between room tiles
               vision[pos1] = 1;
@@ -388,6 +427,9 @@ calculateVision(grid_t* grid, int pos, int* vision)
         }
       } else { // it must be the case that posCoor[0] > pointCoor[0]
         int diff = posCoor[0] - pointCoor[0]; // difference in x values
+        
+        fprintf(stdout, "diff: %d\n", diff);
+
         int currX = 1;
         double currY = 0.0; 
 
@@ -398,7 +440,14 @@ calculateVision(grid_t* grid, int pos, int* vision)
 
           if( currY == roundedD ){ // we have the case where the point falls exactly on a point in a map (not between two points)
             int currPos = coordinatesToPos(grid, posCoor[0] - currX, (int)currY);
+            
+            fprintf(stdout, "currPos: %d x: %d y: %f m: %f\n", currPos, posCoor[0] - currX, currY, m);
+
             if( reference[currPos] == '.' && !wallFound ){
+              
+              //test printf
+              //fprintf(stdout, "currX:%d currY:%f currPos: %d\n", currX, currY, currPos);
+
               vision[currPos] = 1;
             }
             else if( reference[currPos] != '.' && !wallFound ){
@@ -410,6 +459,8 @@ calculateVision(grid_t* grid, int pos, int* vision)
           } else { // otherwise the point falls between two points in the map and we must check both
             int pos1 = coordinatesToPos(grid, posCoor[0] - currX, rounded);
             int pos2 = coordinatesToPos(grid, posCoor[0] - currX, rounded + 1);
+            
+            fprintf(stdout, "pos1: %d, pos2: %d\n", pos1, pos2);
 
             if(reference[pos1] == '.' && reference[pos2] == '.' && !wallFound){
               vision[pos1] = 1;
@@ -423,7 +474,7 @@ calculateVision(grid_t* grid, int pos, int* vision)
               vision[pos1] = -1;
               vision[pos2] = -1;
             }
-          }
+          } 
           currX++;
         }
       }
@@ -494,5 +545,53 @@ int main(const int argc, char* argv[])
   grid_delete(grid);
   // exit successfully after test completion
   exit(0);
+}
+#endif
+
+#ifdef VISIONTEST
+int 
+main(int argc, char* argv[])
+{
+ // check args
+ if( argc != 2 ){
+   fprintf(stderr, "Invalid num args\n");
+   exit(1);
+ }
+ 
+ FILE* fp = fopen(argv[1], "r");
+ if( fp == NULL ){
+   fprintf(stderr, "Invalid map pathname\n");
+   exit(2);
+ }
+ fclose(fp);
+
+ grid_t* grid = grid_new(argv[1]);
+ if( grid == NULL ){
+   fprintf(stderr, "Grid creation failure\n");
+   exit(3);
+ }
+
+ int vision[grid->mapLen];
+ int pos = 36;
+ //int pos = ((grid->numColumns + 1) * 2) + 6;
+
+
+ for(int i = 0; i < grid->mapLen; i++){
+  vision[i] = 0;
+ }
+
+ calculateVision(grid, pos, vision); 
+ fprintf(stdout, "\n");
+ for(int i = 0; i < grid->mapLen; i++){
+   if( i % 15 == 0 ){
+     fprintf(stdout, "\n");
+   } else {
+     fprintf(stdout, "%d", vision[i]);
+   }
+ }
+
+ grid_delete(grid);
+ 
+ exit(0); 
 }
 #endif
