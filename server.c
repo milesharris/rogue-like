@@ -31,14 +31,22 @@ static const int GoldTotal = 250;      // amount of gold in the game
 static game_t* game;
 
 // function prototypes
+// initialization functions
 static void parseArgs(const int argc, char* argv, char** filepathname, int* seed);
 static bool initializeGame(char* filepathname, int seed);
 static int* generateGold(grid_t* grid, int seed);
-static bool handleMessage(void* arg, const addr_t from, const char* message);
+// game state changes
+static bool handlePlayerConnect(char* playerName, const addr_t from);
 static void pickupGold(int playerID, int piles[]);
 static void movePlayer(int playerID, char directionChar);
 static void updateClientState(char* map);
-static bool handlePlayerConnect(char* playerName, const addr_t from);
+static bool handleSpectator(addr_t from);
+
+// messaging functions
+static void sendGrid(addr_t to);
+static bool handleMessage(void* arg, const addr_t from, const char* message);
+static void sendGold(player_t* player, int goldCollected);
+
 
 /******************** main *******************/
 int
@@ -252,22 +260,28 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
     return false;
   }
 
-  if (strncmp("PLAY ", message, 5) == 0) { log_s("received message: %s", message);
+  log_s("received message: %s", message);
+
+  if (strncmp("PLAY ", message, 5) == 0) { 
     // send just name to helper func
     const char* content = message + strlen("PLAY ");
     // returns false on failure to create player
     if ( ! handlePlayerConnect(content, from)) {
       message_send(from, "ERROR failed to add you to game\n");
+      // stop looping as critical error has occurred
+      return true;
     }
   } 
   else if (strncmp("SPECTATE", message, 8) == 0) {
-    handleSpectator();  log_s("received message: %s", message);
+    if ( ! handleSpectator(from)) { 
+      message_send(from, "ERROR could not add you to game\n");
+    }  
   }
   else if (strncmp("KEY ", message, 4) == 0) {
     // send just key to helper func
     const char* content = message + strlen("KEY ");
     sscanf(content, "%c", &key);
-    handleKey(key);  log_s("received message: %s", message);
+    handleKey(key);
   } else {
     message_send(from, "ERROR message not PLAY SPECTATE or KEY\n");
     log_s("invalid message received: %s", message);
@@ -276,42 +290,78 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
   return false;
 }
 
+/************* GAME FUNCTIONS ****************/
+/* the functions below modify the game state
+ * many of the functions are "message handlers"
+ * and do things like move players, adding players to the game, etc.
+ */
+
 /************ handlePlayerConnect ************/
 /* takes a given playername, which is received from a message in handleMessage
  * and create a new player struct with the given playerName
  * randomizes player's initial position and assigns a letter representation
  * then generates vision based on that position
  * sends approriate messages to all clients
- * returns true on success
- * false if error at any point in the function
+ * returns true on success or non-critical error
+ * false if critical error at any point in the function
  */
 static bool handlePlayerConnect(char* playerName, addr_t from)
 {
   player_t* player;                    // stores information for given player
+  int nameLen;                         // length of playerName
   int randPos;                         // random position to drop player
   int mapLen;                          // length of in game map
-  grid_t*  grid;                       // game grid
+  grid_t* grid;                        // game grid
   char* activeMap;                     // active map of current game
   int lastCharID;                      // most recently assigned player 'character'
-  // check params
+  bool emptySpace = false;             // true iff there is > 1 ROOMTILE in map
+
+  // check params (non-critical)
   if (playerName == NULL) {
     log_v("NULL playername in handleConnect");
-    return false;
+    return true;
   }
   if ( ! message_isAddr(from)) {
     log_v("invalid address in handleConnect");
-    return false;
+    return true;
+  }
+  
+  // check for maxPlayers (recoverable)
+  if (game_getNumPlayers(game) == MaxPlayers - 1) { // leave room for spectator
+    log_v("ignoring player connect, MAXPLAYERS already reached");
+    message_send(from, "QUIT Game is full: no more players can join.");
+    // returns true because error is recoverable
+    return true;
+  }
+
+  // modify name as applicable
+  // get length of name
+  nameLen = strlen(playerName);
+  // truncate name if too long
+  if (nameLen > MaxNameLength) {
+    playerName[MaxNameLength] = '\0';
+  }
+  // replace non-graphics and spaces in name with underscores
+  for (int i = 0; i < nameLen; i++) {
+    if (isgraph(playerName[i]) == 0 || isblank(playerName[i]) != 0) {
+      playerName[i] = '_';
+    }
+  }
+
+  // check if existing player with same name
+  // this is a recoverable error but not covered by later check
+  if (game_getPlayer(game, playerName) != NULL) {
+    log_s("player with name: %s already in game", playerName);
+    message_send(from, "QUIT player with your name already in game");
+    // recoverable error
+    return true;
   }
 
   // initialize player and add to hashtable
-  // truncate name if too long
-  if (strlen(playerName) > MaxNameLength) {
-    playerName[MaxNameLength] = '\0';
-  }
-
   // create and check player
   if ((player = player_new(playerName)) == NULL) {
     log_s("could not create player named: %s", playerName);
+    // critical malloc error
     return false;
   }
   
@@ -319,6 +369,7 @@ static bool handlePlayerConnect(char* playerName, addr_t from)
   if ( ! game_addPlayer(game, player)) {
     log_s("failed to add player named: %s to game", playerName);
     player_delete(player);
+    // critical error
     return false;
   }
 
@@ -326,7 +377,7 @@ static bool handlePlayerConnect(char* playerName, addr_t from)
   player_setAddr(player, from);
   // game holds charID as int so must be cast to char
   lastCharID = game_getLastCharID(game);
-  player_setChar(player, (char)(lastCharID));
+  player_setCharID(player, (char)(lastCharID));
   
   // randomize initial position
   // get length of map and map itself
@@ -334,27 +385,103 @@ static bool handlePlayerConnect(char* playerName, addr_t from)
   mapLen = grid_getMapLen(grid);
   activeMap = grid_getActive(grid);
 
+  // check for existence of empty spaces, true if there is at least 1
+  emptySpace = grid_containsEmptyTile(grid);
+
+  // clean up and return if no space to add player
+  if (! emptySpace) {
+    log_s("no room in map to add player: %s", playerName);
+    player_delete(player);
+    message_send(from, "QUIT no room in map to add you");
+    // non-critical error
+    return true;
+  }
   // loop until valid pos found
   while (true) {
     // constrain rand to the length of the map string
-    // TODO: check math here
     randPos = (rand() % mapLen);
     // if empty room tile
     if (activeMap[randPos] == ROOMTILE) {
       // set player pos and update server active map
       player_setPos(player, randPos);
-      grid_replace(grid, randPos, player_getChar(player));
+      grid_replace(grid, randPos, player_getCharID(player));
       break;
     }
   }
   
-  // TODO: calculate their vision and send it to player
-  player_setVision(player, );
+  // TODO: calculate their vision and send it to player with DISPLAY message
+  //player_setVision(player, );
+  //TODO: send new game map (including new player char) to other players
+  
+  sendGold(player, 0);                 // a player has no gold on entry
+  sendGrid(from);
+  sendOK(player);
 
   // return after successfully initializing all player values
   return true;
 }
-/******************* pickupGold *************/
+
+/**************** handleSpectator **************/
+/* handles case where spectator asks to connect
+ * takes an address as a parameter
+ * creates a spectator player and adds them to the player list
+ * with some special behavior
+ * returns true if successful or non-critical error
+ * false if otherwise
+ * NOTE: since spectator is in hashtable
+ * if looping over all players be sure to ignore those named "spectator" when appropriate
+ */
+static bool handleSpectator(addr_t from)
+{ 
+  player_t* spectator;                 // struct to hold the spectator
+
+  // check params
+  if ( ! message_isAddr(from)) {
+    log_v("invalid address in handleSpectator");
+    // non-critical error
+    return true;
+  }
+
+  // disconnect current spectator if they exist
+  if ((spectator = game_getPlayer(game, "spectator")) != NULL) {
+    // send quit message to current spectator
+    message_send(player_getAddr(spectator), "QUIT another spectator connected");
+    // set spectator's address to new spectator
+    player_setAddr(spectator, from);
+    // TODO: send GRID GOLD and DISPLAY message to new spectator
+    // 
+    return true;
+  }
+
+  // create special spectator player if one not present
+  if ((spectator = player_new("spectator")) == NULL) {
+    log_v("could not allocate player struct for spectator");
+    // critical error
+    return false;
+  }
+  // add to game and check
+  if (game_addPlayer(game, spectator) == false){
+    player_delete(spectator);
+    log_v("could not add spectator to game");
+    // critical error
+    return false;
+  }
+  
+  // set relevant attributes if added to game
+  player_setAddr(spectator, from);
+  player_setVision(spectator, grid_getActive(game_getGrid(game)));
+
+  // TODO: send DISPLAY message to spectator
+  sendGrid(from);
+  // spectator collects no gold so send 0
+  sendGold(spectator, 0);
+  return true;
+
+}
+/***************** pickupGold *************/
+/* handles case where client picks up gold
+ * more to come later
+ */
 static void 
 pickupGold(int playerID, int piles[])
 {
@@ -483,4 +610,96 @@ static void updateClientState(char* map)
   //iterate through players
   //  call updateVision on a player
   //  send the player the updated map
+}
+
+/************** MESSAGING FUNCTIONS ***************/
+/* These functions handle the process of sending messages to clients
+ * They are called throughout the "game functions"
+ * The only message not handled here is "QUIT"
+ * as the quit message varies every time 
+ * and there is no real advantage to making it a function
+ */
+
+/************* sendGrid ****************/
+/* this function sends the GRID message to a given address
+ * it is abstracted here to prevent having to reference "game" each time
+ * format: GRID nrows ncolumns
+ */
+static void sendGrid(addr_t to)
+{
+  char* message;                       // message to send to clients
+  grid_t* grid;                        // game grid
+  
+  // do nothing if invalid param
+  if ( ! message_isAddr(to)) {
+    return;
+  }
+  grid = game_getGrid(game);
+  // build message. allocs 2 ints, plus space for "GRID  \0"
+  message = malloc((2 * sizeof(int)) + 7);
+  sprintf(message, "GRID %d %d", grid_getNumRows(grid), grid_getNumColumns(grid));
+  // send message
+  message_send(to, message);
+  free(message);
+}
+
+/************** sendGold **************/
+/* this functions abstracts the process of sending the GOLD message to a client
+ * it takes a player as a parameter
+ * then creates the message and sends it
+ * format: GOLD n p r
+ * where n is number of nuggets just collected
+ * p is number of nuggets in a player's purse
+ * r is the number of nuggets remaining in game
+ * returns nothing on success or failure, but it exits early on failure
+ */
+static void sendGold(player_t* player, int goldCollected)
+{
+  char* message;                       // message to send to client
+  int playerPurse;                     // amount of gold held by player
+  int remainingGold;                   // amount of gold left "on the floor"
+
+  // check param
+  if (player == NULL) {
+    return;
+  }
+  // extract variables into more readable form
+  playerPurse = player_getGold(player);
+  remainingGold = game_getRemainingGold(game);
+
+  // allocate space for 3 ints and "GOLD   \0"
+  message = malloc((sizeof(int) * 3) + 8);
+  // build message and send, then clean up
+  sprintf(message, "GOLD %d %d %d", goldCollected, playerPurse, remainingGold);
+  message_send(player_getAddr(player), message);
+  free(message);
+}
+
+/************* sendOk *************/
+/* this functions abstracts the process of sending the OK message to a client
+ * it takes a player as a parameter, then creates the message and sends
+ * format: OK char where char is the player's assigned charID
+ */
+static void sendOK(player_t* player)
+{
+  char* message;                       // message to send to client
+  // do nothing if invalid param
+  if (player == NULL) {
+    return;
+  }
+
+  // build message. Large enough for a character and "OK \0"
+  message = malloc(sizeof(char) * 5);
+  sprintf(message, "OK %c", player_getCharID(player));
+  message_send(player_getAddr(player), message);
+  free(message);
+}
+
+/************* sendDisplay ****************/
+/* this function sends the client the string it is supposed to render
+ * it takes a player and a string as a parameter (probably)
+ * returns early on error
+ */
+static void sendDisplay(player_t* player, char* displayString) {
+  //TODO: code here, to finish after I know what vision looks like
 }
