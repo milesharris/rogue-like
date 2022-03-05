@@ -28,6 +28,7 @@ int grid_getNumRows(grid_t* grid);
 int grid_getNumColumns(grid_t* grid);
 grid_t* grid_new(char* mapFile);
 bool grid_replace(grid_t* grid, int pos, char newChar);
+bool grid_containsEmptyTile(grid_t* grid);
 bool grid_revertTile(grid_t* grid, int pos);
 void grid_delete(grid_t* grid);
 
@@ -35,7 +36,31 @@ void grid_delete(grid_t* grid);
 
 ### player
 
-The player module 
+The player module...
+
+### game
+
+The game module defines, and implements a structure to hold the state of the game, allowing the struct to be used as a global variable in `server.c` and `client.c` for readability. It also provides a range of functions to interact with a `struct game`. For more information, see the corresponding `game.h`. The `game` module exports the following functions and types:
+
+```c
+typedef struct game game_t; 
+grid_t* game_getGrid(game_t* game);
+int* game_getPiles(game_t* game);
+hashtable_t* game_getPlayers(game_t* game);
+int game_getRemainingGold(game_t* game);
+int game_getLastCharID(game_t* game);
+int game_getNumPlayers(game_t* game);
+int game_setNumPlayers(game_t* game, int numPlayers);
+bool game_setRemainingGold(game_t* game, int gold);
+bool game_setGrid(game_t* game, grid_t* grid);
+int game_setLastCharID(game_t* game, int charID);
+game_t* game_new(int* piles, grid_t* grid);
+bool game_addPlayer(game_t* game, player_t* player);
+player_t* game_getPlayer(game_t* game, char* playerName);
+int game_subtractGold(game_t* game, int gold);
+void game_delete(game_t* game);
+
+```
 
 ### Implementation
 
@@ -55,3 +80,5 @@ For the "grid" module we assume that the number of rows or columns of an in-game
 
 To compile, simply `make`.
 To run the `grid` unit test, type `make gridtest` and refer to `gridtest.out` for results.
+To run a test of player vision, which is included in the grid module, run `make visiontest` and refer to `visiontest.out` for results.
+To run the `player` unit test, type `make playertest` and refer to `playertest.out` for results.

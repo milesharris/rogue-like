@@ -15,6 +15,8 @@
 #include "mem.h"
 #include "file.h"
 
+/**************** file-local constants *******************/
+const char ROOMTILE = '.';
 /**************** file-local global variables ****************/
 /* none */
 
@@ -113,6 +115,26 @@ grid_t* grid_new(char* mapFile)
     mem_free(grid);
     return NULL;
   }
+}
+
+/*********** grid_containsEmptyTile **********/
+/* see header file for details */
+bool grid_containsEmptyTile(grid_t* grid)
+{
+  // check params and active map
+  if (grid == NULL || grid->active == NULL) {
+    return false;
+  }
+
+  // loop over all tiles
+  for (int i = 0; i < grid->mapLen; i++) {
+    if (grid->active[i] == ROOMTILE) {
+      return true;
+    }
+  }
+
+  // false if no empty tile
+  return false;
 }
 
 /**************** grid_replace ***************/

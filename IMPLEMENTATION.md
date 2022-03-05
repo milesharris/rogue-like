@@ -25,7 +25,7 @@ All: Server (split by function), Server Testing, Documentation.
 
 ### Data structures
 
-Client will use the `struct player`, as defined below. 
+Client will use the static `struct player`, as defined below. 
 
 ### Definition of function prototypes
 
@@ -33,6 +33,11 @@ Client will use the `struct player`, as defined below.
 static int parseArgs(const int argc, char* argv[]);
 ```
 Parses arguments to make sure they are valid. Decide if client is player or spectator. 
+
+```c
+static void initCurses();
+```
+Initializes curses. 
 
 ```c
 static bool handleMessage(void* arg, const addr_t from, const char* message);
@@ -45,46 +50,47 @@ static bool handleInput(void* arg);
 Reads lines from stdin and sends them to server if valid. Returns true if message loop should end. 
 
 ```c
-static bool checkInput(void* arg);
+static bool handleError(const char* message);
 ```
-Checks input to ensure it is valid. Returns true if yes, false if no. Helper to handleInput. 
+Responds to ERROR message. 
 
 ```c
-static void initialGrid(const char* gridInfo);
+static bool initialGrid(const char* gridInfo);
 ```
-Deals with initial GRID message (checks size of display). 
+Deals with initial GRID message (checks size of display). Calls initCurses(). 
 
 ```c
-static void renderScreen(const char* mapString, player_t* player);
+static bool renderMap(const char* mapString);
 ```
-Renders the map. 
+Renders the map in response to DISPLAY message. 
 
 ```c
-static void joinGame(void* arg, player_t* player);
+static bool joinGame(const addr_t to);
 ```
 Sends message containing player's 'real name' (taken from the command line) and initializes player. If there was no player name passed in from the command line (so the client is a spectator) send the `SPECTATOR` message.
 
 ```c
-static void leaveGame(const char* message, player_t* player);
+static bool leaveGame(const char* message);
 ```
-Prints disconnect message from server and frees all data structures. 
+Prints disconnect message from server, closes curses and frees all data structures. 
 
 ```c
-static void updatePlayer(const char* message, const char* first, player_t* player);
+static bool updatePlayer(const char* message, const char* first);
 ```
-Updates player struct as new information (GOLD, OK, DISPLAY) comes in. 
+Updates player struct as new information (GOLD, OK, or unknown message) comes in. 
 
 
 ### Detailed pseudo code
 
-
 #### `parseArgs`:
 
 	validate commandline
-	initialize message module
-	print assigned port number
 	decide whether spectator or player
     initialize player
+
+#### `initCurses`:
+
+  initialize everything needed for curses
     
 #### `handleMessage`:
     
@@ -93,36 +99,30 @@ Updates player struct as new information (GOLD, OK, DISPLAY) comes in.
     if first is GRID
         pass message to initialGrid
         call joinGame
-    if first is GOLD or DISPLAY or OK
-        pass message, first, player to updatePlayer
+    if first is DISPLAY
+        pass message to renderMap
+    if first is ERROR
+        pass message to handleError
+    if first is GOLD or OK
+        pass message, first to updatePlayer
     if first is QUIT
-        pass message, player to leaveGame
+        pass message to leaveGame
 
 #### `handleInput`:
 
-    checkInput
     allocate buffer
     read input into buffer
         strip newline
     send message to server in 'KEY [key]' format as in requirements
-
-#### `checkInput`:
-
-    check that arg is not null
-    check that server exists
-    read input
-    check that input is a valid command (keystroke)
-        if spectator, q is only valid keystroke
 
 #### `initialGrid`:
 
     read string into two integers, row num and column num
     check that display fits grid
     
-#### `renderScreen`:
+#### `renderMap`:
 
-    print "header string" with information described in requirements spec
-    print local map string (stored in player) to console 
+   print local map string to console 
     
 #### `joinGame`:
 
@@ -136,16 +136,14 @@ Updates player struct as new information (GOLD, OK, DISPLAY) comes in.
     
 #### `updatePlayer`:
 
-
     if GOLD message
         read string into variables
         update player gold
-        print all gold info
-    if DISPLAY message
-        update player display
-        call renderScreen with map string
+        print all gold info to display
     if OK message
         update player letter
+    if unknown message type
+        do nothing
 
 #### `leaveGame`:
 
@@ -153,6 +151,10 @@ Updates player struct as new information (GOLD, OK, DISPLAY) comes in.
     delete player struct
     free everything else
     
+#### `handleError`:
+
+    print error message from server
+
 ---
 
 ## Server
@@ -182,7 +184,7 @@ static int initializeGame(char* filepathname, int seed);
 Initializes a new player setting their gold to 0 and placing them randomly on the map, connects player with server
 
 ```c
-static void handlePlayerConnect(char* name, int playerIndex, player_t** players);
+static void handlePlayerConnect(char* name);
 ```
 
 Handles player disconnects, if a player disconnects early, print QUIT message and remove player. If game is over, disconnects all players and sends end of game message
@@ -245,6 +247,7 @@ static void updateVision(int playerID);
     create grid calling grid_new
     generate random gold piles
     place piles randomly in grid, checking that they are placed in valid spots
+    generate global game state struct
         
 #### `handlePlayerConnect`:
 
@@ -471,6 +474,7 @@ typedef struct player {
   char* name;
   char* letter;
   grid_t* vision;
+  addr_t address;
   int pos;
   int gold;
 } player_t
@@ -500,7 +504,7 @@ player_t* player_new(char* name);
 ```
 
 #### `player_addGold`
-The *player_addGold* function adds a given amount of gold to a given player's inventory. It returns the player's new gold total if successful, and returns -1 if the given player does not exist or if the given amount of gold is less than 0.
+The *player_addGold* function adds a given amount of gold to a given player's purse. It returns the player's new gold total if successful, and returns -1 if the given player does not exist or if the given amount of gold is less than 0.
 ```c
 int player_addGold(player_t* player, int newGold);
 ```
@@ -544,13 +548,124 @@ else
 
 ---
 
+## Game
+The game module defines, and implements a structure to hold the state of the game, allowing the struct to be used as a global variable in `server.c` and `client.c` for readability. It also provides a range of functions to interact with a `struct game`. 
+
+### Data Structures
+The primary data structure for this module is the `struct game`, defined below. It contains the relevant information about the current game state, and it held by both the server and each client. It is fairly simple, just a container for a collection of information.
+
+```c
+typedef struct game {
+    int* piles;            // ptr to array of piles
+    hashtable_t* players;  // hashtable of player structs
+    int remainingGold;     // gold left in the game
+    grid_t* grid;          // current game grid
+} game_t;
+
+```
+
+### Definition of Function Prototypes
+#### Getters
+These are self-explanatory and will not be heavily detailed. They return NULL or 0 on error when appropriate.
+```c
+grid_t* game_getGrid(game_t* game);
+int* game_getPiles(game_t* game);
+hashtable_t* game_getPlayers(game_t* game);
+int game_getRemainingGold(game_t* game);
+
+```
+
+#### Setters
+Once again self-explanatory. The one detail of note is that game_setGrid calls grid_delete on that game's previous grid.
+
+```c
+bool game_setRemainingGold(game_t* game, int gold);
+bool game_setGrid(game_t* game, grid_t* grid);
+
+```
+
+#### game_new
+The game_new function creates a new `struct game`. It only allocates space for the struct itself, all parameters must be allocated before being passed into the function.
+
+```c
+game_t* game_new(int* piles, grid_t* grid);
+
+```
+#### game_addPlayer
+The game_addPlayer function adds a given player struct with a given playerName key to the inner hashtable of a game. It leverages hashtable_insert. It returns false if failure and true if success.
+```c
+bool game_addPlayer(game_t* game, player_t* player);
+
+```
+#### game_subtractGold
+The game_subtractGold function subtracts a given amount of gold from a given game's remainingGold member. It returns the new value on success, and -1 if the game does not exist.
+
+```c
+int game_subtractGold(game_t* game, int gold);
+
+```
+#### game_getPlayer
+The game_getPlayer function returns a player_t* corresponding to the given playername in the parameters. It leverages hashtable_find.
+
+```c
+player_t* game_getPlayer(game_t* game, char* playerName);
+
+```
+#### game_delete
+The game_delete function free's all memory associated with a given game. It sets the arrays within the game to NULL and calls grid_delete on the grid. If the given game does not exist it does nothing.
+
+```c
+void game_delete(game_t* game);
+
+```
+### Detailed Pseudocode
+
+#### `game_new`
+```
+allocate space for a game_t
+if malloc failure, return NULL
+create players hashtable, return NULL if failure
+set game members to values given as params
+return game
+```
+
+#### `game_subtractGold`
+```
+if given game is NULL return -1
+else subtract the given amount of gold from the game's gold
+return new value of game->remainingGold
+```
+
+#### `game_addPlayer`
+```
+if params NULL return false
+call hashtable_insert with given params on the inner hashtable
+return true if success
+false if otherwise
+```
+
+#### `game_getPlayer`
+```
+if null params return null
+return the result of hashtable_find(playerName)
+```
+#### `game_delete`
+```
+if game is not NULL
+  set game->piles and game->players to NULL
+  call grid_delete on the grid
+  free the struct itself
+```
+
+---
+
 ## Testing plan
 
 ### unit testing
 
 The grid module contains a small unit test that is enabled by compiling it with the GRIDTEST flag. It reads a grid into memory from a given file, prints the intial states of both reference and active maps, then modifies the active map and reprints. The grid module was tested on a variety of map files during development.
 
-The player module is small enough that it does not require a seperate unit test. Its functionality can be determined during our larger integration and systems tests. 
+The player and game modules are small enough that they do not require a seperate unit test. Their functionality can be determined during our larger integration and systems tests. 
 
 ### integration testing
 
@@ -567,5 +682,5 @@ Then, we will test the complete product by connecting several player clients to 
 ---
 
 ## Limitations
+Our game does not allow two players with the same name to connect. It asks the 2nd player to input a new name and try again. 
 
-None as of inital specs, will potentially be filled in later.
