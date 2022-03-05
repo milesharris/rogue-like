@@ -176,7 +176,8 @@ char* game_buildSummary(game_t* game)
     return NULL;
   }
 
-  
+  // TODO: use the new player_summarize to make each line
+  // maybe iterate through characters so I dont have to use iterate idk
 
 }
 /***************** game_subtractGold **************/

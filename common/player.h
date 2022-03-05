@@ -25,7 +25,7 @@ typedef struct player player_t; // opaque to users of the module
 
 grid_t* player_getVision(player_t* player);
 char* player_getName(player_t* player);
-char player_getChar(player_t* player);
+char player_getCharID(player_t* player);
 
 /* player_getPos will return -1 upon receiving a NULL argument, this is the default pos value */
 int player_getPos(player_t* player);
@@ -73,6 +73,14 @@ int player_addGold(player_t* player, int newGold);
  */
 
 void player_updateVision(player_t* player, grid_t* grid, int pos);
+
+/***** player_summarize **************************************/
+/* creates a summary of the player for printing when the game ends
+ * returns the properly formatted summary string on success
+ * note that the returned string is malloc'd, caller responsible for free'ing
+ * returns NULL if failure to allocate memory or if player is NULL
+ */
+char* player_summarize(player_t* player);
 
 /***** player_delete *****************************************/
 /* Deletes a player struct allocated memory. 
