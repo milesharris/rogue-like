@@ -39,6 +39,8 @@ typedef struct grid {
 /**************** local functions ****************/
 /* not visible outside this file */
 static int longestRowLength(char* map);
+static void posToCoordinates(grid_t* grid, int pos, int* tuple);
+static int coordinatesToPos(grid_t* grid, int x, int y);
 
 /**************** getters *****************/
 /* returns NULL or 0 if values don't exist as appropriate */
@@ -279,7 +281,7 @@ coordinatesToPos(grid_t* grid, int x, int y)
  */
 
 void
-calculateVision(grid_t* grid, int pos, int* vision)
+grid_calculateVision(grid_t* grid, int pos, int* vision)
 { 
   // check parameters
   if( grid == NULL || vision == NULL || pos < 0 ){
