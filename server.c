@@ -402,7 +402,8 @@ static bool handleSpectator(addr_t from)
   // disconnect current spectator if they exist
   if ((spectator = game_getPlayer(game, "spectator")) != NULL) {
     // send quit message to current spectator
-    message_send(player_getAddr(spectator), "QUIT another spectator connected");
+    message_send(player_getAddr(spectator), 
+                 "QUIT you have been replaced by a new spectator");
     // set spectator's address to new spectator
     player_setAddr(spectator, from);
     // TODO: send DISPLAY message to new spectator
@@ -722,21 +723,63 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
  */
 static bool handleKey(char key, addr_t from)
 {
+  player_t* player;                    // player that input is coming from
+  bool validKey = false;               // flags if given key is valid input
+
   // array of all valid inputs from players
-  char playerKeys[] = {'Q', 'h', 'H', 'l', 'L', 'j', 'J', 'k', 'K', 'y', 'Y',
-                       'u', 'U', 'b', 'B', 'n', 'N'};    
-  char spectatorKey = 'Q';             // only valid input from spectators
+  const char playerKeys[] = {'Q', 'h', 'H', 'l', 'L', 'j', 'J', 'k', 'K', 'y',
+                             'Y', 'u', 'U', 'b', 'B', 'n', 'N'};    
+  const char quitKey = 'Q';            // only valid input from spectators
   
+  // assign player to corresponding address
+  player = game_getPlayerAtAddr(game, from);
+
   // check params
   if ( ! message_isAddr(from)) {
     log_V("invalid address in handleKey");
     return false;
   }
 
-  // validate key from spectator
-  
+  // validate key from spectator and handle accordingly
+  if (strcmp(player_getName(player), "spectator") == 0) {
+    if (key == quitKey) {
+      message_send(from, "QUIT Thanks for watching!\n");
+      return true;
+    } else {
+      log_v("invalid key received");
+      message_send(from, "ERROR invalid key\n");
+      return false;
+    }
+  }
 
   // validate key from player
+  size_t arrayLen = sizeof(playerKeys); // sizeof(char) is 1 so len = size
+  for (int i = 0; i < arrayLen; i++) {
+    // continue function execution if key valid
+    if (key == playerKeys[i]) {
+      validKey = true;
+      break;
+    }
+  }
+  // handle valid key input
+  if (validKey) {
+    log_v("valid key received");
+    // quit if appropriate
+    if (key == quitKey) {
+      message_send(from, "QUIT Thanks for playing!");
+      handlePlayerDisconnect(player);
+      return true;
+    } else {
+      // all keys except 'Q' are movement keys
+      movePlayer(game_getGrid(game), player, game, key);
+      return true;
+    }
+  } else {
+    // send error message if key is invalid
+    log_v("invalid key received");
+    message_send(from, "ERROR invalid key\n");
+    return false;
+  }
 }
 
 /************* sendGrid ****************/
