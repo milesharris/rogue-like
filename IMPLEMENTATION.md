@@ -682,5 +682,5 @@ Then, we will test the complete product by connecting several player clients to 
 ---
 
 ## Limitations
+Our game does not allow two players with the same name to connect. It asks the 2nd player to input a new name and try again. 
 
-None as of inital specs, will potentially be filled in later.

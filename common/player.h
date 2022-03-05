@@ -25,7 +25,6 @@ typedef struct player player_t; // opaque to users of the module
 
 grid_t* player_getVision(player_t* player);
 char* player_getName(player_t* player);
-
 char player_getChar(player_t* player);
 
 /* player_getPos will return -1 upon receiving a NULL argument, this is the default pos value */
@@ -57,7 +56,6 @@ addr_t player_setAddr(player_t* player, addr_t address);
  *
  * returns player_t* if successful, otherwise NULL
  */
-
 player_t* player_new(char* name);
 
 /***** player_addGold ****************************************/
@@ -73,7 +71,6 @@ int player_addGold(player_t* player, int newGold);
  * Takes a pointer to a player struct, to be deleted, as parameter
  * Returns void
  */
-
 void player_delete(player_t* player);
 
 #endif

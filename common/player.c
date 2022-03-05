@@ -50,7 +50,7 @@ player_getGold(player_t* player)
 }
 
 char
-player_getChar(player_t* player)
+player_getCharID(player_t* player)
 {
   return player ? player->charID : DEFAULTCHAR;
 }
@@ -101,7 +101,7 @@ player_setAddr(player_t* player, addr_t address)
 }
 
 char
-player_setChar(player_t* player, char newChar)
+player_setCharID(player_t* player, char newChar)
 {
   // return '?' if invalid params
   if (player == NULL || isalpha(newChar) == 0) {
