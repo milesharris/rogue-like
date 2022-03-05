@@ -10,6 +10,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #include "file.h"
+#include "set.h"
 #include "grid.h"
 #include "mem.h"
 #include "game.h"
@@ -47,6 +48,8 @@ static bool handleSpectator(addr_t from);
 static void sendGrid(addr_t to);
 static bool handleMessage(void* arg, const addr_t from, const char* message);
 static void sendGold(player_t* player, int goldCollected);
+static bool handleKey(char key, addr_t from);
+static void sendOK(player_t* player);
 
 
 /******************** main *******************/
@@ -244,53 +247,6 @@ static int* generateGold(grid_t* grid, int seed)
   return piles;
 }
 
-/**************** handleMessage ***************/
-/* helper for message_loop, handles when server recieves a message
- * and then calls appropriate functions
- * returns false when loop should continue
- * returns true when loop should end 
- */
-// TODO: This must return true at some point for message_loop to end
-static bool handleMessage(void* arg, const addr_t from, const char* message)
-{
-  char key;                            // key input from key message
-
-  // if invalid message (bad address or null string) log and continue looping
-  if ( ! message_isAddr(from) || message == NULL) {
-    log_v("bad message received (bad addr or null string)");
-    return false;
-  }
-
-  log_s("received message: %s", message);
-
-  if (strncmp("PLAY ", message, 5) == 0) { 
-    // send just name to helper func
-    const char* content = message + strlen("PLAY ");
-    // returns false on failure to create player
-    if ( ! handlePlayerConnect(content, from)) {
-      message_send(from, "ERROR failed to add you to game\n");
-      // stop looping as critical error has occurred
-      return true;
-    }
-  } 
-  else if (strncmp("SPECTATE", message, 8) == 0) {
-    if ( ! handleSpectator(from)) { 
-      message_send(from, "ERROR could not add you to game\n");
-    }  
-  }
-  else if (strncmp("KEY ", message, 4) == 0) {
-    // send just key to helper func
-    const char* content = message + strlen("KEY ");
-    sscanf(content, "%c", &key);
-    handleKey(key);
-  } else {
-    message_send(from, "ERROR message not PLAY SPECTATE or KEY\n");
-    log_s("invalid message received: %s", message);
-  }
-  // return false to continue receiving messages
-  return false;
-}
-
 /************* GAME FUNCTIONS ****************/
 /* the functions below modify the game state
  * many of the functions are "message handlers"
@@ -480,6 +436,7 @@ static bool handleSpectator(addr_t from)
   return true;
 
 }
+
 /***************** pickupGold *************/
 /* handles case where client picks up gold
  * more to come later
@@ -768,6 +725,76 @@ static void updateClientState(char* map)
  * as the quit message varies every time 
  * and there is no real advantage to making it a function
  */
+
+/**************** handleMessage ***************/
+/* helper for message_loop, handles when server recieves a message
+ * and then calls appropriate functions
+ * returns false when loop should continue
+ * returns true when loop should end 
+ */
+// TODO: This must return true at some point for message_loop to end
+static bool handleMessage(void* arg, const addr_t from, const char* message)
+{
+  char key;                            // key input from key message
+
+  // if invalid message (bad address or null string) log and continue looping
+  if ( ! message_isAddr(from) || message == NULL) {
+    log_v("bad message received (bad addr or null string)");
+    return false;
+  }
+
+  log_s("received message: %s", message);
+
+  if (strncmp("PLAY ", message, 5) == 0) { 
+    // send just name to helper func
+    const char* content = message + strlen("PLAY ");
+    // returns false on failure to create player
+    if ( ! handlePlayerConnect(content, from)) {
+      message_send(from, "ERROR failed to add you to game\n");
+      // stop looping as critical error has occurred
+      return true;
+    }
+  } 
+  else if (strncmp("SPECTATE", message, 8) == 0) {
+    if ( ! handleSpectator(from)) { 
+      message_send(from, "ERROR could not add you to game\n");
+    }  
+  }
+  else if (strncmp("KEY ", message, 4) == 0) {
+    // send just key to helper func
+    const char* content = message + strlen("KEY ");
+    sscanf(content, "%c", &key);
+    handleKey(key, from);
+  } else {
+    message_send(from, "ERROR message not PLAY SPECTATE or KEY\n");
+    log_s("invalid message received: %s", message);
+  }
+  // return false to continue receiving messages
+  return false;
+}
+
+/************* handleKey *******************/
+/* handles key input from the client
+ * and calls the appropriate function according to their input
+ */
+static bool handleKey(char key, addr_t from)
+{
+  // array of all valid inputs from players
+  char playerKeys[] = {'Q', 'h', 'H', 'l', 'L', 'j', 'J', 'k', 'K', 'y', 'Y',
+                       'u', 'U', 'b', 'B', 'n', 'N'};    
+  char spectatorKey = 'Q';             // only valid input from spectators
+  
+  // check params
+  if ( ! message_isAddr(from)) {
+    log_V("invalid address in handleKey");
+    return false;
+  }
+
+  // validate key from spectator
+  
+
+  // validate key from player
+}
 
 /************* sendGrid ****************/
 /* this function sends the GRID message to a given address

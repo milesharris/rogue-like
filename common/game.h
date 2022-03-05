@@ -26,6 +26,12 @@ int game_getRemainingGold(game_t* game);
 int game_getLastCharID(game_t* game);
 int game_getNumPlayers(game_t* game);
 
+/* finds the player in the game with the given address
+ * returns NULL if player not found or bad parameters
+ * returns player with given address if they exist
+ */ 
+player_t* game_getPlayerAtAddr(game_t* game, addr_t address);
+
 /**************** setters ***************/
 /* return false on failure, true on success */
 bool game_setRemainingGold(game_t* game, int gold);

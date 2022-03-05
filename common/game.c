@@ -18,6 +18,12 @@
 static const int MAXPLAYERS = 26;      // max # players in game
 static const int MAXGOLD = 250;        // max # gold in game
 
+/**************** file-local functions ****************/
+static void game_getAtAddrHelper(void* arg, const char* key, void* item);
+
+/*************** global types and functions ***************/
+/* that is, visible outside of this file */
+
 /******************** game struct ******************/
 /* see game.h for details */
 
@@ -193,6 +199,44 @@ bool game_addPlayer(game_t* game, player_t* player)
     return true;
   } else {
     return false;
+  }
+}
+
+/************** game_getPlayerAtAddr ***************/
+/* see header file for details */
+player_t* game_getPlayerAtAddr(game_t* game, addr_t address)
+{
+  hashtable_t* players;                        // table of players in game
+  player_t* player = NULL;                     // player with given address
+  
+  // takes a name string and message string to give to hashtable_iterate
+  void* container[] = {&address, player};
+  // check params
+  if (game == NULL || ! message_isAddr(address)) {
+    return NULL;
+  }
+
+  // check existence of player table and assign
+  if ((players = game_getPlayers(game)) == NULL) {
+    return NULL;
+  }
+
+  // iterate over hashtable, returning the player with given address if exist
+  hashtable_iterate(players, container, game_getAtAddrHelper);
+
+  return player;
+}
+
+/***************** game_getAtAddrHelper ************/
+static void game_getAtAddrHelper(void* arg, const char* key, void* item) {
+  // extract params
+  void** container = arg;
+  addr_t* targetAddr = container[0];
+  player_t* currPlayer = item;
+  
+  // compares addresses and sends matching player back to parent functions
+  if (message_eqAddr(*targetAddr, player_getAddr(currPlayer))) {
+    container[1] = currPlayer;
   }
 }
 
