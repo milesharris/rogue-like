@@ -1103,8 +1103,8 @@ static void sendOK(player_t* player)
 static void sendDisplay(player_t* player, char* displayString) {
   
   addr_t to;                           // address to send message to
-  char* output = "DISPLAY\n";          // beginning of display messages
-  char* temp;                          // temp to check realloc results
+  char* initial = "DISPLAY\n";         // beginning of display messages
+  char* message;                       // final message sent to clients
   
   // check params
   if (player == NULL || displayString == NULL) {
@@ -1117,12 +1117,11 @@ static void sendDisplay(player_t* player, char* displayString) {
   }
 
   // build string
-  temp = realloc(output, strlen(output) + strlen(displayString) + 1);
-  mem_assert(temp, "could not realloc in sendDisplay\n");
-
-  output = temp;
-  strcat(output, displayString);
+  message = mem_malloc_assert(strlen(initial) + strlen(displayString) + 1, 
+                              "failed to alloc message in sendDisplay\n");
+  strcpy(message, initial);
+  strcat(message, displayString);
   // send message and clean up
-  message_send(to, output);
-  free(output);
+  message_send(to, message);
+  free(message);
 }

@@ -131,7 +131,7 @@ player_new(char* name, char* mapfile)
   } 
 
   // save a copy of the name string in memory and handle malloc failure
-  if ((player->name = malloc(sizeof(name))) == NULL) {
+  if ((player->name = malloc(strlen(name) + 1)) == NULL) {
     return NULL;
   }
   // copy param string into player struct
