@@ -15,7 +15,7 @@ const char DEFAULTCHAR = '?';
 
 typedef struct player {
   char* name;           // name provided by client
-  char* vision;         // map of user vision
+  grid_t* vision;         // map of user vision
   addr_t address;       // address of player
   char charID;          // character representation in game
   int pos;              // index position in the map string
@@ -25,7 +25,7 @@ typedef struct player {
 //TODO: Document additions to player module in readme and specs
 /**** getter functions ***************************************/
 
-char* 
+grid_t* 
 player_getVision(player_t* player)
 {
   return player ? player->vision : NULL;
@@ -63,8 +63,8 @@ player_getAddr(player_t* player)
 
 /***** setter functions **************************************/
 
-char* 
-player_setVision(player_t* player, char* vision)
+grid_t* 
+player_setVision(player_t* player, grid_t* vision)
 {
   if ( player == NULL || vision == NULL ) {
     return NULL;

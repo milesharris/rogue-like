@@ -39,7 +39,7 @@ addr_t player_getAddr(player_t* player);
 /***** setters ***********************************************/
 /* set the value of various attributes of a player struct and return their value */
 
-char* player_setVision(player_t* player, grid_t* vision);
+grid_t* player_setVision(player_t* player, grid_t* vision);
 char player_setChar(player_t* player, char newChar);
 
 int player_setPos(player_t* player, int pos);
