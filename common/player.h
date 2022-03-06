@@ -73,7 +73,7 @@ int player_addGold(player_t* player, int newGold);
  * Returns void
  */
 
-void player_updateVision(player_t* player, grid_t* grid, int pos);
+void player_updateVision(player_t* player, grid_t* grid);
 
 /***** player_summarize **************************************/
 /* creates a summary of the player for printing when the game ends

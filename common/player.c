@@ -191,12 +191,18 @@ char* player_summarize(player_t* player)
 /***** player_updateVision ***********************************/
 /* see player.h for full details */
 void
-player_updateVision(player_t* player, grid_t* grid, int pos)
+player_updateVision(player_t* player, grid_t* grid)
 {
   // check parameters
-  if( player == NULL || grid == NULL || pos < 0 ){
+  if( player == NULL || grid == NULL ){
     return;
   }
+  
+  int pos = player_getPos(player);
+  if( pos < 0 ){
+    return;
+  }
+
   // initialize the vision array
   size_t mapLen = grid_getMapLen(grid);
   int vision[mapLen];
@@ -209,6 +215,7 @@ player_updateVision(player_t* player, grid_t* grid, int pos)
   char* playerActive;
 
   if( currPlayerVision == NULL ){
+    player->
     playerActive = grid_getActive(grid);
     // initialize a new players vision to nothing
     for(int i = 0; i < mapLen; i++){
@@ -273,6 +280,7 @@ int
 main(const int argc, char* argv[])
 {
   char* name = NULL;
+  char* mapFile = NULL;
   
   // check command line args
   if( argc != 3 ){
@@ -282,6 +290,18 @@ main(const int argc, char* argv[])
   
   // assign name
   name = argv[1];
+  mapFile = argv[2];
+
+  // make grid
+  fprintf(stdout, "Creating grid... ");
+  grid_t* grid = grid_new(mapFile);
+  
+  if( grid != NULL ){
+    fprintf(stdout, "success\n");
+  } else {
+    fprintf(stdout, "failed\n");
+    exit(2);
+  }
   
   // creating a new player
   fprintf(stdout, "Creating new player... ");
@@ -291,7 +311,7 @@ main(const int argc, char* argv[])
     fprintf(stdout, "success!\n");
   } else {
     fprintf(stdout, "failed to create new player\n");
-    exit(2);
+    exit(3);
   }
 
   fprintf(stdout, "name given: %s\n", name);
@@ -304,16 +324,26 @@ main(const int argc, char* argv[])
   fprintf(stdout, "Getting player gold... got %d\n", player_getGold(player));
 
   // tesing pos
-  fprintf(stdout, "\nSetting player pos to 100... ");
-  int position = player_setPos(player, 100);
+  fprintf(stdout, "\nSetting player pos to 1394... ");
+  int position = player_setPos(player, 1394);
   fprintf(stdout, " set to %d\n", position);
   fprintf(stdout, "Getting player pos... got %d\n", player_getPos(player));
 
   // testing vision 
-  char example[] = "example str";
-  fprintf(stdout, "Setting vision to %s... ", example);
-  player_setVision(player, example);
-  fprintf(stdout, "vision set to %s\n", player_getVision(player));
+  player_updateVision(player, grid);
+  grid_t* vision = player_getVision(player);
+
+  if( vision == NULL ){
+    fprintf(stdout, "failed to get vision\n");
+  }
+  
+  char* visionActive = grid_getActive(vision);
+  int mapLen = grid_getMapLen(vision);
+
+  fprintf(stdout, "----- vision map ---------------------------------------------------------------");
+  for(int i = 0; i < mapLen; i++){
+    fprintf(stdout, "%c", visionActive[i]);
+  }
 
   // valgrind will show if there is mem issue
   player_delete(player);
