@@ -200,21 +200,37 @@ player_updateVision(player_t* player, grid_t* grid, int pos)
   // initialize the vision array
   size_t mapLen = grid_getMapLen(grid);
   int vision[mapLen];
+  int rowLen = grid_getNumColumns(grid);
   // populate vision array
   grid_calculateVision(grid, pos, vision);
   
   // grabbing necessary map copies
   grid_t* currPlayerVision = player_getVision(player);
-  char* playerActive = grid_getActive(currPlayerVision);
+  char* playerActive;
+
+  if( currPlayerVision == NULL ){
+    playerActive = grid_getActive(grid);
+    // initialize a new players vision to nothing
+    for(int i = 0; i < mapLen; i++){
+      playerActive[i] = ' ';
+    }  
+  } else {
+    playerActive = grid_getActive(currPlayerVision);
+  }
+
   char* globalActive = grid_getActive(currPlayerVision);
 
-  if ( playerActive == NULL || globalActive == NULL || currPlayerVision == NULL ) {
+  if ( globalActive == NULL ) {
     return;
   }
 
   // updating PAST player vision to reference map values
   for(int i = 0; i < mapLen; i++){
-    if( isblank(playerActive[i]) == 0 ){ // is slot is not whitespace, revert it to its reference map tile
+    // inserting new line characters into vision map
+    if( i != 0 && ( i % (rowLen + 1) == 0 ) ){
+      grid_replace(currPlayerVision, i, '\n');
+    }
+    else if( isblank(playerActive[i]) == 0 ){ // is slot is not whitespace, revert it to its reference map tile
       grid_revertTile(currPlayerVision, i);
     } 
     // check if the corresponding value in vision has a value of 1, in which case we use the active map value for this position
@@ -259,7 +275,7 @@ main(const int argc, char* argv[])
   char* name = NULL;
   
   // check command line args
-  if( argc != 2 ){
+  if( argc != 3 ){
     fprintf(stderr, "Player test: invalid num args\n");
     exit(1);
   }
