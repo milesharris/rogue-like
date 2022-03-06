@@ -69,6 +69,7 @@ int player_addGold(player_t* player, int newGold);
 /***** player_updateVision ***********************************/
 /* Updates a player's vision to that of a given position
  * Takes a point to a player struct, a pointer to a grid struct, and a position integer
+ * where, in game, the grid is the server's grid
  * Returns void
  */
 

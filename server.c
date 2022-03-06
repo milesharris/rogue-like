@@ -18,7 +18,7 @@
 #include "log.h"
 
 // global constants
-static const int goldMaxNumPiles = 40; // maximum number of gold piles
+static const int goldMaxNumPiles = 30; // maximum number of gold piles
 static const int goldMinNumPiles = 5;  // minimum number of gold piles
 static const char ROOMTILE = '.';      // char representation of room floor
 static const char PASSAGETILE = '#';   // char representation of passage tile
@@ -30,8 +30,6 @@ static const int GoldTotal = 250;      // amount of gold in the game
 
 // global game state
 static game_t* game;
-
-//TODO: CHECK ALL ITERATORS, MAKE SURE THEY SKIP SPECTATORS IF NEEDED
 
 // function prototypes
 // initialization functions and utilities
@@ -372,6 +370,7 @@ static bool handlePlayerConnect(char* playerName, addr_t from)
   
   // TODO: calculate their vision and send it to player with DISPLAY message
   //player_setVision(player, );
+  player_updateVision(player, grid, player_getPos);
   //TODO: send new game map (including new player char) to other players
   
   sendGold(player, 0);                 // a player has no gold on entry
@@ -512,7 +511,7 @@ static void gameOverHelper(void* arg, const char* key, void* item)
   player_t* player = item;
   bool* normalExit = container[0];
   char* gameSummary = container[1];    // summary of game for normal exit
-  // set the 
+  // set the address to send messages to
   addr_t to = player_getAddr(player);
 
   // send current player a quit message
@@ -565,7 +564,7 @@ pickupGold(player_t* player)
 
   }
 
-  // return up the chain to trigger gameOver
+  // return up the chain to trigger gameOver if all gold collected
   if (game_getRemainingGold(game) == 0) {
     return true;
   }
@@ -590,19 +589,18 @@ static void pickupGoldHelper(void* arg, const char* key, void* item)
   // handle the spectator seperately as they see all
   if (strcmp(player_getName(player), "spectator") == 0) {
     player_setVision(player, grid_getActive(game_getGrid(game)));
-    // TODO: getVision returns a grid, need a string
-    sendDisplay(player, player_getVision(player));
+    // sends just the active map in the display message
+    sendDisplay(player, grid_getActive(game_getGrid(game)));
     return;
   }
   // update each player's display
+  player_updateVision(player, game_getGrid(game), player_getPos(player));
 
-  // calc vision here as well
-  // TODO: look at how vision works and determine what to send
-  player_updateVision(player, game_getGrid(game), player_getPos);
 
 }
 /************** moveIterateHelper*********/
 /* helper to pass into hashtable_iterate in moveHelper
+ * finds a player with a provided charID
  * container passed into helper that holds the following items
  * void* container[2] = {bumpedPlayer, &next}; 
  * stores the matching player back in the container
@@ -614,6 +612,10 @@ moveIterateHelper(void* arg, const char* key, void* item)
   char* targetCharID = container[1];
   player_t* currPlayer = item;
 
+  // skip spectator as they have no "charID"
+  if (strcmp(player_getName(currPlayer), "spectator")) {
+    return;
+  }
   // matches player with target ID
   if (player_getChar(currPlayer) == *targetCharID) {
     container[0] = currPlayer;

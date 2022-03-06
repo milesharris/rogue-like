@@ -179,7 +179,6 @@ char* player_summarize(player_t* player)
   name = player_getName(player);
   
   // determine amount of memory to malloc
-  // magic numbers: 
   toAlloc = strlen(name) + MEMADD;
   // allocate and check success
   if ((summary = malloc(toAlloc)) == NULL) {
