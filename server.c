@@ -25,11 +25,13 @@ static const char PASSAGETILE = '#';   // char representation of passage tile
 static const char GOLDTILE = '*';      // char representation of gold
 static const char PLAYERCHAR = '@';    // player's view of themself
 static const int MaxNameLength = 50;   // max number of chars in playerName
-static const int MaxPlayers = 27;      // maximum number of players
+static const int MaxPlayers = 27;      // maximum number of players (and spectator)
 static const int GoldTotal = 250;      // amount of gold in the game
 
 // global game state
 static game_t* game;
+
+//TODO: CHECK ALL ITERATORS, MAKE SURE THEY SKIP SPECTATORS IF NEEDED
 
 // function prototypes
 // initialization functions and utilities
@@ -42,6 +44,7 @@ static bool handlePlayerConnect(char* playerName, const addr_t from);
 static bool pickupGold(player_t* player, int piles[]);
 static void pickupGoldHelper(void* arg, const char* key, void* item);
 static void movePlayer(grid_t* grid, player_t* player, game_t* game, char directionChar);
+static bool movePlayerHelper(player_t* player, char directionChar, int directionValue);
 static void updateClientState(char* map);
 static bool handleSpectator(addr_t from);
 static void handlePlayerQuit(player_t* player);
@@ -407,7 +410,7 @@ static bool handleSpectator(addr_t from)
                  "QUIT you have been replaced by a new spectator");
     // set spectator's address to new spectator
     player_setAddr(spectator, from);
-    // TODO: send DISPLAY message to new spectator
+    sendDisplay(spectator, grid_getActive(game_getGrid(game)));
     sendGold(spectator, 0);
     sendGrid(from);
     return true;
@@ -430,9 +433,10 @@ static bool handleSpectator(addr_t from)
   // set relevant attributes if added to game
   player_setAddr(spectator, from);
   player_setVision(spectator, grid_getActive(game_getGrid(game)));
-
-  // TODO: send DISPLAY message to spectator
+  
+  // update spectator client
   sendGrid(from);
+  sendDisplay(spectator, grid_getActive(game_getGrid(game)));
   // spectator collects no gold so send 0
   sendGold(spectator, 0);
   return true;
@@ -596,29 +600,38 @@ static void pickupGoldHelper(void* arg, const char* key, void* item)
 
 }
 /************** moveIterateHelper*********/
-static player_t*
-moveIterateHelper(void* arg, const char* word, void* item)
+/* helper to pass into hashtable_iterate in moveHelper
+ * container passed into helper that holds the following items
+ * void* container[2] = {bumpedPlayer, &next}; 
+ * stores the matching player back in the container
+ */
+static void
+moveIterateHelper(void* arg, const char* key, void* item)
 {
-  player_t* player = item;
-  if (player_getChar(player) == arg) {
-    return player;
+  void** container = arg;
+  char* targetCharID = container[1];
+  player_t* currPlayer = item;
+
+  // matches player with target ID
+  if (player_getChar(currPlayer) == *targetCharID) {
+    container[0] = currPlayer;
   }
-return NULL;
 }
 
 /************* repeatMovePlayerHelper **********/
 static void
-repeatMovePlayerHelper(grid_t* grid, player_t* player, game_t* game, char directionChar, int directionValue)
+repeatMovePlayerHelper(player_t* player, char directionChar, int directionValue)
 {
+  grid_t* grid = game_getGrid(game);   // in-game grid
+  // character player is trying to move to
+  char next = grid_getActive(grid)[player_getPos(player) + directionValue];
+  
   // as long as we encounter a roomtile/passagetile/goldtile/player, move
-  while (grid_getActive(grid)[player_getPos(player)+directionValue] == ROOMTILE 
-    || grid_getActive(grid)[player_getPos(player)+directionValue] == PASSAGETILE
-    || grid_getActive(grid)[player_getPos(player)+directionValue] == GOLDTILE 
-    || isupper(grid_getActive(grid)[player_getPos(player)+directionValue]) != 0) {
-    
-    // move player
-    movePlayerHelper(grid, player, game, directionChar, directionValue);
-
+  while (next == ROOMTILE || next == PASSAGETILE || next == GOLDTILE 
+         || isupper(next) != 0) {
+    // move player and update next char
+    movePlayerHelper(player, directionChar, directionValue);
+    next = grid_getActive(grid)[player_getPos(player) + directionValue];
   }
 }
 
@@ -627,16 +640,26 @@ repeatMovePlayerHelper(grid_t* grid, player_t* player, game_t* game, char direct
 // then propogate up the chain
 // too drunk to figure out ATM but its gotta happen
 // also this doesn't handle cases where players move in passages
-static void
-movePlayerHelper(grid_t* grid, player_t* player, game_t* game, char directionChar, int directionValue)
+static bool
+movePlayerHelper(player_t* player, char directionChar, int directionValue)
 {
-  //TODO: change this to just 1 switch statement
-  if (grid_getActive(grid)[player_getPos(player)+directionValue] == ROOMTILE 
-    || grid_getActive(grid)[player_getPos(player)+directionValue] == PASSAGETILE
-    || grid_getActive(grid)[player_getPos(player)+directionValue] == GOLDTILE 
-    || isupper(grid_getActive(grid)[player_getPos(player)+directionValue]) != 0) {
+  player_t* bumpedPlayer = NULL; // player that current "mover" "collides" with
+  char bumpedPlayerCharID;       // that player's char representation on the map
+  hashtable_t* playerTable = game_getPlayers(game); // table of players
+  grid_t* grid = game_getGrid(game); // in-game grid      
+  int playerPos;                 // in game position of current player
+  int bumpedPos;                 // position of bumped player, if they exist
 
-    char next = grid_getActive(grid)[player_getPos(player)+directionValue];
+  // grid tile that client is trying to move to 
+  const char next = grid_getActive(grid)[player_getPos(player) + directionValue];
+  // char representation of moving player on map
+  const char playerCharID = player_getCharID(player); 
+  
+  playerPos = player_getPos(player);
+
+  // if the move is valid (does not hit a wall or similar)
+  if (next == ROOMTILE || next == PASSAGETILE || next == GOLDTILE 
+     || isupper(next) != 0) {
 
     // if we land on a pile of gold
     if (next == GOLDTILE) {
@@ -645,154 +668,125 @@ movePlayerHelper(grid_t* grid, player_t* player, game_t* game, char directionCha
     pickupGold(player, game_getPiles(game));
 
     // update map with removed gold pile and new player position
-    grid_replace(grid, player_getPos(player), ROOMTILE);
-    grid_replace(grid, player_getPos(player)+directionValue, PLAYERCHAR);
+    grid_revertTile(grid, player_getPos(player));
+    grid_replace(grid, player_getPos(player) + directionValue, 
+                 playerCharID);
 
     // update player's position
-    player_setPos(player, player_getPos(player)+directionValue);
+    player_setPos(player, player_getPos(player) + directionValue);
     
     // if we hit another player, handle collision
-    } else if (isalpha(next)) {
+    } else if (isupper(next) != 0) {
 
+      // holds two items to pass into iterator
+      void* container[2] = {bumpedPlayer, &next}; 
       // iterate over the hashtable to find the player bumped into
-      player_t* bumpedPlayer;
-      hashtable_t* playerHash = game_getPlayers(game);
-      //TODO: fix bug here, currently assigning bumpedPLayer to a function pointer
-      hashtable_iterate(playerHash, next, bumpedPlayer = moveIterateHelper);
-
-      // update map with the new positions of both players
-      char bumpedPlayerSymbol = player_getChar(bumpedPlayer);
-      grid_replace(grid, player_getPos(player), bumpedPlayerSymbol);
-      grid_replace(grid, player_getPos(bumpedPlayer), PLAYERCHAR);
+      // assigns bumpedPlayer
+      hashtable_iterate(playerTable, container, moveIterateHelper);
 
       // switch the positions of the colliding players
-      int currentPos = player_getPos(player);
-      int bumpedPos = player_getPos(bumpedPlayer);
+      bumpedPos = player_getPos(bumpedPlayer);
       player_setPos(player, bumpedPos);
-      player_setPos(bumpedPlayer, currentPos);
+      player_setPos(bumpedPlayer, playerPos);
+      
+      // update map with the new positions of both players
+      bumpedPlayerCharID = player_getCharID(bumpedPlayer);
+      grid_replace(grid, player_getPos(bumpedPlayer), bumpedPlayerCharID);
+      grid_replace(grid, player_getPos(player), playerCharID);
 
+    // if normal move, no gold or collision
     } else {
-      // update player position
-      player_setPos(player, player_getPos(player)+directionValue);
-
-      // update map
-      grid_replace(grid, player_getPos(player), ROOMTILE);
-      grid_replace(grid, player_getPos(player)+ directionValue, PLAYERCHAR);
+      // revert player's old position to reference
+      grid_revertTile(grid, player_getPos(player));
+      
+      // then set their new position and update map accordingly
+      player_setPos(player, player_getPos(player) + directionValue);
+      grid_replace(grid, player_getPos(player) + directionValue, playerCharID);
     }
 
+    // if move is invalid log and do nothing
     } else {
-      fprintf(stderr, "Invalid move");
+      log_s("invalid move request from %s", player_getName(player));
     }
-
 }
 
 /**************** movePlayer *************/
 //TODO : ACCOUNT FOR /N AT END OF LINE? 
 //TODO : UPDATE ALL PLAYER VISION?
+//TODO: booleans bro
 static void 
 movePlayer(grid_t* grid, player_t* player, game_t* game, char directionChar)
 {
-  // if move is lowercase
-  if (directionChar == "h" || directionChar == "l" || directionChar == "j" || directionChar == "k" 
-  || directionChar == "y" || directionChar == "u" || directionChar == "b" || directionChar == "n") {
-
-    // switch statement for single space movement
-      switch(directionChar) {
-
-        // single move right case
-        case 'l' :
-          movePlayerHelper(grid, player, game, directionChar, 1);
-          break;
-
-        // single move left case
-        case 'h' :
-          movePlayerHelper(grid, player, game, directionChar, -1);
-          break;
-
-        // single move up case 
-        case 'k' :
-          movePlayerHelper(grid, player, game, directionChar, -grid_getNumColumns(grid));
-          break;
-
-        // single move down case
-        case 'j' :
-          movePlayerHelper(grid, player, game, directionChar, +grid_getNumColumns(grid));
-          break;
-
-        // single move down left case
-        case 'b' :
-          movePlayerHelper(grid, player, game, directionChar, -grid_getNumColumns(grid)-1);
-          break;
-
-        // single move down right case
-        case 'n' :
-          movePlayerHelper(grid, player, game, directionChar, -grid_getNumColumns(grid)+1);
-          break;
-
-        // single move up left case
-        case 'y' :
-          movePlayerHelper(grid, player, game, directionChar, +grid_getNumColumns(grid)-1);
-          break;
-
-        // single move up right case
-        case 'u' :
-          movePlayerHelper(grid, player, game, directionChar, +grid_getNumColumns(grid)+1);
-          break;
-
-      }
-
-      // if move is capitalized
-      } else if(isupper(directionChar)) {
-
-      // switch statement to handle all cases of repeat movement
-      switch(directionChar) {
-
-        // repeat move right case
-        case 'L' :
-          repeatMovePlayerHelper(grid, player, game, directionChar, 1);
-          break;
-
-        // repeat move left case
-        case 'H' :
-          repeatMovePlayerHelper(grid, player, game, directionChar, -1);
-          break;
-
-        // repeat move up case 
-        case 'K' :
-          repeatMovePlayerHelper(grid, player, game, directionChar, -grid_getNumColumns(grid));
-          break;
-
-        // repeat move down case
-        case 'J' :
-          repeatMovePlayerHelper(grid, player, game, directionChar, +grid_getNumColumns(grid));
-          break;
-
-        // repeat move down left case
-        case 'B' :
-          repeatMovePlayerHelper(grid, player, game, directionChar, -grid_getNumColumns(grid)-1);
-          break;
-
-        // repeat move down right case
-        case 'N' :
-          repeatMovePlayerHelper(grid, player, game, directionChar, -grid_getNumColumns(grid)+1);
-          break;
-
-        // repeat move up left case
-        case 'Y' :
-          repeatMovePlayerHelper(grid, player, game, directionChar, +grid_getNumColumns(grid)-1);
-          break;
-
-        // repeat move up right case
-        case 'U' :
-          repeatMovePlayerHelper(grid, player, game, directionChar, +grid_getNumColumns(grid)+1);
-          break;
-
-      }
-
-  } else {
-    fprintf(stderr, "invalid direction input\n");
+  // switch statement for single space movement
+  switch(directionChar) {
+    // single move right case
+    case 'l' :
+      movePlayerHelper(player, directionChar, 1);
+      break;
+    // single move left case
+    case 'h' :
+      movePlayerHelper(player, directionChar, -1);
+      break;
+    // single move up case 
+    case 'k' :
+      movePlayerHelper(player, directionChar, -grid_getNumColumns(grid));
+      break;
+    // single move down case
+    case 'j' :
+      movePlayerHelper(player, directionChar, +grid_getNumColumns(grid));
+      break;
+    // single move down left case
+    case 'b' :
+      movePlayerHelper(player, directionChar, -grid_getNumColumns(grid)-1);
+      break;
+    // single move down right case
+    case 'n' :
+      movePlayerHelper(player, directionChar, -grid_getNumColumns(grid)+1);
+      break;
+    // single move up left case
+    case 'y' :
+      movePlayerHelper(player, directionChar, +grid_getNumColumns(grid)-1);
+      break;
+    // single move up right case
+    case 'u' :
+      movePlayerHelper(player, directionChar, +grid_getNumColumns(grid)+1);
+      break;
+    // repeat move right case
+    case 'L' :
+      repeatMovePlayerHelper(player, directionChar, 1);
+      break;
+    // repeat move left case
+    case 'H' :
+      repeatMovePlayerHelper(player, directionChar, -1);
+      break;
+    // repeat move up case 
+    case 'K' :
+      repeatMovePlayerHelper(player, directionChar, -grid_getNumColumns(grid));
+      break;
+    // repeat move down case
+    case 'J' :
+      repeatMovePlayerHelper(player, directionChar, +grid_getNumColumns(grid));
+      break;
+    // repeat move down left case
+    case 'B' :
+      repeatMovePlayerHelper(player, directionChar, -grid_getNumColumns(grid)-1);
+      break;
+    // repeat move down right case
+    case 'N' :
+      repeatMovePlayerHelper(player, directionChar, -grid_getNumColumns(grid)+1);
+      break;
+    // repeat move up left case
+    case 'Y' :
+      repeatMovePlayerHelper(player, directionChar, +grid_getNumColumns(grid)-1);
+      break;
+    // repeat move up right case
+    case 'U' :
+      repeatMovePlayerHelper(player, directionChar, +grid_getNumColumns(grid)+1);
+      break;
+    // default to log and ignore
+    default:
+      log_c("invalid char: %c in movePlayer", directionChar);
   }
-
 }
 
 /******************* updateClientState *************/
@@ -820,7 +814,7 @@ static void updateClientState(char* map)
  * returns true when loop should end 
  */
 // TODO: This must return true at some point for message_loop to end
-// should happen on pickupGold, make it work somehow
+// should happen on pickupGold, make it work somehow (booleans my dudes)
 static bool handleMessage(void* arg, const addr_t from, const char* message)
 {
   char key;                            // key input from key message
@@ -1024,7 +1018,6 @@ static void sendDisplay(player_t* player, char* displayString) {
 
   // build string
   temp = realloc(output, strlen(output) + strlen(displayString) + 1);
-  // TODO: check about asserts on monday
   mem_assert(temp, "could not realloc in sendDisplay\n");
 
   output = temp;
