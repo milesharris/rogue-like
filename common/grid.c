@@ -364,8 +364,7 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
       vision[left] = 1;
     }
     else if(reference[left] != '.' && !wallFound){
-      //fprintf(stdout, "left: %d\n", left);
-      vision[left] = 1; //  possible bug
+      vision[left] = 1;
       wallFound = true;
     } else {
       vision[left] = -1;
@@ -439,6 +438,10 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
               vision[currPos] = 1;
               wallFound = true;
             } else { // otherwise we've already seen a wall, so this point is not visible
+              // if statements such as this subordinate non-visible determinations to visible ones, 
+              // so if a tile is first found to be visible and later is deemed non-visible, it remains marked as visible
+              // the result is a guarantee all visible tiles will be marked visible, with the caveat that certain 
+              // non-visible tiles also marked visible, this is also documented in the README.md file
               if(vision[currPos] == 0){
                 vision[currPos] = -1;
               }
@@ -454,21 +457,13 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
               pos2 = coordinatesToPos(grid, rounded + 1, posCoor[1] + step);
             }
             
-            if((reference[pos1] == '.' || reference[pos2] == '.') && !wallFound){ // haven't hit a wall yet, and current position is between room tilesi
-              if(vision[pos1] == 0){
-                vision[pos1] = 1;
-              }
-              if(vision[pos2] == 0){
-                vision[pos2] = 1;
-              }
+            if((reference[pos1] == '.' || reference[pos2] == '.') && !wallFound){ // haven't hit a wall yet, and current position is between room tiles
+              vision[pos1] = 1;
+              vision[pos2] = 1;
             }
             else if(!wallFound){ // haven't found a wall yet, but the current position hits a wall
-              if(vision[pos1] == 0){
-                vision[pos1] = 1;
-              }
-              if(vision[pos2] == 0){
-                vision[pos2] = 1;
-              }
+              vision[pos1] = 1;
+              vision[pos2] = 1;
               wallFound = true;
             } else { // we've already see a wall, current position is not visible
               if(vision[pos1] == 0){
@@ -533,20 +528,12 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
             }
             
             if((reference[pos1] == '.' || reference[pos2] == '.') && !wallFound){
-              if(vision[pos1] == 0){
-                vision[pos1] = 1;
-              }
-              if(vision[pos2] == 0){
-                vision[pos2] = 1;
-              }
+              vision[pos1] = 1;
+              vision[pos2] = 1;
             }
             else if(!wallFound){
-              if(vision[pos1] == 0){
-                vision[pos1] = 1;
-              }
-              if(vision[pos2] == 0){
-                vision[pos2] = 1;
-              }
+              vision[pos1] = 1;
+              vision[pos2] = 1;
               wallFound = true;
             } else {
               if(vision[pos1] == 0){
@@ -619,6 +606,13 @@ int main(const int argc, char* argv[])
   grid_revertTile(grid, 2);
 
   printf("Active map after reversion: \n%s\n", active);
+  
+  // test containsEmptyTile function
+  if( grid_containsEmptyTile(grid) ){
+    printf("Successfully detected empty tile\n");
+  } else {
+    printf("Failed to detect empty tile\n");
+  }
 
   grid_delete(grid);
   // exit successfully after test completion
@@ -627,6 +621,7 @@ int main(const int argc, char* argv[])
 #endif
 
 #ifdef VISIONTEST
+// created a separate vision unit test, because the challenges involved with developing grid_calculateVision meant a lot of testing was required and it made sense for it to have a independent unit test
 int 
 main(int argc, char* argv[])
 {
@@ -636,47 +631,98 @@ main(int argc, char* argv[])
    exit(1);
  }
  
+ // test the map filepath is valid
  FILE* fp = fopen(argv[1], "r");
  if( fp == NULL ){
    fprintf(stderr, "Invalid map pathname\n");
    exit(2);
  }
  fclose(fp);
-
+  
+ // create new grid
  grid_t* grid = grid_new(argv[1]);
  if( grid == NULL ){
    fprintf(stderr, "Grid creation failure\n");
    exit(3);
  }
-
+ 
+ // initialize vision array to correct size
  int vision[grid->mapLen];
- int pos = 1395;
- //int pos = ((grid->numColumns + 1) * 2) + 6;
-
-
+ // specific location chosen to illustrate features vision behavior with corners
+ int pos = 1397;
+ // initialize vision to zeros
  for(int i = 0; i < grid->mapLen; i++){
   vision[i] = 0;
  }
-
- calculateVision(grid, pos, vision); 
+ // populate vision array
+ grid_calculateVision(grid, pos, vision); 
  fprintf(stdout, "\n");
  char* reference = grid_getReference(grid);
+
  for(int i = 0; i < grid->mapLen; i++){
+   // inserting new lines in correct spots
    if(i % (grid->numColumns+1)==0){
     fprintf(stdout, "\n");
    }
+   // print player location as @ char
    else if( i == pos ){
     fprintf(stdout, "@");
    }
    else if(vision[i] == 1){
-       //int point[2];
-       //posToCoordinates(grid, i, point);
-       //fprintf(stdout, "coor: (%d,%d)\n", point[0],point[1]);
       fprintf(stdout, "%c", reference[i]);
    } else {
       fprintf(stdout, " ");
    }
  }
+ fprintf(stdout, "\n");
+
+ // testing with a new position this time in a tunnel
+ pos = 594;
+ // resetting vision
+ for(int i = 0; i < grid->mapLen; i++){
+  vision[i] = 0;
+ }
+ // repopulate vision array
+ grid_calculateVision(grid, pos, vision);
+ fprintf(stdout, "\n----- map boundary ------------------------------------------------------------\n");
+ // repeating the test code from above with new position
+ for(int i = 0; i < grid->mapLen; i++){
+   if(i % (grid->numColumns+1) == 0){
+     fprintf(stdout, "\n");
+   }
+   else if( i == pos ){
+     fprintf(stdout, "@");
+   }
+   else if( vision[i] == 1){
+    fprintf(stdout, "%c", reference[i]);
+   } else {
+     fprintf(stdout, " ");
+   }
+ }
+ fprintf(stdout, "\n");
+
+ // testing a third position
+ pos = 1055;
+ for(int i = 0; i < grid->mapLen; i++){
+   vision[i] = 0;
+ }
+ grid_calculateVision(grid, pos, vision);
+ fprintf(stdout, "\n----- map boundary ------------------------------------------------------------\n");
+
+ for(int i = 0; i < grid->mapLen; i++){
+   if(i % (grid->numColumns+1) == 0){
+     fprintf(stdout, "\n");
+   }
+   else if( i == pos ){
+     fprintf(stdout, "@");
+   }
+   else if( vision[i] == 1 ){
+     fprintf(stdout, "%c", reference[i]);
+   } else {
+     fprintf(stdout, " ");
+   }
+ }
+ fprintf(stdout, "\n");
 
  grid_delete(grid);
  
