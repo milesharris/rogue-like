@@ -913,7 +913,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
     
     // send just playername to handlePlayerConnect
     char* content = messageCopy + strlen("PLAY ");
-    
+
     // returns false on failure to create player
     if ( ! handlePlayerConnect(content, from)) {
       message_send(from, "ERROR failed to add you to game\n");

@@ -159,6 +159,7 @@ game_new(int* piles, grid_t* grid)
   }
 
   // initialize attributes to default values or parameters
+  game->players = players;
   game->numPlayers = 0;
   game->lastCharID = defaultCharID;
   game->piles = piles;
