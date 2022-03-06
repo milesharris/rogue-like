@@ -36,12 +36,18 @@ typedef struct game {
     grid_t* grid;         // current game grid
     int lastCharID;       // most recent 'player.charID'
     int numPlayers;       // number of players in a game
+    char* mapfile;        // filepath of the in-game map
 } game_t;
 
 /**************** getters ****************/
 grid_t* game_getGrid(game_t* game)
 {
   return game ? game->grid : NULL;
+}
+
+char* game_getMapfile(game_t* game)
+{
+  return game ? game->mapfile : NULL;
 }
 
 int* game_getPiles(game_t* game)
@@ -165,6 +171,7 @@ game_new(int* piles, grid_t* grid)
   game->piles = piles;
   game->remainingGold = MAXGOLD;
   game->grid = grid;
+  game->mapfile = grid_getMapfile(grid);
 
   return game;
 }

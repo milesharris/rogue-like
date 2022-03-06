@@ -271,14 +271,15 @@ static int* generateGold(grid_t* grid, int* piles, int* seed)
  */
 static bool handlePlayerConnect(char* playerName, addr_t from)
 {
-  player_t* player;                    // stores information for given player
-  int nameLen;                         // length of playerName
-  int randPos;                         // random position to drop player
-  int mapLen;                          // length of in game map
-  grid_t* grid;                        // game grid
-  char* activeMap;                     // active map of current game
-  int lastCharID;                      // most recently assigned player 'character'
-  bool emptySpace = false;             // true iff there is > 1 ROOMTILE in map
+  player_t* player;                      // stores information for given player
+  int nameLen;                           // length of playerName
+  int randPos;                           // random position to drop player
+  int mapLen;                            // length of in game map
+  grid_t* grid;                          // game grid
+  char* activeMap;                       // active map of current game
+  int lastCharID;                        // most recently assigned player 'character'
+  bool emptySpace = false;               // true iff there is > 1 ROOMTILE in map
+  char* mapfile = game_getMapfile(game); // game map used to initialize player vision
 
   // check params (non-critical)
   if (playerName == NULL) {
@@ -323,7 +324,7 @@ static bool handlePlayerConnect(char* playerName, addr_t from)
 
   // initialize player and add to hashtable
   // create and check player
-  if ((player = player_new(playerName)) == NULL) {
+  if ((player = player_new(playerName, mapfile)) == NULL) {
     log_s("could not create player named: %s", playerName);
     // critical malloc error
     return false;
@@ -394,8 +395,9 @@ static bool handlePlayerConnect(char* playerName, addr_t from)
  */
 static bool handleSpectator(addr_t from)
 { 
-  player_t* spectator;                 // struct to hold the spectator
-
+  player_t* spectator;                   // struct to hold the spectator
+  char* mapfile = game_getMapfile(game); // mapfile used by the server
+  
   // check params
   if ( ! message_isAddr(from)) {
     log_v("invalid address in handleSpectator");
@@ -417,7 +419,7 @@ static bool handleSpectator(addr_t from)
   }
 
   // create special spectator player if one not present
-  if ((spectator = player_new("spectator")) == NULL) {
+  if ((spectator = player_new("spectator", mapfile)) == NULL) {
     log_v("could not allocate player struct for spectator");
     // critical error
     return false;
