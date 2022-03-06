@@ -64,16 +64,16 @@ int
 main(const int argc, char* argv[])
 {
   char* filepathname = NULL;           // filepath of the map file
-  int seed;                            // seed for random number gen (optional)
+  int* seed = NULL;                    // seed for random number gen (optional)
   int ourPort;                         // port that server runs on
   
   // initialize logging
   log_init(stderr);
 
   // validate arguments
-  parseArgs(argc, argv, &filepathname, &seed); log_v("parseargs passed\n");
+  parseArgs(argc, argv, &filepathname, seed); log_v("parseargs passed\n");
   // generate necessary data structures
-  if (! initializeGame(filepathname, &seed)) { 
+  if (! initializeGame(filepathname, seed)) { 
     log_v("failed to initialize game, exiting non-zero");
     log_done();
     exit(3);
