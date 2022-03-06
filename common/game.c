@@ -21,6 +21,7 @@ static const int MAXGOLD = 250;        // max # gold in game
 
 /**************** file-local functions ****************/
 static void game_getAtAddrHelper(void* arg, const char* key, void* item);
+static void game_summaryHelper(void* arg, const char* key, void* item);
 
 /*************** global types and functions ***************/
 /* that is, visible outside of this file */
