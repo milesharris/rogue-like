@@ -1,6 +1,8 @@
 /* 
- * server.c - implements the server for Nuggets game
- *
+ * server.c - defines implements the server for Nuggets game
+ * more comments to come
+ * see design and implementation specs for more details
+ * CS50, Winter 2022, team 1
  */
 
 #include <stdio.h>
@@ -19,7 +21,7 @@
 
 // global constants
 static const int goldMaxNumPiles = 30; // maximum number of gold piles
-static const int goldMinNumPiles = 5;  // minimum number of gold piles
+//static const int goldMinNumPiles = 5;  // minimum number of gold piles
 static const char ROOMTILE = '.';      // char representation of room floor
 static const char PASSAGETILE = '#';   // char representation of passage tile
 static const char GOLDTILE = '*';      // char representation of gold
@@ -33,17 +35,18 @@ static game_t* game;
 
 // function prototypes
 // initialization functions and utilities
-static void parseArgs(const int argc, char* argv, char** filepathname, int* seed);
-static bool initializeGame(char* filepathname, int seed);
-static int* generateGold(grid_t* grid, int seed);
+static void parseArgs(const int argc, char* argv[], char** filepathname, int* seed);
+static bool initializeGame(char* filepathname, int* seed);
+static int* generateGold(grid_t* grid, int* piles, int* seed);
 static bool strToInt(const char string[], int* number);
 // game state changes
 static bool handlePlayerConnect(char* playerName, const addr_t from);
 static bool pickupGold(player_t* player);
 static void pickupGoldHelper(void* arg, const char* key, void* item);
-static bool movePlayer(grid_t* grid, player_t* player, game_t* game, char directionChar);
+static bool movePlayer(player_t* player, char directionChar);
 static bool movePlayerHelper(player_t* player, int directionValue);
-static void updateClientState(char* map);
+static void updatePlayersVision();
+static void updateHelper(void* arg, const char* key, void* item);
 static bool handleSpectator(addr_t from);
 static void handlePlayerQuit(player_t* player);
 static void gameOver(bool normalExit);
@@ -54,14 +57,14 @@ static bool handleMessage(void* arg, const addr_t from, const char* message);
 static void sendGold(player_t* player, int goldCollected);
 static bool handleKey(char key, addr_t from);
 static void sendOK(player_t* player);
-
+static void sendDisplay(player_t* player, char* displayString);
 
 /******************** main *******************/
 int
 main(const int argc, char* argv[])
 {
   char* filepathname = NULL;           // filepath of the map file
-  int seed = NULL;                     // seed for random number gen (optional)
+  int seed;                            // seed for random number gen (optional)
   int ourPort;                         // port that server runs on
   
   // initialize logging
@@ -70,7 +73,7 @@ main(const int argc, char* argv[])
   // validate arguments
   parseArgs(argc, argv, &filepathname, &seed); log_v("parseargs passed\n");
   // generate necessary data structures
-  if (! initializeGame(filepathname, seed)) { 
+  if (! initializeGame(filepathname, &seed)) { 
     log_v("failed to initialize game, exiting non-zero");
     log_done();
     exit(3);
@@ -114,7 +117,7 @@ main(const int argc, char* argv[])
 /****************** parseArgs ******************/
 /* Parses arguments for use in server.c */
 static void
-parseArgs(const int argc, char* argv, char** filepathname, int* seed)
+parseArgs(const int argc, char* argv[], char** filepathname, int* seed)
 {
   FILE* fp;                            // file pointer to map file for testing
 
@@ -163,7 +166,7 @@ static bool strToInt(const char string[], int* number)
 /******************* initializeGame *************/
 /* set up data structures for game */
 static bool
-initializeGame(char* filepathname, int seed)
+initializeGame(char* filepathname, int* seed)
 {
   grid_t* serverGrid = NULL;           // master grid held by server
   int* goldPiles = NULL;               // array of gold piles
@@ -175,7 +178,7 @@ initializeGame(char* filepathname, int seed)
   }
 
   // randomly distribute gold
-  goldPiles = generateGold(serverGrid, seed); log_v("generated gold");
+  goldPiles = generateGold(serverGrid, goldPiles, seed); log_v("generated gold");
 
   // create global game state
   game = game_new(goldPiles, serverGrid); log_v("created game");
@@ -187,15 +190,13 @@ initializeGame(char* filepathname, int seed)
 /* randomly generates piles of gold and adds them to the map 
  * helper for initializeGame
  */
-static int* generateGold(grid_t* grid, int seed)
+static int* generateGold(grid_t* grid, int* piles, int* seed)
 {
-  int piles[goldMaxNumPiles] = {-1};         // array of piles
   int totalGold = GoldTotal;                 // max gold
   int currPile = 0;                          // value (gold) of current pile
   int currIndex = 0;                         // index into array
   int tmp = 0;                               // temp int
   char* active = grid_getActive(grid);       // server active map
-  char* reference = grid_getReference(grid); // server reference map
   int gridLen = grid_getMapLen(grid);        // length of map string
   int pilesInserted = 0;
   int slot = 0;
@@ -204,9 +205,13 @@ static int* generateGold(grid_t* grid, int seed)
   if ( seed == NULL ) {
     srand(getpid());
   } else {
-    srand(seed);
+    srand(*seed);
   }
-
+  // create and check piles array
+  piles = mem_malloc_assert((sizeof(int) * goldMaxNumPiles), 
+                            "failed to alloc piles\n");
+  memset(piles, -1, (size_t)(goldMaxNumPiles));
+  
   // generating random piles
   // loops until no more gold to distribute
   while ( totalGold > 0 ) {
@@ -371,11 +376,8 @@ static bool handlePlayerConnect(char* playerName, addr_t from)
   sendGold(player, 0);                 // a player has no gold on entry
   sendGrid(from);
   sendOK(player);
-  // calculate vision for all players based on new player joining 
-  // TODO: calculate their vision and send it to player with DISPLAY message
-  //player_setVision(player, );
-  player_updateVision(player, grid, player_getPos);
-  //TODO: send new game map (including new player char) to other players
+  // update all player's vision with new information
+  updatePlayersVision();
   // return after successfully initializing all player values
   return true;
 }
@@ -429,8 +431,9 @@ static bool handleSpectator(addr_t from)
   }
   
   // set relevant attributes if added to game
+  // note that vision does not need to be send
+  // spectator's display is always server's active map
   player_setAddr(spectator, from);
-  player_setVision(spectator, grid_getActive(game_getGrid(game)));
   
   // update spectator client
   sendGrid(from);
@@ -457,7 +460,7 @@ static void handlePlayerQuit(player_t* player)
   }
 
   // remove player from the game map and send message
-  grid_revertTile(gameGrid, player_getPos);
+  grid_revertTile(gameGrid, player_getPos(player));
   message_send(player_getAddr(player), "QUIT Thanks for playing!\n");
 }
 
@@ -534,7 +537,7 @@ static bool
 pickupGold(player_t* player)
 {
   size_t arrayLen;                     // length of game.piles
-  int piles[] = game_getPiles(game);   // array of gold piles in game
+  int* piles = game_getPiles(game);   // array of gold piles in game
 
   // check params and values
   if (player == NULL || piles == NULL) {
@@ -556,11 +559,10 @@ pickupGold(player_t* player)
     game_subtractGold(game, piles[i]);
     piles[i] = -1;
 
-    // then send GOLD and DISPLAY to all players, this time w/ 0 picked up
-    // so that all clients get updated   
-    // TODO: more here, read in morning and check 
+    // then GOLD to all players, this time w/ 0 picked up
     hashtable_iterate(game_getPlayers(game), NULL, pickupGoldHelper);
-
+    // update all client's vision
+    updatePlayersVision();
   }
 
   // return up the chain to trigger gameOver if all gold collected
@@ -573,9 +575,11 @@ pickupGold(player_t* player)
 }
 
 /************* pickupGoldHelper *************/
-/* sends the GOLD and DISPLAY messages to a client
+/* sends the GOLD message to a client saying they picked up 0 gold
  * for use in pickupGold, passed to hashtable_iterate
  * with the appropriate information after its called in pickupGold
+ * serves only to update all players about the game state
+ * when a player picks up gold
  */
 static void pickupGoldHelper(void* arg, const char* key, void* item) 
 {
@@ -584,18 +588,6 @@ static void pickupGoldHelper(void* arg, const char* key, void* item)
 
   // update each player regarding gold remaining
   sendGold(player, 0);
-
-  // handle the spectator seperately as they see all
-  if (strcmp(player_getName(player), "spectator") == 0) {
-    player_setVision(player, grid_getActive(game_getGrid(game)));
-    // sends just the active map in the display message
-    sendDisplay(player, grid_getActive(game_getGrid(game)));
-    return;
-  }
-  // update each player's display
-  player_updateVision(player, game_getGrid(game), player_getPos(player));
-
-
 }
 /************** moveIterateHelper*********/
 /* helper to pass into hashtable_iterate in moveHelper
@@ -616,7 +608,7 @@ moveIterateHelper(void* arg, const char* key, void* item)
     return;
   }
   // matches player with target ID
-  if (player_getChar(currPlayer) == *targetCharID) {
+  if (player_getCharID(currPlayer) == *targetCharID) {
     container[0] = currPlayer;
   }
 }
@@ -648,13 +640,13 @@ repeatMovePlayerHelper(player_t* player, int directionValue)
   }
   // returns false if game continues, true if it ends
   return gameOverFlag;
-
 }
 
 /************** movePlayerHelper ********/
 /* handles the actual in-game process of moving players
  * takes the player to move, and an integer representing the distance
  * to shift the player's position in the in-game map
+ * moves the player, picks up gold if necessary, and updates all vision
  * returns true if player picks up gold and there is no gold remaining
  * false if otherwise
  */
@@ -670,7 +662,8 @@ movePlayerHelper(player_t* player, int directionValue)
   bool gameOverFlag = false;     // becomes true if pickupGold returns true
 
   // grid tile that client is trying to move to 
-  const char next = grid_getActive(grid)[player_getPos(player) + directionValue];
+  // TODO: not sure if this will cast
+  char next = grid_getActive(grid)[player_getPos(player) + directionValue];
   // char representation of moving player on map
   const char playerCharID = player_getCharID(player); 
   
@@ -726,18 +719,26 @@ movePlayerHelper(player_t* player, int directionValue)
   } else {
       log_s("invalid move request from %s", player_getName(player));
   }
+  // update all client's vision after a move
+  updatePlayersVision();
   // true if no more gold in the game, false if otherwise
   return gameOverFlag;
 }
 
 /**************** movePlayer *************/
-//TODO : ACCOUNT FOR /N AT END OF LINE? 
-//TODO : UPDATE ALL PLAYER VISION?
+/* Master function to move a given player
+ * takes a player and a pre-validated move key as parameters 
+ * Mostly a switch statement calling helper function for each case
+ * returns false if a move does not collect the last pile of gold
+ * so that message_loop will continue looping
+ * and true if the last pile is collected or a critical error occurred
+ * so that message_loop will stop looping and call gameOver()
+ */ 
 static bool 
-movePlayer(grid_t* grid, player_t* player, game_t* game, char directionChar)
+movePlayer(player_t* player, char directionChar)
 {
   bool gameOverFlag = false;           // set to true if all gold collected
-
+  grid_t* grid = game_getGrid(game);   // game grid
   // calls appropriate function for given move char
   switch(directionChar) {
     // single move right case
@@ -750,27 +751,33 @@ movePlayer(grid_t* grid, player_t* player, game_t* game, char directionChar)
       break;
     // single move up case 
     case 'k' :
-      gameOverFlag = movePlayerHelper(player, -grid_getNumColumns(grid));
+      // make move negative, and subtract 1 to account for newline
+      gameOverFlag = movePlayerHelper(player, 0 - grid_getNumColumns(grid) - 1);
       break;
     // single move down case
     case 'j' :
-      gameOverFlag = movePlayerHelper(player, +grid_getNumColumns(grid));
+      // add 1 to account for newline
+      gameOverFlag = movePlayerHelper(player, grid_getNumColumns(grid) + 1);
       break;
     // single move down left case
     case 'b' :
-      gameOverFlag = movePlayerHelper(player, -grid_getNumColumns(grid) - 1);
+      // ncolumns is 1 less than the move needed for pure down
+      gameOverFlag = movePlayerHelper(player, grid_getNumColumns(grid));
       break;
     // single move down right case
     case 'n' :
-      gameOverFlag = movePlayerHelper(player, -grid_getNumColumns(grid) + 1);
+      // add 2 to ncolumns, 1 to get pure down then 1 to go right
+      gameOverFlag = movePlayerHelper(player, grid_getNumColumns(grid) + 2);
       break;
     // single move up left case
     case 'y' :
-      gameOverFlag = movePlayerHelper(player, +grid_getNumColumns(grid) - 1);
+      // make negative, then subtract 1 for pure up then 1 to go left
+      gameOverFlag = movePlayerHelper(player, 0 - grid_getNumColumns(grid) - 2);
       break;
     // single move up right case
     case 'u' :
-      gameOverFlag = movePlayerHelper(player, +grid_getNumColumns(grid) + 1);
+      // make negative to move up, ncolumns is 1 less than a pure up
+      gameOverFlag = movePlayerHelper(player, 0 - grid_getNumColumns(grid));
       break;
     // repeat move right case
     case 'L' :
@@ -782,27 +789,27 @@ movePlayer(grid_t* grid, player_t* player, game_t* game, char directionChar)
       break;
     // repeat move up case 
     case 'K' :
-      gameOverFlag = repeatMovePlayerHelper(player, -grid_getNumColumns(grid));
+      gameOverFlag = repeatMovePlayerHelper(player, 0 - grid_getNumColumns(grid) - 1);
       break;
     // repeat move down case
     case 'J' :
-      gameOverFlag = repeatMovePlayerHelper(player, +grid_getNumColumns(grid));
+      gameOverFlag = repeatMovePlayerHelper(player, grid_getNumColumns(grid) + 1);
       break;
     // repeat move down left case
     case 'B' :
-      gameOverFlag = repeatMovePlayerHelper(player, -grid_getNumColumns(grid) - 1);
+      gameOverFlag = repeatMovePlayerHelper(player, grid_getNumColumns(grid));
       break;
     // repeat move down right case
     case 'N' :
-      gameOverFlag = repeatMovePlayerHelper(player, -grid_getNumColumns(grid) + 1);
+      gameOverFlag = repeatMovePlayerHelper(player, grid_getNumColumns(grid) + 2);
       break;
     // repeat move up left case
     case 'Y' :
-      gameOverFlag = repeatMovePlayerHelper(player, +grid_getNumColumns(grid) - 1);
+      gameOverFlag = repeatMovePlayerHelper(player, 0 - grid_getNumColumns(grid) - 2);
       break;
     // repeat move up right case
     case 'U' :
-      gameOverFlag = repeatMovePlayerHelper(player, +grid_getNumColumns(grid) + 1);
+      gameOverFlag = repeatMovePlayerHelper(player, 0 - grid_getNumColumns(grid));
       break;
     // default to log and ignore
     default:
@@ -811,6 +818,40 @@ movePlayer(grid_t* grid, player_t* player, game_t* game, char directionChar)
   }
   // returns true if all gold picked up
   return gameOverFlag;
+}
+
+/****************** updateHelper ******************/
+/* helper function for updatePlayersVision
+ * passed into hashtable_iterate
+ * does all the work of updating vision and sending display messages
+ */
+static void updateHelper(void* arg, const char* key, void* item)
+{
+  player_t* currPlayer = item;         // current player struct in hashtable
+  grid_t* playerVisionGrid;            // current player's vision
+  int playerPos;                       // current player's position
+  
+  // handle spectator differently
+  if (strcmp(player_getName(currPlayer), "spectator") == 0) {
+    log_v("updating spectator vision");
+    // send them the active map, don't bother changing their vision
+    sendDisplay(currPlayer, grid_getActive(game_getGrid(game)));
+    return;
+  }
+
+  // handle normal players
+  log_s("updating %s's vision", player_getName(currPlayer));
+  playerVisionGrid = player_getVision(currPlayer);
+  playerPos = player_getPos(currPlayer);
+
+  // calculate and update a player's vision grid
+  player_updateVision(currPlayer, game_getGrid(game), playerPos);
+  // replace the character at the player's position with the '@' symbol
+  // in the player's local vision string
+  grid_replace(playerVisionGrid, playerPos, PLAYERCHAR);
+
+  // message player with updated vision
+  sendDisplay(currPlayer, grid_getActive(player_getVision(currPlayer)));
 }
 
 /******************* updatePlayersVision *************/
@@ -831,10 +872,8 @@ static void updatePlayersVision()
   if ((playerTable = game_getPlayers(game)) == NULL) {
     return;
   }
-  // CREATE AN ITERATOR AND ITERATE THROUGH HASHTABLE OF PLAYERS
-  //iterate through players
-  //  call updateVision on a player
-  //  send the player the updated map
+  // iterate over all players and update their vision
+  hashtable_iterate(playerTable, NULL, updateHelper);
 }
 
 /************** MESSAGING FUNCTIONS ***************/
@@ -866,14 +905,24 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
   log_s("received message: %s", message);
 
   if (strncmp("PLAY ", message, 5) == 0) { 
-    // send just name to helper func
-    const char* content = message + strlen("PLAY ");
+    
+    // workaround for param being const but needs to be modified
+    char* messageCopy = mem_malloc_assert(strlen(message) + 1, 
+                                          "failed to alloc message copy\n");
+    strcpy(messageCopy, message);
+    
+    // send just playername to handlePlayerConnect
+    char* content = messageCopy + strlen("PLAY ");
+    
     // returns false on failure to create player
     if ( ! handlePlayerConnect(content, from)) {
       message_send(from, "ERROR failed to add you to game\n");
+      free(messageCopy);
       // stop looping as critical error has occurred
       return true;
     }
+    // clean up memory
+    free(messageCopy);
   } 
   else if (strncmp("SPECTATE", message, 8) == 0) {
     if ( ! handleSpectator(from)) { 
@@ -921,7 +970,7 @@ static bool handleKey(char key, addr_t from)
 
   // check params
   if ( ! message_isAddr(from)) {
-    log_V("invalid address in handleKey");
+    log_v("invalid address in handleKey");
     // non-critical
     return false;
   }
@@ -957,7 +1006,7 @@ static bool handleKey(char key, addr_t from)
       return true;
     } else {
       // all keys except 'Q' are movement keys
-      gameOverFlag = movePlayer(game_getGrid(game), player, game, key);
+      gameOverFlag = movePlayer(player, key);
       // will be true if player moved and collected last pile of gold
       return gameOverFlag;
     }
@@ -1057,7 +1106,7 @@ static void sendDisplay(player_t* player, char* displayString) {
   
   // check params
   if (player == NULL || displayString == NULL) {
-    return NULL;
+    return;
   }
   // get and check address
   to = player_getAddr(player);
