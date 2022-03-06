@@ -15,7 +15,7 @@ const char DEFAULTCHAR = '?';
 
 typedef struct player {
   char* name;           // name provided by client
-  grid_t* vision;       // map of user vision
+  char* vision;         // map of user vision
   addr_t address;       // address of player
   char charID;          // character representation in game
   int pos;              // index position in the map string
@@ -25,7 +25,7 @@ typedef struct player {
 //TODO: Document additions to player module in readme and specs
 /**** getter functions ***************************************/
 
-grid_t* 
+char* 
 player_getVision(player_t* player)
 {
   return player ? player->vision : NULL;
@@ -63,8 +63,8 @@ player_getAddr(player_t* player)
 
 /***** setter functions **************************************/
 
-grid_t* 
-player_setVision(player_t* player, grid_t* vision)
+char* 
+player_setVision(player_t* player, char* vision)
 {
   if ( player == NULL || vision == NULL ) {
     return NULL;
@@ -258,16 +258,25 @@ int
 main(const int argc, char* argv[])
 {
   char* name = NULL;
+  grid_t* grid = NULL;
   
   // check command line args
-  if( argc != 2 ){
+  if( argc != 3 ){
     fprintf(stderr, "Player test: invalid num args\n");
     exit(1);
   }
   
   // assign name
   name = argv[1];
+  // create grid
+  grid = grid_new(argv[2]);
   
+  
+  if( grid == NULL ){
+    fprintf(stdout, "Failure to create grid\n");
+    exit(2);
+  }
+
   // creating a new player
   fprintf(stdout, "Creating new player... ");
   player_t* player = player_new(name);
@@ -276,7 +285,7 @@ main(const int argc, char* argv[])
     fprintf(stdout, "success!\n");
   } else {
     fprintf(stdout, "failed to create new player\n");
-    exit(2);
+    exit(3);
   }
 
   fprintf(stdout, "name given: %s\n", name);
@@ -289,12 +298,16 @@ main(const int argc, char* argv[])
   fprintf(stdout, "Getting player gold... got %d\n", player_getGold(player));
 
   // tesing pos
-  fprintf(stdout, "\nSetting player pos to 100... ");
-  int position = player_setPos(player, 100);
+  fprintf(stdout, "\nSetting player pos to 1394... ");
+  int position = player_setPos(player, 1394);
   fprintf(stdout, " set to %d\n", position);
   fprintf(stdout, "Getting player pos... got %d\n", player_getPos(player));
 
   // testing vision 
+  grid_t* vision = grid_new(argv[2]);
+
+
+  // --
   char example[] = "example str";
   fprintf(stdout, "Setting vision to %s... ", example);
   player_setVision(player, example);

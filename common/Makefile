@@ -25,7 +25,7 @@ gridtest: grid.c
 
 playertest: player.c
 	$(CC) $(CFLAGS) -DPLAYERTEST player.c -o $@
-	$(VALGRIND) ./playertest testname &> playertest.out
+	$(VALGRIND) ./playertest testname ../maps/main.txt &> playertest.out
 
 visiontest: grid.c
 	$(CC) $(CFLAGS) -DVISIONTEST grid.c $L/libcs50.a -o $@
