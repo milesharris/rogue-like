@@ -368,15 +368,14 @@ static bool handlePlayerConnect(char* playerName, addr_t from)
     }
   }
   
+  sendGold(player, 0);                 // a player has no gold on entry
+  sendGrid(from);
+  sendOK(player);
+  // calculate vision for all players based on new player joining 
   // TODO: calculate their vision and send it to player with DISPLAY message
   //player_setVision(player, );
   player_updateVision(player, grid, player_getPos);
   //TODO: send new game map (including new player char) to other players
-  
-  sendGold(player, 0);                 // a player has no gold on entry
-  sendGrid(from);
-  sendOK(player);
-
   // return after successfully initializing all player values
   return true;
 }
@@ -814,9 +813,24 @@ movePlayer(grid_t* grid, player_t* player, game_t* game, char directionChar)
   return gameOverFlag;
 }
 
-/******************* updateClientState *************/
-static void updateClientState(char* map)
+/******************* updatePlayersVision *************/
+/* updates vision for all players currently in the game
+ * handles spectator seperately as vision functions don't work on them
+ * then sends the DISPLAY message with appropriate vision string
+ * takes no parameters and returns void
+ */
+static void updatePlayersVision()
 {
+  hashtable_t* playerTable;            // table of players in game
+
+  // check global variable
+  if (game == NULL) {
+    return;
+  }
+  // assign and check playerTable
+  if ((playerTable = game_getPlayers(game)) == NULL) {
+    return;
+  }
   // CREATE AN ITERATOR AND ITERATE THROUGH HASHTABLE OF PLAYERS
   //iterate through players
   //  call updateVision on a player
