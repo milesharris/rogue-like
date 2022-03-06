@@ -272,10 +272,11 @@ coordinatesToPos(grid_t* grid, int x, int y)
 }
 
 /***** calculateVision ****************************************/
-/* Calculates a player's current vision, returning a boolean array, the same size as our map, indicating which points are visible
+/* Calculates a player's current vision, 
+ * modifies a given integer array representing the player's vision
  * Parameters:  pos - a player's current position
  *              grid - the grid struct for the map
- *              vision - a boolean array with values -1 (not visible), 0 (unvisited) or 1 (visible)
+ *              vision - an integer array with values -1 (not visible), 0 (unvisited) or 1 (visible)
  *
  * Returns:     void
  */
