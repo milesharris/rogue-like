@@ -10,7 +10,6 @@
 #include <ctype.h>
 #include <unistd.h>
 #include "file.h"
-#include "set.h"
 #include "grid.h"
 #include "mem.h"
 #include "game.h"
@@ -22,11 +21,11 @@
 static const int goldMaxNumPiles = 40; // maximum number of gold piles
 static const int goldMinNumPiles = 5;  // minimum number of gold piles
 static const char ROOMTILE = '.';      // char representation of room floor
-static const char PASSAGETILE = '#';    // char representation of passage tile
+static const char PASSAGETILE = '#';   // char representation of passage tile
 static const char GOLDTILE = '*';      // char representation of gold
 static const char PLAYERCHAR = '@';    // player's view of themself
 static const int MaxNameLength = 50;   // max number of chars in playerName
-static const int MaxPlayers = 26;      // maximum number of players
+static const int MaxPlayers = 27;      // maximum number of players
 static const int GoldTotal = 250;      // amount of gold in the game
 
 // global game state
@@ -40,14 +39,14 @@ static int* generateGold(grid_t* grid, int seed);
 static bool strToInt(const char string[], int* number);
 // game state changes
 static bool handlePlayerConnect(char* playerName, const addr_t from);
-static void pickupGold(player_t* player, int piles[]);
+static bool pickupGold(player_t* player, int piles[]);
+static void pickupGoldHelper(void* arg, const char* key, void* item);
 static void movePlayer(grid_t* grid, player_t* player, game_t* game, char directionChar);
 static void updateClientState(char* map);
 static bool handleSpectator(addr_t from);
 static void handlePlayerQuit(player_t* player);
 static void gameOver(bool normalExit);
 static void gameOverHelper(void* arg, const char* key, void* item);
-
 // messaging functions
 static void sendGrid(addr_t to);
 static bool handleMessage(void* arg, const addr_t from, const char* message);
@@ -93,14 +92,12 @@ main(const int argc, char* argv[])
   // handles inbound messages until gameOver or fatal error
   if (message_loop(NULL, 0, NULL, NULL, handleMessage)) {
     // if loop completed successfully, send quit info and close down module
-    // call quitGame
-
     // clean up and exit
     gameOver(true);
     message_done();
+    log_v("quitting game normally");
     log_done();
     exit(0);
-
   } else {
     // if loop quits unexpectedly
     // send quit message with error explanation
@@ -473,9 +470,9 @@ static void gameOver(bool normalExit)
   hashtable_t* playerTable;            // table of players in game
   playerTable = game_getPlayers(game);
   char* gameSummary;                   // game over summary table
+  void* container[2];                  // to pass into hashtable_iterate
 
-  //TODO clean this up, make consistent with func below
-  // exit process if error
+  // exit procedure if error
   if ( ! normalExit) {
     // log, send message, and clean up memory then return to main
     log_v("calling gameOver(error)");
@@ -484,14 +481,20 @@ static void gameOver(bool normalExit)
     return;
   }
 
+  // procedure if game successfully completed
   log_v("calling gameOver(success)");
-  // exit process if game successfully completed
   // build summary table
   gameSummary = game_buildSummary(game);
-  // send to all clients using DISPLAY
 
-  // clean up and return to main
+  // fill container
+  container[0] = &normalExit;
+  container[1] = gameSummary;
 
+  // send table to all clients
+  hashtable_iterate(playerTable, container, gameOverHelper);
+  // clean up
+  game_delete(game);
+  free(gameSummary);
 }
 
 /************** gameOverHelper *************/
@@ -500,39 +503,98 @@ static void gameOver(bool normalExit)
  */
 static void gameOverHelper(void* arg, const char* key, void* item)
 {
-  char* gameSummary;                   // summary of game for normal exit
-  // extract player and exit status from param
+  void** container = arg;
+  // extract player and exit status from arg
   player_t* player = item;
-  bool* normalExit = arg;
+  bool* normalExit = container[0];
+  char* gameSummary = container[1];    // summary of game for normal exit
+  // set the 
+  addr_t to = player_getAddr(player);
 
   // send current player a quit message
   if (! *normalExit) {
-    message_send(player_getAddr(player), 
-               "QUIT server encountered a critical error\n");
+    message_send(to, "QUIT server encountered a critical error\n");
   } else {
-    // dont do this here actually, runtime too long
-    gameSummary = buildGameSummary(game);
-    message_send(player_getAddr(player), gameSummary);
+    log_s("sending summary: %s", gameSummary);
+    message_send(to, gameSummary);
   }
-  
 }
 
 /***************** pickupGold *************/
 /* handles case where client picks up gold
- * more to come later
+ * returns true if last pile picked up (no more gold left after player gets it)
+ * so that it can be returned up the chain all the way to handleMessage
+ * so that handleMessage can exit properly
+ * more to come later i guess
  */
-static void 
+static bool
 pickupGold(player_t* player, int piles[])
 {
-  //update player gold total
-  //update total gold remainging
-  //update map to reflect absence of pile - DONE IN PLAYER MOVEMENT
-  //update piles[] to reflect absence of pile
-  //send GOLD message to all clients
-  //update clients to state change
+  size_t arrayLen;                     // length of game.piles
 
+  // check params
+  if (player == NULL || piles == NULL) {
+    log_v("bad params in pickupGold");
+    return false;
+  }
+
+  // update player gold total
+  arrayLen = (sizeof(game_getPiles(game)) / sizeof(int));
+  for (int i = 0; i < arrayLen; i++) {
+    // skip empty piles
+    if (piles[i] == -1) {
+      continue;
+    }
+    // modify player and message
+    player_addGold(player, piles[i]);
+    sendGold(player, piles[i]);
+    // modify game state
+    game_subtractGold(game, piles[i]);
+    piles[i] = -1;
+
+    // then send GOLD and DISPLAY to all players, this time w/ 0 picked up
+    // so that all clients get updated   
+    // TODO: more here, read in morning and check 
+    hashtable_iterate(game_getPlayers(game), NULL, pickupGoldHelper);
+
+  }
+
+  // return up the chain to trigger gameOver
+  if (game_getRemainingGold(game) == 0) {
+    return true;
+  }
+
+  // don't trigger gameOver if there is still gold
+  return false;
 }
 
+/************* pickupGoldHelper *************/
+/* sends the GOLD and DISPLAY messages to a client
+ * for use in pickupGold, passed to hashtable_iterate
+ * with the appropriate information after its called in pickupGold
+ */
+static void pickupGoldHelper(void* arg, const char* key, void* item) 
+{
+  // extract from params
+  player_t* player = item;
+
+  // update each player regarding gold remaining
+  sendGold(player, 0);
+
+  // handle the spectator seperately as they see all
+  if (strcmp(player_getName(player), "spectator") == 0) {
+    player_setVision(player, grid_getActive(game_getGrid(game)));
+    // TODO: getVision returns a grid, need a string
+    sendDisplay(player, player_getVision(player));
+    return;
+  }
+  // update each player's display
+
+  // calc vision here as well
+  // TODO: look at how vision works and determine what to send
+  player_updateVision(player, game_getGrid(game), player_getPos);
+
+}
 /************** moveIterateHelper*********/
 static player_t*
 moveIterateHelper(void* arg, const char* word, void* item)
@@ -558,13 +620,17 @@ repeatMovePlayerHelper(grid_t* grid, player_t* player, game_t* game, char direct
     movePlayerHelper(grid, player, game, directionChar, directionValue);
 
   }
-
 }
 
 /************** movePlayerHelper ********/
+//TODO: modify so that it can return a boolean when gold picked up
+// then propogate up the chain
+// too drunk to figure out ATM but its gotta happen
+// also this doesn't handle cases where players move in passages
 static void
 movePlayerHelper(grid_t* grid, player_t* player, game_t* game, char directionChar, int directionValue)
 {
+  //TODO: change this to just 1 switch statement
   if (grid_getActive(grid)[player_getPos(player)+directionValue] == ROOMTILE 
     || grid_getActive(grid)[player_getPos(player)+directionValue] == PASSAGETILE
     || grid_getActive(grid)[player_getPos(player)+directionValue] == GOLDTILE 
@@ -584,9 +650,8 @@ movePlayerHelper(grid_t* grid, player_t* player, game_t* game, char directionCha
 
     // update player's position
     player_setPos(player, player_getPos(player)+directionValue);
-
+    
     // if we hit another player, handle collision
-
     } else if (isalpha(next)) {
 
       // iterate over the hashtable to find the player bumped into
@@ -730,8 +795,6 @@ movePlayer(grid_t* grid, player_t* player, game_t* game, char directionChar)
 
 }
 
-
-
 /******************* updateClientState *************/
 static void updateClientState(char* map)
 {
@@ -757,6 +820,7 @@ static void updateClientState(char* map)
  * returns true when loop should end 
  */
 // TODO: This must return true at some point for message_loop to end
+// should happen on pickupGold, make it work somehow
 static bool handleMessage(void* arg, const addr_t from, const char* message)
 {
   char key;                            // key input from key message
@@ -939,9 +1003,33 @@ static void sendOK(player_t* player)
 
 /************* sendDisplay ****************/
 /* this function sends the client the string it is supposed to render
- * it takes a player and a string as a parameter (probably)
+ * it takes a player and a string as parameters
  * returns early on error
  */
 static void sendDisplay(player_t* player, char* displayString) {
-  //TODO: code here, to finish after I know what vision looks like
+  
+  addr_t to;                           // address to send message to
+  char* output = "DISPLAY\n";          // beginning of display messages
+  char* temp;                          // temp to check realloc results
+  
+  // check params
+  if (player == NULL || displayString == NULL) {
+    return NULL;
+  }
+  // get and check address
+  to = player_getAddr(player);
+  if ( ! message_isAddr(to)) {
+    return;
+  }
+
+  // build string
+  temp = realloc(output, strlen(output) + strlen(displayString) + 1);
+  // TODO: check about asserts on monday
+  mem_assert(temp, "could not realloc in sendDisplay\n");
+
+  output = temp;
+  strcat(output, displayString);
+  // send message and clean up
+  message_send(to, output);
+  free(output);
 }
