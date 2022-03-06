@@ -6,16 +6,23 @@
 
 #include <stdlib.h>
 #include <stdio.h>
-#include "grid.h"
+#include <ctype.h>
 #include <string.h>
+#include "message.h"
+#include "grid.h"
+
+const char DEFAULTCHAR = '?';
 
 typedef struct player {
   char* name;           // name provided by client
-  grid_t* vision;         // map of user vision
+  grid_t* vision;       // map of user vision
+  addr_t address;       // address of player
+  char charID;          // character representation in game
   int pos;              // index position in the map string
   int gold;             // amount of gold held by player
 } player_t;
 
+//TODO: Document additions to player module in readme and specs
 /**** getter functions ***************************************/
 
 grid_t* 
@@ -40,6 +47,18 @@ int
 player_getGold(player_t* player)
 {
   return player ? player->gold : 0;
+}
+
+char
+player_getCharID(player_t* player)
+{
+  return player ? player->charID : DEFAULTCHAR;
+}
+
+addr_t
+player_getAddr(player_t* player)
+{
+  return player->address;
 }
 
 /***** setter functions **************************************/
@@ -74,6 +93,25 @@ player_setGold(player_t* player, int gold)
   return player->gold;
 }
 
+addr_t
+player_setAddr(player_t* player, addr_t address)
+{
+  player->address = address;
+  return player->address;
+}
+
+char
+player_setCharID(player_t* player, char newChar)
+{
+  // return '?' if invalid params
+  if (player == NULL || isalpha(newChar) == 0) {
+    return DEFAULTCHAR;
+  }
+  // set and return
+  player->charID = newChar;
+  return player->charID;
+}
+
 /***** player_new ********************************************/
 /* see player.h for details */ 
 
@@ -94,11 +132,12 @@ player_new(char* name)
   // copy param string into player struct
   strcpy(player->name, name);
 
-  // initialize all other values to defaults and return
+  // initialize all other values address to defaults and return
   player->vision = NULL;
   player->pos = -1;
   player->gold = 0;
-  
+  player->charID = DEFAULTCHAR;
+  player->address = message_noAddr();
   return player;
 }
 
@@ -115,6 +154,78 @@ player_addGold(player_t* player, int newGold)
   // add given amount of gold to player's total and return new value
   player->gold += newGold;
   return player->gold;
+}
+
+/***** player_summarize **************************************/
+/* see header file for details */
+char* player_summarize(player_t* player)
+{
+  char* summary;                       // summary string to return
+  char charID;                         // player character ID
+  int purse;                           // player's total gold
+  char* name;                          // player's name
+  size_t toAlloc;                      // memory to allocate to summary
+  
+  // amount to add to length of name in malloc
+  // holds room for a 10-character number, a space, 2 characters, and '\0'
+  const int MEMADD = 14;
+  // check param
+  if (player == NULL) {
+    return NULL;
+  }
+  // values for string
+  charID = player_getCharID(player);
+  purse = player_getGold(player);
+  name = player_getName(player);
+  
+  // determine amount of memory to malloc
+  // magic numbers: 
+  toAlloc = strlen(name) + MEMADD;
+  // allocate and check success
+  if ((summary = malloc(toAlloc)) == NULL) {
+    return NULL;
+  }
+  sprintf(summary, "%c%10d %s\n", charID, purse, name);
+  return summary;
+}
+
+/***** player_updateVision ***********************************/
+/* see player.h for full details */
+void
+player_updateVision(player_t* player, grid_t* grid, int pos)
+{
+  // check parameters
+  if( player == NULL || grid == NULL || pos < 0 ){
+    return;
+  }
+  // initialize the vision array
+  size_t mapLen = grid_getMapLen(grid);
+  int vision[mapLen];
+  // populate vision array
+  grid_calculateVision(grid, pos, vision);
+  
+  // grabbing necessary map copies
+  grid_t* currPlayerVision = player_getVision(player);
+  char* playerActive = grid_getActive(currPlayerVision);
+  char* globalActive = grid_getActive(currPlayerVision);
+
+  if ( playerActive == NULL || globalActive == NULL || currPlayerVision == NULL ) {
+    return;
+  }
+
+  // updating PAST player vision to reference map values
+  for(int i = 0; i < mapLen; i++){
+    if( isblank(playerActive[i]) == 0 ){ // is slot is not whitespace, revert it to its reference map tile
+      grid_revertTile(currPlayerVision, i);
+    } 
+    // check if the corresponding value in vision has a value of 1, in which case we use the active map value for this position
+    if( vision[i] == 1 ){
+      char newChar =  globalActive[i];
+      grid_replace(currPlayerVision, i, newChar);
+    }
+  }
+
+  return;
 }
 
 /***** player_delete *****************************************/

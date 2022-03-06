@@ -12,6 +12,7 @@
 #define __PLAYER_H
 
 #include "grid.h"
+#include "message.h"
 
 /***** global types ******************************************/
 
@@ -24,6 +25,7 @@ typedef struct player player_t; // opaque to users of the module
 
 grid_t* player_getVision(player_t* player);
 char* player_getName(player_t* player);
+char player_getCharID(player_t* player);
 
 /* player_getPos will return -1 upon receiving a NULL argument, this is the default pos value */
 int player_getPos(player_t* player);
@@ -31,12 +33,18 @@ int player_getPos(player_t* player);
 /* player_getGold will return a 0 upon receiving a NULL argument, this is the default gold value */
 int player_getGold(player_t* player);
 
+/* NOTE: This DOES NOT check for NULL within func. Only use on non-null players */
+addr_t player_getAddr(player_t* player);
+
 /***** setters ***********************************************/
 /* set the value of various attributes of a player struct and return their value */
 
 grid_t* player_setVision(player_t* player, grid_t* vision);
+char player_setChar(player_t* player, char newChar);
+
 int player_setPos(player_t* player, int pos);
 int player_setGold(player_t* player, int gold);
+addr_t player_setAddr(player_t* player, addr_t address);
 
 /***** player_new ********************************************/
 /* Initalized a new 'player' struct
@@ -48,7 +56,6 @@ int player_setGold(player_t* player, int gold);
  *
  * returns player_t* if successful, otherwise NULL
  */
-
 player_t* player_new(char* name);
 
 /***** player_addGold ****************************************/
@@ -59,12 +66,27 @@ player_t* player_new(char* name);
  */
 int player_addGold(player_t* player, int newGold);
 
+/***** player_updateVision ***********************************/
+/* Updates a player's vision to that of a given position
+ * Takes a point to a player struct, a pointer to a grid struct, and a position integer
+ * Returns void
+ */
+
+void player_updateVision(player_t* player, grid_t* grid, int pos);
+
+/***** player_summarize **************************************/
+/* creates a summary of the player for printing when the game ends
+ * returns the properly formatted summary string on success
+ * note that the returned string is malloc'd, caller responsible for free'ing
+ * returns NULL if failure to allocate memory or if player is NULL
+ */
+char* player_summarize(player_t* player);
+
 /***** player_delete *****************************************/
 /* Deletes a player struct allocated memory. 
  * Takes a pointer to a player struct, to be deleted, as parameter
  * Returns void
  */
-
 void player_delete(player_t* player);
 
 #endif
