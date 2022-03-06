@@ -140,6 +140,14 @@ player_new(char* name, char* mapfile)
   // the mapfile is verified by the server before ever being passed here
   grid_t* vision = grid_new(mapfile);
 
+  // initialize values of active vision to be white space
+  char* active = grid_getActive(vision);
+  int mapLen = grid_getMapLen(vision);
+
+  for(int i = 0; i < mapLen; i++){
+    active[i] = ' ';
+  }
+
   // initialize all other values address to defaults and return
   player->vision = vision;
   player->pos = -1;
@@ -220,20 +228,9 @@ player_updateVision(player_t* player, grid_t* grid)
   
   // grabbing necessary map copies
   grid_t* currPlayerVision = player_getVision(player);
-  char* playerActive;
 
-  if( currPlayerVision == NULL ){
-    player->
-    playerActive = grid_getActive(grid);
-    // initialize a new players vision to nothing
-    for(int i = 0; i < mapLen; i++){
-      playerActive[i] = ' ';
-    }  
-  } else {
-    playerActive = grid_getActive(currPlayerVision);
-  }
-
-  char* globalActive = grid_getActive(currPlayerVision);
+  char* globalActive = grid_getActive(grid);
+  char* playerActive = grid_getActive(currPlayerVision);
 
   if ( globalActive == NULL ) {
     return;

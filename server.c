@@ -707,7 +707,7 @@ movePlayerHelper(player_t* player, int directionValue)
       bumpedPlayerCharID = player_getCharID(bumpedPlayer);
       grid_replace(grid, player_getPos(bumpedPlayer), bumpedPlayerCharID);
       grid_replace(grid, player_getPos(player), playerCharID);
-
+r
     // if normal move, no gold or collision
     } else {
       // revert player's old position to reference
@@ -847,7 +847,7 @@ static void updateHelper(void* arg, const char* key, void* item)
   playerPos = player_getPos(currPlayer);
 
   // calculate and update a player's vision grid
-  player_updateVision(currPlayer, game_getGrid(game), playerPos);
+  player_updateVision(currPlayer, game_getGrid(game));
   // replace the character at the player's position with the '@' symbol
   // in the player's local vision string
   grid_replace(playerVisionGrid, playerPos, PLAYERCHAR);
