@@ -167,8 +167,8 @@ char* player_summarize(player_t* player)
   size_t toAlloc;                      // memory to allocate to summary
   
   // amount to add to length of name in malloc
-  // holds room for a 10-character number, a space, a character, and '\0'
-  const int MEMADD = 13;
+  // holds room for a 10-character number, a space, 2 characters, and '\0'
+  const int MEMADD = 14;
   // check param
   if (player == NULL) {
     return NULL;
@@ -185,7 +185,7 @@ char* player_summarize(player_t* player)
   if ((summary = malloc(toAlloc)) == NULL) {
     return NULL;
   }
-  sprintf(summary, "%c%10d %s", charID, purse, name);
+  sprintf(summary, "%c%10d %s\n", charID, purse, name);
   return summary;
 }
 

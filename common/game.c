@@ -7,6 +7,7 @@
 #include <stdio.h>
 #include <stdlib.h>
 #include <stdbool.h>
+#include <string.h>
 #include "game.h"
 #include "grid.h"
 #include "hashtable.h"
@@ -171,14 +172,49 @@ game_new(int* piles, grid_t* grid)
 char* game_buildSummary(game_t* game) 
 {
   char* gameSummary;                   // summary string to return
+  
   // check param
   if (game == NULL) {
     return NULL;
   }
 
-  // TODO: use the new player_summarize to make each line
-  // maybe iterate through characters so I dont have to use iterate idk
+  // build start of summary
+  char* firstLine = "QUIT GAME OVER:\n";
+  if ((gameSummary = malloc(strlen(firstLine) + 1)) == NULL) {
+    return NULL;
+  }
+  strcpy(gameSummary, firstLine);
 
+  // fill in rest of table and return
+  hashtable_iterate(game->players, gameSummary, game_summaryHelper);
+  return gameSummary;
+}
+
+/*************** game_summaryHelper ***************/
+/* helper to build the summary table
+ * calls player_summarize on each player
+ * concatenates it to the string passed in through arg
+ * also reallocates string passed through arg to store 
+ * then free's the string
+ */
+static void game_summaryHelper(void* arg, const char* key, void* item)
+{
+  // extract from params
+  char* gameSummary = arg;
+  player_t* player = item;
+  char* toAdd = player_summarize(player);  // string to concat to summary
+  char* temp;                              // checks realloc success           
+  
+  // allocate enough memory to concat
+  temp = realloc(gameSummary, strlen(gameSummary) + strlen(toAdd) + 1);
+  // exit on malloc failure. 
+  if (temp == NULL) {
+    return;
+  }
+  gameSummary = temp;
+  // add the player's summary to the game string, then clean up memory
+  strcat(gameSummary, toAdd);
+  free(toAdd);
 }
 /***************** game_subtractGold **************/
 /* see game.h for details */
