@@ -36,3 +36,6 @@ Icon?
 
 ###########################################################################
 # custom additions below here; see also .gitignore files in subdirectories.
+# executable files
+server
+client

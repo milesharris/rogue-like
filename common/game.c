@@ -295,7 +295,8 @@ void
 game_delete(game_t* game)
 {
   if ( game != NULL ) {
-    game->piles = NULL;
+    // piles is a malloc'd int array
+    free(game->piles);
     // delete all players in game
     if (game->players != NULL) {
       // casts player_delete to satisfy hashtable_delete

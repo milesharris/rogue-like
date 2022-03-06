@@ -1,6 +1,8 @@
 /* 
- * server.c - implements the server for Nuggets game
- *
+ * server.c - defines implements the server for Nuggets game
+ * more comments to come
+ * see design and implementation specs for more details
+ * CS50, Winter 2022, team 1
  */
 
 #include <stdio.h>
@@ -19,7 +21,7 @@
 
 // global constants
 static const int goldMaxNumPiles = 30; // maximum number of gold piles
-static const int goldMinNumPiles = 5;  // minimum number of gold piles
+//static const int goldMinNumPiles = 5;  // minimum number of gold piles
 static const char ROOMTILE = '.';      // char representation of room floor
 static const char PASSAGETILE = '#';   // char representation of passage tile
 static const char GOLDTILE = '*';      // char representation of gold
@@ -33,9 +35,9 @@ static game_t* game;
 
 // function prototypes
 // initialization functions and utilities
-static void parseArgs(const int argc, char* argv, char** filepathname, int* seed);
-static bool initializeGame(char* filepathname, int seed);
-static int* generateGold(grid_t* grid, int seed);
+static void parseArgs(const int argc, char* argv[], char** filepathname, int* seed);
+static bool initializeGame(char* filepathname, int* seed);
+static int* generateGold(grid_t* grid, int* piles, int* seed);
 static bool strToInt(const char string[], int* number);
 // game state changes
 static bool handlePlayerConnect(char* playerName, const addr_t from);
@@ -44,7 +46,7 @@ static void pickupGoldHelper(void* arg, const char* key, void* item);
 static bool movePlayer(player_t* player, char directionChar);
 static bool movePlayerHelper(player_t* player, int directionValue);
 static void updatePlayersVision();
-static void updateHelper(void* arg, const char key, void* item);
+static void updateHelper(void* arg, const char* key, void* item);
 static bool handleSpectator(addr_t from);
 static void handlePlayerQuit(player_t* player);
 static void gameOver(bool normalExit);
@@ -55,14 +57,14 @@ static bool handleMessage(void* arg, const addr_t from, const char* message);
 static void sendGold(player_t* player, int goldCollected);
 static bool handleKey(char key, addr_t from);
 static void sendOK(player_t* player);
-
+static void sendDisplay(player_t* player, char* displayString);
 
 /******************** main *******************/
 int
 main(const int argc, char* argv[])
 {
   char* filepathname = NULL;           // filepath of the map file
-  int seed = NULL;                     // seed for random number gen (optional)
+  int seed;                            // seed for random number gen (optional)
   int ourPort;                         // port that server runs on
   
   // initialize logging
@@ -71,7 +73,7 @@ main(const int argc, char* argv[])
   // validate arguments
   parseArgs(argc, argv, &filepathname, &seed); log_v("parseargs passed\n");
   // generate necessary data structures
-  if (! initializeGame(filepathname, seed)) { 
+  if (! initializeGame(filepathname, &seed)) { 
     log_v("failed to initialize game, exiting non-zero");
     log_done();
     exit(3);
@@ -115,7 +117,7 @@ main(const int argc, char* argv[])
 /****************** parseArgs ******************/
 /* Parses arguments for use in server.c */
 static void
-parseArgs(const int argc, char* argv, char** filepathname, int* seed)
+parseArgs(const int argc, char* argv[], char** filepathname, int* seed)
 {
   FILE* fp;                            // file pointer to map file for testing
 
@@ -164,7 +166,7 @@ static bool strToInt(const char string[], int* number)
 /******************* initializeGame *************/
 /* set up data structures for game */
 static bool
-initializeGame(char* filepathname, int seed)
+initializeGame(char* filepathname, int* seed)
 {
   grid_t* serverGrid = NULL;           // master grid held by server
   int* goldPiles = NULL;               // array of gold piles
@@ -176,7 +178,7 @@ initializeGame(char* filepathname, int seed)
   }
 
   // randomly distribute gold
-  goldPiles = generateGold(serverGrid, seed); log_v("generated gold");
+  goldPiles = generateGold(serverGrid, goldPiles, seed); log_v("generated gold");
 
   // create global game state
   game = game_new(goldPiles, serverGrid); log_v("created game");
@@ -188,15 +190,13 @@ initializeGame(char* filepathname, int seed)
 /* randomly generates piles of gold and adds them to the map 
  * helper for initializeGame
  */
-static int* generateGold(grid_t* grid, int seed)
+static int* generateGold(grid_t* grid, int* piles, int* seed)
 {
-  int piles[goldMaxNumPiles] = {-1};         // array of piles
   int totalGold = GoldTotal;                 // max gold
   int currPile = 0;                          // value (gold) of current pile
   int currIndex = 0;                         // index into array
   int tmp = 0;                               // temp int
   char* active = grid_getActive(grid);       // server active map
-  char* reference = grid_getReference(grid); // server reference map
   int gridLen = grid_getMapLen(grid);        // length of map string
   int pilesInserted = 0;
   int slot = 0;
@@ -205,9 +205,13 @@ static int* generateGold(grid_t* grid, int seed)
   if ( seed == NULL ) {
     srand(getpid());
   } else {
-    srand(seed);
+    srand(*seed);
   }
-
+  // create and check piles array
+  piles = mem_malloc_assert((sizeof(int) * goldMaxNumPiles), 
+                            "failed to alloc piles\n");
+  memset(piles, -1, (size_t)(goldMaxNumPiles));
+  
   // generating random piles
   // loops until no more gold to distribute
   while ( totalGold > 0 ) {
@@ -427,8 +431,9 @@ static bool handleSpectator(addr_t from)
   }
   
   // set relevant attributes if added to game
+  // note that vision does not need to be send
+  // spectator's display is always server's active map
   player_setAddr(spectator, from);
-  player_setVision(spectator, grid_getActive(game_getGrid(game)));
   
   // update spectator client
   sendGrid(from);
@@ -455,7 +460,7 @@ static void handlePlayerQuit(player_t* player)
   }
 
   // remove player from the game map and send message
-  grid_revertTile(gameGrid, player_getPos);
+  grid_revertTile(gameGrid, player_getPos(player));
   message_send(player_getAddr(player), "QUIT Thanks for playing!\n");
 }
 
@@ -532,7 +537,7 @@ static bool
 pickupGold(player_t* player)
 {
   size_t arrayLen;                     // length of game.piles
-  int piles[] = game_getPiles(game);   // array of gold piles in game
+  int* piles = game_getPiles(game);   // array of gold piles in game
 
   // check params and values
   if (player == NULL || piles == NULL) {
@@ -603,7 +608,7 @@ moveIterateHelper(void* arg, const char* key, void* item)
     return;
   }
   // matches player with target ID
-  if (player_getChar(currPlayer) == *targetCharID) {
+  if (player_getCharID(currPlayer) == *targetCharID) {
     container[0] = currPlayer;
   }
 }
@@ -658,7 +663,7 @@ movePlayerHelper(player_t* player, int directionValue)
 
   // grid tile that client is trying to move to 
   // TODO: not sure if this will cast
-  const char next = grid_getActive(grid)[player_getPos(player) + directionValue];
+  char next = grid_getActive(grid)[player_getPos(player) + directionValue];
   // char representation of moving player on map
   const char playerCharID = player_getCharID(player); 
   
@@ -820,7 +825,7 @@ movePlayer(player_t* player, char directionChar)
  * passed into hashtable_iterate
  * does all the work of updating vision and sending display messages
  */
-static void updateHelper(void* arg, const char key, void* item)
+static void updateHelper(void* arg, const char* key, void* item)
 {
   player_t* currPlayer = item;         // current player struct in hashtable
   grid_t* playerVisionGrid;            // current player's vision
@@ -900,14 +905,24 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
   log_s("received message: %s", message);
 
   if (strncmp("PLAY ", message, 5) == 0) { 
-    // send just name to helper func
-    const char* content = message + strlen("PLAY ");
+    
+    // workaround for param being const but needs to be modified
+    char* messageCopy = mem_malloc_assert(strlen(message) + 1, 
+                                          "failed to alloc message copy\n");
+    strcpy(messageCopy, message);
+    
+    // send just playername to handlePlayerConnect
+    char* content = messageCopy + strlen("PLAY ");
+    
     // returns false on failure to create player
     if ( ! handlePlayerConnect(content, from)) {
       message_send(from, "ERROR failed to add you to game\n");
+      free(messageCopy);
       // stop looping as critical error has occurred
       return true;
     }
+    // clean up memory
+    free(messageCopy);
   } 
   else if (strncmp("SPECTATE", message, 8) == 0) {
     if ( ! handleSpectator(from)) { 
@@ -955,7 +970,7 @@ static bool handleKey(char key, addr_t from)
 
   // check params
   if ( ! message_isAddr(from)) {
-    log_V("invalid address in handleKey");
+    log_v("invalid address in handleKey");
     // non-critical
     return false;
   }
@@ -1091,7 +1106,7 @@ static void sendDisplay(player_t* player, char* displayString) {
   
   // check params
   if (player == NULL || displayString == NULL) {
-    return NULL;
+    return;
   }
   // get and check address
   to = player_getAddr(player);

@@ -1,12 +1,12 @@
 # Makefile for our Nuggets game
 # Adapted from top-level TSE Makefile
 # CS50, Winter 2022, team 1 
-C = ../common
-L = ../libcs50
-S = ../support
+C = ./common
+L = ./libcs50
+S = ./support
 LLIBS = $C/common.a $L/libcs50.a $S/support.a
 
-CFLAGS = -Wall -pedantic -std=c11 -ggdb $(FLAGS) -I$(LLIBS)
+CFLAGS = -Wall -pedantic -std=c11 -ggdb $(FLAGS) -I$C -I$L -I$S
 CC = gcc
 MAKE = make
 VALGRIND= valgrind --leak-check=full --show-leak-kinds=all
