@@ -25,6 +25,7 @@ hashtable_t* game_getPlayers(game_t* game);
 int game_getRemainingGold(game_t* game);
 int game_getLastCharID(game_t* game);
 int game_getNumPlayers(game_t* game);
+char* game_getMapfile(game_t* game);
 
 /* finds the player in the game with the given address
  * returns NULL if player not found or bad parameters

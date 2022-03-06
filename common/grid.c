@@ -30,6 +30,7 @@ typedef struct grid {
   size_t mapLen;                       // length of map string
   int numColumns;                      // number of rows in the map
   int numRows;                         // number of columns in the map
+  char* mapfile;                       // filepath of in-game grid
 } grid_t;
 
 /**************** global functions ****************/
@@ -47,6 +48,11 @@ static int coordinatesToPos(grid_t* grid, int x, int y);
 char* grid_getReference(grid_t* grid)
 {
   return grid ? grid->reference : NULL;
+}
+
+char* grid_getMapfile(grid_t* grid)
+{
+  return grid ? grid->mapfile : NULL;
 }
 
 char* grid_getActive(grid_t* grid)
@@ -109,6 +115,12 @@ grid_t* grid_new(char* mapFile)
 
     // number of colums == length of longest row
     grid->numColumns = longestRowLength(grid->reference);
+    
+    // copy mapfile into memory
+    grid->mapfile = mem_malloc_assert(strlen(mapFile) + 1, 
+                                      "failed to alloc mapfile in grid\n");
+    strcpy(grid->mapfile, mapFile);
+
     // return the "complete" grid only if all operations successful
     return grid;
 
@@ -186,6 +198,10 @@ void grid_delete(grid_t* grid)
 
   if (grid->reference != NULL) {
     mem_free(grid->reference);
+  }
+
+  if (grid->mapfile != NULL) {
+    mem_free(grid->mapfile);
   }
 
   // then free the struct itself

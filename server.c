@@ -64,16 +64,16 @@ int
 main(const int argc, char* argv[])
 {
   char* filepathname = NULL;           // filepath of the map file
-  int seed;                            // seed for random number gen (optional)
+  int* seed = NULL;                    // seed for random number gen (optional)
   int ourPort;                         // port that server runs on
   
   // initialize logging
   log_init(stderr);
 
   // validate arguments
-  parseArgs(argc, argv, &filepathname, &seed); log_v("parseargs passed\n");
+  parseArgs(argc, argv, &filepathname, seed); log_v("parseargs passed\n");
   // generate necessary data structures
-  if (! initializeGame(filepathname, &seed)) { 
+  if (! initializeGame(filepathname, seed)) { 
     log_v("failed to initialize game, exiting non-zero");
     log_done();
     exit(3);
@@ -271,14 +271,15 @@ static int* generateGold(grid_t* grid, int* piles, int* seed)
  */
 static bool handlePlayerConnect(char* playerName, addr_t from)
 {
-  player_t* player;                    // stores information for given player
-  int nameLen;                         // length of playerName
-  int randPos;                         // random position to drop player
-  int mapLen;                          // length of in game map
-  grid_t* grid;                        // game grid
-  char* activeMap;                     // active map of current game
-  int lastCharID;                      // most recently assigned player 'character'
-  bool emptySpace = false;             // true iff there is > 1 ROOMTILE in map
+  player_t* player;                      // stores information for given player
+  int nameLen;                           // length of playerName
+  int randPos;                           // random position to drop player
+  int mapLen;                            // length of in game map
+  grid_t* grid;                          // game grid
+  char* activeMap;                       // active map of current game
+  int lastCharID;                        // most recently assigned player 'character'
+  bool emptySpace = false;               // true iff there is > 1 ROOMTILE in map
+  char* mapfile = game_getMapfile(game); // game map used to initialize player vision
 
   // check params (non-critical)
   if (playerName == NULL) {
@@ -323,7 +324,7 @@ static bool handlePlayerConnect(char* playerName, addr_t from)
 
   // initialize player and add to hashtable
   // create and check player
-  if ((player = player_new(playerName)) == NULL) {
+  if ((player = player_new(playerName, mapfile)) == NULL) {
     log_s("could not create player named: %s", playerName);
     // critical malloc error
     return false;
@@ -394,8 +395,9 @@ static bool handlePlayerConnect(char* playerName, addr_t from)
  */
 static bool handleSpectator(addr_t from)
 { 
-  player_t* spectator;                 // struct to hold the spectator
-
+  player_t* spectator;                   // struct to hold the spectator
+  char* mapfile = game_getMapfile(game); // mapfile used by the server
+  
   // check params
   if ( ! message_isAddr(from)) {
     log_v("invalid address in handleSpectator");
@@ -417,7 +419,7 @@ static bool handleSpectator(addr_t from)
   }
 
   // create special spectator player if one not present
-  if ((spectator = player_new("spectator")) == NULL) {
+  if ((spectator = player_new("spectator", mapfile)) == NULL) {
     log_v("could not allocate player struct for spectator");
     // critical error
     return false;
@@ -913,7 +915,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
     
     // send just playername to handlePlayerConnect
     char* content = messageCopy + strlen("PLAY ");
-    
+
     // returns false on failure to create player
     if ( ! handlePlayerConnect(content, from)) {
       message_send(from, "ERROR failed to add you to game\n");
@@ -1101,8 +1103,8 @@ static void sendOK(player_t* player)
 static void sendDisplay(player_t* player, char* displayString) {
   
   addr_t to;                           // address to send message to
-  char* output = "DISPLAY\n";          // beginning of display messages
-  char* temp;                          // temp to check realloc results
+  char* initial = "DISPLAY\n";         // beginning of display messages
+  char* message;                       // final message sent to clients
   
   // check params
   if (player == NULL || displayString == NULL) {
@@ -1115,12 +1117,11 @@ static void sendDisplay(player_t* player, char* displayString) {
   }
 
   // build string
-  temp = realloc(output, strlen(output) + strlen(displayString) + 1);
-  mem_assert(temp, "could not realloc in sendDisplay\n");
-
-  output = temp;
-  strcat(output, displayString);
+  message = mem_malloc_assert(strlen(initial) + strlen(displayString) + 1, 
+                              "failed to alloc message in sendDisplay\n");
+  strcpy(message, initial);
+  strcat(message, displayString);
   // send message and clean up
-  message_send(to, output);
-  free(output);
+  message_send(to, message);
+  free(message);
 }

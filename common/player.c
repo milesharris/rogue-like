@@ -116,8 +116,13 @@ player_setCharID(player_t* player, char newChar)
 /* see player.h for details */ 
 
 player_t* 
-player_new(char* name)
+player_new(char* name, char* mapfile)
 {
+  // check params
+  if (name == NULL || mapfile == NULL) {
+    return NULL;
+  }
+  
   player_t* player = malloc(sizeof(player_t));
 
   // handle malloc error, return NULL if failure to allocate
@@ -126,14 +131,17 @@ player_new(char* name)
   } 
 
   // save a copy of the name string in memory and handle malloc failure
-  if ((player->name = malloc(sizeof(name))) == NULL) {
+  if ((player->name = malloc(strlen(name) + 1)) == NULL) {
     return NULL;
   }
   // copy param string into player struct
   strcpy(player->name, name);
 
+  // the mapfile is verified by the server before ever being passed here
+  grid_t* vision = grid_new(mapfile);
+
   // initialize all other values address to defaults and return
-  player->vision = NULL;
+  player->vision = vision;
   player->pos = -1;
   player->gold = 0;
   player->charID = DEFAULTCHAR;
