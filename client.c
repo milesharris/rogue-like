@@ -30,15 +30,6 @@ static bool handleInput(void* arg);
 // static global variable, player
 static player_t* player; 
 
-/* NOTES
- *
- * - need to do logging
- *
- * - see if it compiles
- */
-
-
-
 /********************* main ********************/
 int
 main(const int argc, char* argv[])
@@ -54,7 +45,8 @@ main(const int argc, char* argv[])
 
   // build server address
   const char* serverHost = argv[1];
-  const char* serverPort = argv[2]; // print port number? check specs
+  const char* serverPort = argv[2];
+  fprintf(stderr, "Port %s", serverPort); // log port number to stderr
   addr_t server; 
   if (!message_setAddr(serverHost, serverPort, &server)) {
     fprintf(stderr, "Failed to form address from %s %s\n", serverHost, serverPort);
@@ -139,7 +131,7 @@ static void joinGame(const addr_t to)
 /* initializes curses */
 static void initCurses()
 {
-  
+
   initscr();
   cbreak();
   noecho();
@@ -151,8 +143,7 @@ static void initCurses()
   
 /******************** handleMessage *****************/
 /* Skeleton for distributing messages depending on message type
- * Note: messages are parsed differently than requirements say. Make sure it works. 
- */
+ * Note: messages are parsed differently than requirements say.  */
 static bool handleMessage(void* arg, const addr_t from, const char* message)
 {
   // read first word and rest of message into separate strings
@@ -178,7 +169,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
     return handleError(remainder);
   }
 
-  // if GOLD or OK
+  // if GOLD or OK or other unknown message
   else {
     return updatePlayer(remainder, first);
   }  
@@ -204,6 +195,7 @@ static bool initialGrid(const char* gridInfo)
     return true;
   }
 
+  fprintf(stderr, "Game initialized successfully."); // log successful boot up
   return false;
 
 }
@@ -234,6 +226,7 @@ static bool leaveGame(const char* message)
   player_delete(player);
   // nothing to free?
 
+  fprintf(stderr, "Game ended without fatal error."); // log successful shutdown
   return true; // ends message loop
 
 }
@@ -296,11 +289,13 @@ static bool updatePlayer(const char* message, const char* first)
     return false;
   }
 
-  // if unidentifiable message type received, don't do anything
+  // if unidentifiable message type received, log error and move on
   else {
+    fprintf(stderr, "Unknown message type received: %s", first);
     return false;
   }
 }
+
 
 /********************* handleInput ******************/
 /* sends all valid input to server */
