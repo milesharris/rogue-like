@@ -485,7 +485,7 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
               midPos = coordinatesToPos(grid, mid, posCoor[1] + step);
             }
             
-            if(reference[midPos] && !wallFound){ // haven't hit a wall yet, and current position is between room tiles
+            if(reference[midPos] == '.' && !wallFound){ // haven't hit a wall yet, and current position is between room tiles
               //if(vision[pos1] == 0){
               //  vision[pos1] = 1;
               //}
@@ -541,7 +541,7 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
           }
 
           int rounded = (int) currVal;
-          int mid = (int) (currVal - 0.5);
+          int mid = (int) (currVal + 0.5);
           double roundedD = (double) rounded;
 
           if( currVal == roundedD ){ // we have the case where the point falls exactly on a point in a map (not between two points)
@@ -616,7 +616,7 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
       }
     }
   }
-
+  
   return;
 }
 
@@ -717,7 +717,7 @@ main(int argc, char* argv[])
  int vision[grid->mapLen];
  // specific location chosen to illustrate features vision behavior with corners
  //int pos = 1397;
- int pos = 284;
+ int pos = 2158;
  // initialize vision to zeros
  for(int i = 0; i < grid->mapLen; i++){
   vision[i] = 0;
@@ -728,26 +728,26 @@ main(int argc, char* argv[])
  char* reference = grid_getReference(grid);
 
  for(int i = 0; i < grid->mapLen; i++){
-   // inserting new lines in correct spots
-   //if(i % (grid->numColumns+1)==0){
-   // fprintf(stdout, "\n");
-   //}
+   
+   
    // print player location as @ char
    if( i == pos ){
     fprintf(stdout, "@");
    }
    else if(i % (grid->numColumns+1)==0 && i != 0){
      fprintf(stdout, "\n");
-     fprintf(stdout, "%c", reference[i]);
+     //fprintf(stdout, "%c", reference[i]);
    }
    else if(vision[i] == 1 && reference[i] != '\n'){
       fprintf(stdout, "%c", reference[i]);
    } else {
       fprintf(stdout, " ");
    }
+   
  }
  fprintf(stdout, "\n");
 
+ grid_delete(grid);
  return 0;
 
  // testing with a new position this time in a tunnel
