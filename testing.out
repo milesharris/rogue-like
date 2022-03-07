@@ -1,56 +1,90 @@
 START OF LOG
 parseargs passed
 
-adding pile of 32 gold to array
-adding pile of 23 gold to array
-adding pile of 11 gold to array
-adding pile of 11 gold to array
-adding pile of 173 gold to array
-added gold at index 37
+adding pile of 40 gold to array
+adding pile of 4 gold to array
+adding pile of 20 gold to array
+adding pile of 24 gold to array
+adding pile of 162 gold to array
+added gold at index 25
+added gold at index 36
 added gold at index 39
-added gold at index 35
-added gold at index 27
-added gold at index 49
+added gold at index 33
+added gold at index 48
 generated gold
 piles array initially:
-32
-23
-11
-11
-173
+40
+4
+20
+24
+162
 
 created game
 game initialized
 
 START OF LOG
-message_init: ready at port '57509'
-server listening on port 57509
+message_init: ready at port '46822'
+server listening on port 46822
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
+message_loop: FROM 129.170.64.104:50051
 message_loop: 1 lines:
 PLAY one
 received message: PLAY one
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:50051
 message_send: 1 lines:
 GOLD 0 0 250
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:50051
 message_send: 1 lines:
 GRID 5 14
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:50051
 message_send: 1 lines:
 OK A
 updating one's vision
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:50051
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |.........*|
-  |..*.*.*...|
-  |.*....@...|
-    --------- 
+  |.......*..|
+  |*..*..*...|
+  |*......@..|
+     -------- 
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
+message_loop: FROM 129.170.64.104:37411
+message_loop: 1 lines:
+PLAY two
+received message: PLAY two
+message_send: TO 129.170.64.104:37411
+message_send: 1 lines:
+GOLD 0 0 250
+message_send: TO 129.170.64.104:37411
+message_send: 1 lines:
+GRID 5 14
+message_send: TO 129.170.64.104:37411
+message_send: 1 lines:
+OK B
+updating one's vision
+message_send: TO 129.170.64.104:50051
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*..B|
+  |*......@..|
+     -------- 
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +--- ------ 
+  |.......*..|
+  |*..*..*..@|
+  |*......A..|
+   --- ------ 
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:37411
 message_loop: 1 lines:
 KEY h
 received message: KEY h
@@ -60,63 +94,167 @@ valid key received
 in move, nextChar = .
 making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:50051
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |.........*|
-  |..*.*.*...|
-  |.*...@....|
-    --------- 
+  |.......*..|
+  |*..*..*.B.|
+  |*......@..|
+     -------- 
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +--- ------+
+  |.......*..|
+  |*..*..*.@.|
+  |*......A..|
+  +--- ------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
+message_loop: FROM 129.170.64.104:37411
 message_loop: 1 lines:
-KEY k
-received message: KEY k
-key var set to: k
-player key input k valid
+KEY h
+received message: KEY h
+key var set to: h
+player key input h valid
 valid key received
 in move, nextChar = .
 making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:50051
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |.........*|
-  |..*.*@*...|
-  |.*........|
+  |.......*..|
+  |*..*..*B..|
+  |*......@..|
+     -------- 
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*@..|
+  |*......A..|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
+message_loop: FROM 129.170.64.104:50051
+message_loop: 1 lines:
+KEY š
+received message: KEY š
+key var set to: š
+invalid key received
+message_send: TO 129.170.64.104:50051
+message_send: 1 lines:
+ERROR invalid key for player
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:50051
+message_loop: 1 lines:
+KEY a
+received message: KEY a
+key var set to: a
+invalid key received
+message_send: TO 129.170.64.104:50051
+message_send: 1 lines:
+ERROR invalid key for player
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:50051
+message_loop: 1 lines:
+KEY j
+received message: KEY j
+key var set to: j
+player key input j valid
+valid key received
+in move, nextChar = -
+invalid move request from one
+updating one's vision
+message_send: TO 129.170.64.104:50051
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*B..|
+  |*......@..|
+     -------- 
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*@..|
+  |*......A..|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:50051
+message_loop: 1 lines:
+KEY j
+received message: KEY j
+key var set to: j
+player key input j valid
+valid key received
+in move, nextChar = -
+invalid move request from one
+updating one's vision
+message_send: TO 129.170.64.104:50051
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*B..|
+  |*......@..|
+     -------- 
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*@..|
+  |*......A..|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:50051
 message_loop: 1 lines:
 KEY l
 received message: KEY l
 key var set to: l
 player key input l valid
 valid key received
-in move, nextChar = *
-nextchar is a goldtile
-message_send: TO 129.170.64.104:56825
-message_send: 1 lines:
-GOLD 32 32 250
-message_send: TO 129.170.64.104:56825
-message_send: 1 lines:
-GOLD 0 32 218
+in move, nextChar = .
+making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:50051
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |.........*|
-  |..*.*.@...|
-  |.*........|
+  |.......*..|
+  |*..*..*B..|
+  |*.......@.|
+     --------+
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*@..|
+  |*.......A.|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
+message_loop: FROM 129.170.64.104:50051
 message_loop: 1 lines:
 KEY h
 received message: KEY h
@@ -126,112 +264,87 @@ valid key received
 in move, nextChar = .
 making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:50051
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |.........*|
-  |..*.*@....|
-  |.*........|
-  +----------+
+  |.......*..|
+  |*..*..*B..|
+  |*......@..|
+     --------+
 
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
-message_loop: 1 lines:
-KEY h
-received message: KEY h
-key var set to: h
-player key input h valid
-valid key received
-in move, nextChar = *
-nextchar is a goldtile
-skipping empty pile of gold, value is: -1
-message_send: TO 129.170.64.104:56825
-message_send: 1 lines:
-GOLD 23 55 218
-message_send: TO 129.170.64.104:56825
-message_send: 1 lines:
-GOLD 0 55 195
-updating one's vision
-message_send: TO 129.170.64.104:56825
+updating two's vision
+message_send: TO 129.170.64.104:37411
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |.........*|
-  |..*.@.....|
-  |.*........|
+  |.......*..|
+  |*..*..*@..|
+  |*......A..|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
+message_loop: FROM 129.170.64.104:50051
 message_loop: 1 lines:
-KEY h
-received message: KEY h
-key var set to: h
-player key input h valid
+KEY l
+received message: KEY l
+key var set to: l
+player key input l valid
 valid key received
 in move, nextChar = .
 making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:50051
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |.........*|
-  |..*@......|
-  |.*........|
+  |.......*..|
+  |*..*..*B..|
+  |*.......@.|
+     --------+
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*@..|
+  |*.......A.|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
+message_loop: FROM 129.170.64.104:50051
 message_loop: 1 lines:
-KEY h
-received message: KEY h
-key var set to: h
-player key input h valid
+KEY j
+received message: KEY j
+key var set to: j
+player key input j valid
 valid key received
-in move, nextChar = *
-nextchar is a goldtile
-skipping empty pile of gold, value is: -1
-skipping empty pile of gold, value is: -1
-message_send: TO 129.170.64.104:56825
-message_send: 1 lines:
-GOLD 11 66 195
-message_send: TO 129.170.64.104:56825
-message_send: 1 lines:
-GOLD 0 66 184
+in move, nextChar = -
+invalid move request from one
 updating one's vision
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:50051
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |.........*|
-  |..@.......|
-  |.*........|
-  +----------+
+  |.......*..|
+  |*..*..*B..|
+  |*.......@.|
+     --------+
 
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
-message_loop: 1 lines:
-KEY h
-received message: KEY h
-key var set to: h
-player key input h valid
-valid key received
-in move, nextChar = .
-making a normal move
-updating one's vision
-message_send: TO 129.170.64.104:56825
+updating two's vision
+message_send: TO 129.170.64.104:37411
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |.........*|
-  |.@........|
-  |.*........|
+  |.......*..|
+  |*..*..*@..|
+  |*.......A.|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
+message_loop: FROM 129.170.64.104:50051
 message_loop: 1 lines:
 KEY k
 received message: KEY k
@@ -241,37 +354,57 @@ valid key received
 in move, nextChar = .
 making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:50051
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |.@.......*|
-  |..........|
-  |.*........|
+  |.......*..|
+  |*..*..*B@.|
+  |*.........|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*@A.|
+  |*.........|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
+message_loop: FROM 129.170.64.104:50051
 message_loop: 1 lines:
-KEY h
-received message: KEY h
-key var set to: h
-player key input h valid
+KEY k
+received message: KEY k
+key var set to: k
+player key input k valid
 valid key received
 in move, nextChar = .
 making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:50051
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |@........*|
-  |..........|
-  |.*........|
+  |.......*@.|
+  |*..*..*B..|
+  |*.........|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*A.|
+  |*..*..*@..|
+  |*.........|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
+message_loop: FROM 129.170.64.104:50051
 message_loop: 1 lines:
 KEY j
 received message: KEY j
@@ -281,17 +414,237 @@ valid key received
 in move, nextChar = .
 making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:50051
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |.........*|
-  |@.........|
-  |.*........|
+  |.......*..|
+  |*..*..*B@.|
+  |*.........|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*@A.|
+  |*.........|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
+message_loop: FROM 129.170.64.104:50051
+message_loop: 1 lines:
+KEY h
+received message: KEY h
+key var set to: h
+player key input h valid
+valid key received
+in move, nextChar = B
+handling a collision
+updating one's vision
+message_send: TO 129.170.64.104:50051
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*B@.|
+  |*.........|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*@A.|
+  |*.........|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:50051
+message_loop: 1 lines:
+KEY h
+received message: KEY h
+key var set to: h
+player key input h valid
+valid key received
+in move, nextChar = B
+handling a collision
+updating one's vision
+message_send: TO 129.170.64.104:50051
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*B@.|
+  |*.........|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*@A.|
+  |*.........|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:50051
+message_loop: 1 lines:
+KEY h
+received message: KEY h
+key var set to: h
+player key input h valid
+valid key received
+in move, nextChar = B
+handling a collision
+updating one's vision
+message_send: TO 129.170.64.104:50051
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*B@.|
+  |*.........|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*@A.|
+  |*.........|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:50051
+message_loop: 1 lines:
+KEY h
+received message: KEY h
+key var set to: h
+player key input h valid
+valid key received
+in move, nextChar = B
+handling a collision
+updating one's vision
+message_send: TO 129.170.64.104:50051
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*B@.|
+  |*.........|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*@A.|
+  |*.........|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:50051
+message_loop: 1 lines:
+KEY k
+received message: KEY k
+key var set to: k
+player key input k valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:50051
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*@.|
+  |*..*..*B..|
+  |*.........|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*A.|
+  |*..*..*@..|
+  |*.........|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:50051
+message_loop: 1 lines:
+KEY l
+received message: KEY l
+key var set to: l
+player key input l valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:50051
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*.@|
+  |*..*..*B..|
+  |*.........|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*.A|
+  |*..*..*@..|
+  |*.........|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:50051
+message_loop: 1 lines:
+KEY k
+received message: KEY k
+key var set to: k
+player key input k valid
+valid key received
+in move, nextChar = -
+invalid move request from one
+updating one's vision
+message_send: TO 129.170.64.104:50051
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*.@|
+  |*..*..*B..|
+  |*.........|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*.A|
+  |*..*..*@..|
+  |*.........|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:50051
 message_loop: 1 lines:
 KEY j
 received message: KEY j
@@ -301,270 +654,226 @@ valid key received
 in move, nextChar = .
 making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:50051
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |.........*|
-  |..........|
-  |@*........|
+  |.......*..|
+  |*..*..*B.@|
+  |*.........|
   +----------+
 
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
-message_loop: 1 lines:
-KEY l
-received message: KEY l
-key var set to: l
-player key input l valid
-valid key received
-in move, nextChar = *
-nextchar is a goldtile
-skipping empty pile of gold, value is: -1
-skipping empty pile of gold, value is: -1
-skipping empty pile of gold, value is: -1
-message_send: TO 129.170.64.104:56825
-message_send: 1 lines:
-GOLD 11 77 184
-message_send: TO 129.170.64.104:56825
-message_send: 1 lines:
-GOLD 0 77 173
-updating one's vision
-message_send: TO 129.170.64.104:56825
+updating two's vision
+message_send: TO 129.170.64.104:37411
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |.........*|
-  |..........|
-  |.@........|
+  |.......*..|
+  |*..*..*@.A|
+  |*.........|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
+message_loop: FROM 129.170.64.104:50051
 message_loop: 1 lines:
-KEY l
-received message: KEY l
-key var set to: l
-player key input l valid
+KEY j
+received message: KEY j
+key var set to: j
+player key input j valid
 valid key received
 in move, nextChar = .
 making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:50051
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |.........*|
-  |..........|
-  |..@.......|
+  |.......*..|
+  |*..*..*B..|
+  |*........@|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*@..|
+  |*........A|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
+message_loop: FROM 129.170.64.104:50051
 message_loop: 1 lines:
 KEY l
 received message: KEY l
 key var set to: l
 player key input l valid
 valid key received
-in move, nextChar = .
-making a normal move
+in move, nextChar = |
+invalid move request from one
 updating one's vision
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:50051
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |.........*|
-  |..........|
-  |...@......|
+  |.......*..|
+  |*..*..*B..|
+  |*........@|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*@..|
+  |*........A|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
+message_loop: FROM 129.170.64.104:50051
 message_loop: 1 lines:
-KEY l
-received message: KEY l
-key var set to: l
-player key input l valid
+KEY h
+received message: KEY h
+key var set to: h
+player key input h valid
 valid key received
 in move, nextChar = .
 making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:50051
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |.........*|
-  |..........|
-  |....@.....|
+  |.......*..|
+  |*..*..*B..|
+  |*.......@.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*@..|
+  |*.......A.|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
+message_loop: FROM 129.170.64.104:50051
 message_loop: 1 lines:
-KEY l
-received message: KEY l
-key var set to: l
-player key input l valid
+KEY h
+received message: KEY h
+key var set to: h
+player key input h valid
 valid key received
 in move, nextChar = .
 making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:50051
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |.........*|
-  |..........|
-  |.....@....|
+  |.......*..|
+  |*..*..*B..|
+  |*......@..|
   +----------+
 
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
-message_loop: 1 lines:
-KEY l
-received message: KEY l
-key var set to: l
-player key input l valid
-valid key received
-in move, nextChar = .
-making a normal move
-updating one's vision
-message_send: TO 129.170.64.104:56825
+updating two's vision
+message_send: TO 129.170.64.104:37411
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |.........*|
-  |..........|
-  |......@...|
+  |.......*..|
+  |*..*..*@..|
+  |*......A..|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
-message_loop: 1 lines:
-KEY l
-received message: KEY l
-key var set to: l
-player key input l valid
-valid key received
-in move, nextChar = .
-making a normal move
-updating one's vision
-message_send: TO 129.170.64.104:56825
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |.........*|
-  |..........|
-  |.......@..|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
-message_loop: 1 lines:
-KEY l
-received message: KEY l
-key var set to: l
-player key input l valid
-valid key received
-in move, nextChar = .
-making a normal move
-updating one's vision
-message_send: TO 129.170.64.104:56825
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |.........*|
-  |..........|
-  |........@.|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
-message_loop: 1 lines:
-KEY l
-received message: KEY l
-key var set to: l
-player key input l valid
-valid key received
-in move, nextChar = .
-making a normal move
-updating one's vision
-message_send: TO 129.170.64.104:56825
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |.........*|
-  |..........|
-  |.........@|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
+message_loop: FROM 129.170.64.104:50051
 message_loop: 1 lines:
 KEY k
 received message: KEY k
 key var set to: k
 player key input k valid
 valid key received
-in move, nextChar = .
-making a normal move
+in move, nextChar = B
+handling a collision
 updating one's vision
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:50051
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |.........*|
-  |.........@|
-  |..........|
+  |.......*..|
+  |*..*..*B..|
+  |*......@..|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*@..|
+  |*......A..|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:56825
+message_loop: FROM 129.170.64.104:37411
 message_loop: 1 lines:
-KEY k
-received message: KEY k
-key var set to: k
-player key input k valid
+KEY Q
+received message: KEY Q
+key var set to: Q
+player key input Q valid
 valid key received
-in move, nextChar = *
-nextchar is a goldtile
-skipping empty pile of gold, value is: -1
-skipping empty pile of gold, value is: -1
-skipping empty pile of gold, value is: -1
-skipping empty pile of gold, value is: -1
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:37411
 message_send: 1 lines:
-GOLD 173 250 173
-message_send: TO 129.170.64.104:56825
-message_send: 1 lines:
-GOLD 0 250 0
+QUIT Thanks for playing!
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:50051
+message_loop: 1 lines:
+KEY l
+received message: KEY l
+key var set to: l
+player key input l valid
+valid key received
+in move, nextChar = .
+making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:56825
+message_send: TO 129.170.64.104:50051
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |.........@|
-  |..........|
-  |..........|
+  |.......*..|
+  |*..*..*...|
+  |*.......@.|
   +----------+
 
-calling gameOver(success)
-gameSummary: is QUIT GAME OVER:
-A       250 one
+updating two's vision
+message_send: TO 129.170.64.104:37411
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.......*..|
+  |*..*..*@..|
+  |*.......A.|
+  +----------+
 
-normalExit true
-gameSummary initial: QUIT GAME OVER:
-A       250 one
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:50051
+message_loop: 1 lines:
+KEY Q
+received message: KEY Q
+key var set to: Q
+player key input Q valid
+valid key received
+message_send: TO 129.170.64.104:50051
+message_send: 1 lines:
+QUIT Thanks for playing!
 
-sending summary: QUIT GAME OVER:
-A       250 one
-
-message_send: TO 129.170.64.104:56825
-message_send: 2 lines:
-QUIT GAME OVER:
-A       250 one
-
-message_done: message module closing down.
-quitting game normally
-END OF LOG

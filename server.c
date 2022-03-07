@@ -481,6 +481,8 @@ static void handlePlayerQuit(player_t* player)
   // remove player from the game map and send message
   grid_revertTile(gameGrid, player_getPos(player));
   message_send(player_getAddr(player), "QUIT Thanks for playing!\n");
+  // remove player from all other's screens
+  updatePlayersVision();
 }
 
 /*************** gameOver ******************/
@@ -742,6 +744,8 @@ movePlayerHelper(player_t* player, int directionValue)
   // if move is invalid log and do nothing
   } else {
       log_s("invalid move request from %s", player_getName(player));
+      // no need to update vision if the player never actually moved
+      return gameOverFlag;
   }
   // update all client's vision after a move
   updatePlayersVision();
