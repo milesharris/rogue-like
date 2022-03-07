@@ -85,7 +85,8 @@ parseArgs(const int argc, char* argv[])
   // if spectator
   if (argc == 3) {
     // spectator's player name is "spectator"
-    player = player_new("spectator", "./maps/main.txt"); 
+    player = player_new("spectator", "./maps/main.txt"); // player_new must take a map file
+
     return 0;
   }
 
@@ -97,7 +98,7 @@ parseArgs(const int argc, char* argv[])
       log_v("usage: Playername cannot be 'spectator'");
       exit(3);
     }
-    player = player_new(playername, "./maps/main.txt");
+    player = player_new(playername, "./maps/main.txt"); // player_new must take a map file
     return 0;
   }
 
@@ -220,7 +221,7 @@ static bool initialGrid(const char* gridInfo)
 /* updates map */
 static bool renderMap(const char* mapString)
 {
-  log_v("rendering map");
+  
   // print map starting at 1, 0 (header starts at 0, 0)
   mvprintw(1, 0, mapString); 
   refresh();
