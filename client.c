@@ -21,7 +21,7 @@ static void initCurses();
 static bool handleMessage(void* arg, const addr_t from, const char* message);
 static bool initialGrid(const char* gridInfo);
 static bool renderMap(const char* mapString);
-static void joinGame(const addr_t to);
+static void joinGame();
 static bool leaveGame(const char* message);
 static bool handleError(const char* message);
 static bool updatePlayer(const char* message, const char* first);
@@ -42,6 +42,20 @@ static player_t* player;
  *    messages printed with big spaces/briefly displayed stuff
  * 3. make sure message is parsed correctly
  * 4. whether I'm using * and & correctly w the address in player
+ *
+ * Looks like handleInput is working
+ */
+
+
+/* Ncurses debugging 11:23 PM
+ *
+ * -> "unknown message type: DISPLAY" might be an error with parsing and strtok_r
+ *    strange because the map gets rendered ? 
+ *
+ *  Display isn't showing right -> change renderMap
+ *
+ *  header is overwritten -> increase distance between small messages being written and big messages 
+ *        Miles thinks maybe int overflow w numbers in header also
  */
 
 /********************* main ********************/
@@ -67,10 +81,11 @@ main(const int argc, char* argv[])
     exit(4);
   }
 
-  // send either SPECTATE or PLAYER [playername] message to join game
-  joinGame(server);
   player_setAddr(player, server); // player->address is address of SERVER
 
+  // send either SPECTATE or PLAYER [playername] message to join game
+  joinGame(); 
+  
   // loop, waiting for input or messages
   bool ok = message_loop(&server, 0, NULL, handleInput, handleMessage);
 
@@ -121,13 +136,14 @@ parseArgs(const int argc, char* argv[])
 
 /******************** joinGame **********************/
 /* joins game by sending either SPECTATE or PLAYER [playername] messages to server */
-static void joinGame(const addr_t to)
+static void joinGame()
 {
   const char* name = player_getName(player);
 
   // if spectator
   if ((strcmp("spectator", name)) == 0) {
-    message_send(to, "SPECTATE");
+    message_send(player_getAddr(player), "SPECTATE");
+    fprintf(stderr, "SPECTATE message sent to server"); // log
   }
 
   // if player
@@ -136,12 +152,13 @@ static void joinGame(const addr_t to)
     char playMsg[strlen("PLAY ") + strlen(name) + 1];
     snprintf(playMsg, sizeof(playMsg), "PLAY %s", name);
     
-    message_send(to, playMsg);
+    message_send(player_getAddr(player), playMsg);
+
+    fprintf(stderr, "PLAYER message sent to server"); // log
   
     // free playMsg? idt it is necessary, but idk why it isn't
   }
 
-  fprintf(stderr, "SPECTATE or PLAYER message sent to server");
 }
 
 /********************** initCurses ***************/
@@ -170,8 +187,10 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
   strcpy(messageCpy, message);
   first = __strtok_r(messageCpy, " ", &remainder);
   
-  //printf("%s", first); printf("%s", remainder); // checks that parsing is right
-  
+  // mvprintw(0, 50, "%s, and %s", first, remainder); // WHY DOES THIS MAKE DISPLAY WORK -> because then this is what prints the display?
+  move(0,0);
+  refresh();
+
   if ((strcmp(first, "GRID")) == 0) {
     return initialGrid(remainder);
   }
@@ -181,6 +200,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
   }
 
   if ((strcmp(first, "DISPLAY")) == 0) {
+    mvprintw(1, 0, "%s", remainder);
     return renderMap(remainder);
   }
 
@@ -213,7 +233,7 @@ static bool initialGrid(const char* gridInfo)
     fprintf(stderr, "Window must be expanded to play Nuggets. Window is %d by %d and must be %d by %d.", uy, ux, nrows, ncols);
     return true;
   }
-
+ 
   fprintf(stderr, "Game initialized successfully."); // log successful boot up
   return false;
 
@@ -224,8 +244,51 @@ static bool initialGrid(const char* gridInfo)
 static bool renderMap(const char* mapString)
 {
   // print map starting at 1, 0 (header starts at 0, 0)
-  mvprintw(1, 0, mapString); // TODO correct way to print it? Or should I do line by line like in life example
+  mvprintw(1, 10, "%s", mapString); // TODO correct way to print it? Or should I do line by line like in life example
+
+  // move mouse
+ /* int initx, inity, x, y;
+  getbegyx(stdscr, inity, initx);
+  y++;
+  move(inity, initx);
+  x = initx;
+  y = inity;
+
+  int x = 0;
+  int y = 1;
+  move(y, x);
+
+  // print map starting at (1,0)
+  char c;
+  for (int i = 0; i < strlen(mapString); i++) {
+    // if newline, move mouse to after newline
+    if (c == '\n') {
+      x = 0;
+      y++;
+      move(y, x);
+      continue;
+    }
+    // if normal character, put and move
+    else {
+    c = mapString[1];
+    addch(c);
+    x++;
+    move(y, x);
+    }
+  }
+*/
+  // move(0,0);
   refresh();
+
+
+
+
+
+
+
+
+
+
   return false;
 
 }
@@ -271,7 +334,7 @@ static bool handleError(const char* message)
 {
   // prints at x = 50 because max length of normal status message is 50 char
   // TODO also not sure if this will work well
-  mvprintw(0, 50, "%s                     ", message); 
+  mvprintw(0, 70, "%s                     ", message); 
   refresh();
   return false;
 
@@ -345,7 +408,7 @@ static bool handleInput(void* arg)
   if ((strcmp("spectator", player_getName(player))) == 0) {
     switch(c) {
     case 'q':  message_send(to, "KEY q"); break; 
-    default: mvprintw(0, 50, "unknown keystroke               ");
+    default: mvprintw(0, 70, "unknown keystroke               ");
     }
   }
   
@@ -353,7 +416,7 @@ static bool handleInput(void* arg)
   else {
     // send char if valid keystroke
     switch(c) {
-    case 'q':   message_send(to, "KEY q"); break;
+    case 'Q':   message_send(to, "KEY Q"); break;
     case 'h':   message_send(to, "KEY h"); break;
     case 'H':   message_send(to, "KEY H"); break;
     case 'l':   message_send(to, "KEY l"); break;
@@ -371,7 +434,7 @@ static bool handleInput(void* arg)
     case 'n':   message_send(to, "KEY n"); break;
     case 'N':   message_send(to, "KEY N"); break;
     // if not valid, print error 
-    default: mvprintw(0, 50, "unknown keystroke               ");
+    default: mvprintw(0, 70, "unknown keystroke               ");
     }
   }
   
