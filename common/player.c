@@ -114,7 +114,6 @@ player_setCharID(player_t* player, char newChar)
 
 /***** player_new ********************************************/
 /* see player.h for details */ 
-
 player_t* 
 player_new(char* name, char* mapfile)
 {
@@ -244,11 +243,8 @@ player_updateVision(player_t* player, grid_t* grid)
   }
 
   // updating PAST player vision to reference map values
+  // then setting current vision to active map values
   for(int i = 0; i < mapLen; i++){
-    // inserting new line characters into vision map
-    //if( i != 0 && ( i % (rowLen + 1) == 0 ) ){
-    //  grid_replace(currPlayerVision, i, '\n');
-    //}
     if( isblank(playerActive[i]) == 0 ){ // is slot is not whitespace, revert it to its reference map tile
       grid_revertTile(currPlayerVision, i);
     } 
