@@ -211,6 +211,19 @@ static bool renderMap(const char* mapString)
 
 }
 
+// I don't think this will work
+/*
+ * int init_x, init_y, x, y;
+ * getbegyx(stdscr, y, x);
+ * y++;
+ * move(y, x);
+ * x = init_x;
+ * y = init_y;
+ *
+ * char curr;
+ * for (int i = 0; ...
+ */
+
 /******************* leaveGame *******************/
 /* Close ncurses
  * Print QUIT message from server
@@ -239,7 +252,7 @@ static bool handleError(const char* message)
 {
   // prints at x = 50 because max length of normal status message is 50 char
   // TODO also not sure if this will work well
-  mvprintw(0, 50, "%s                           ", message); 
+  mvprintw(0, 50, "%s                     ", message); 
   return false;
 
 }
@@ -309,7 +322,7 @@ static bool handleInput(void* arg)
   if (strcmp("spectator", name)) {
     switch(c) {
     case 'q':  message_send(to, "KEY q"); break; 
-    default: mvprintw(0, 50, "unknown keystroke");
+    default: mvprintw(0, 50, "unknown keystroke               ");
     }
   }
   
