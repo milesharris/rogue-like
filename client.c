@@ -1,6 +1,6 @@
 /* 
  * client.c - implements the client for Nuggets game, windows_us team
- *
+ * A client is used to connect to a server, where the server handles game logic
  */
 
 #include <stdio.h>
@@ -10,6 +10,7 @@
 #include <ncurses.h>
 #include <ctype.h>
 #include "file.h"
+#include "log.h"
 #include "message.h"
 #include "player.h"
 
@@ -35,19 +36,19 @@ static player_t* player;
 int
 main(const int argc, char* argv[])
 {
- 
+  log_init(stderr);
   parseArgs(argc, argv);
 
   // if message module cannot be initialized
   if (message_init(NULL) == 0) {
-    fprintf(stderr, "could not initialize message module");
-    return 2; 
+    log_v("could not initialize message module");
+    exit(2); 
   }
 
   // build server address
   const char* serverHost = argv[1];
   const char* serverPort = argv[2];
-  fprintf(stderr, "Port %s\n", serverPort); // log port number to stderr
+  log_s("Port %s\n", serverPort); // log port number to stderr
   addr_t server; 
   if (!message_setAddr(serverHost, serverPort, &server)) {
     fprintf(stderr, "Failed to form address from %s %s\n", serverHost, serverPort);
@@ -62,9 +63,9 @@ main(const int argc, char* argv[])
   // loop, waiting for input or messages
   bool ok = message_loop(&server, 0, NULL, handleInput, handleMessage);
 
-  // close message module
+  // close message and log module
   message_done();
-
+  log_done();
   return ok? 0 : 1; // return status depends on result of loop
 
 }
@@ -83,7 +84,8 @@ parseArgs(const int argc, char* argv[])
   // check arg count
   // if spectator
   if (argc == 3) {
-    player = player_new("spectator", "./maps/main.txt"); // spectator's player name is "spectator"
+    // spectator's player name is "spectator"
+    player = player_new("spectator", "./maps/main.txt"); 
     return 0;
   }
 
@@ -92,7 +94,7 @@ parseArgs(const int argc, char* argv[])
     char* playername = argv[3];
     // playername cannot be "spectator"
     if ((strcmp(playername, "spectator")) == 0) {
-      fprintf(stderr, "usage: Playername cannot be 'spectator'");
+      log_v("usage: Playername cannot be 'spectator'");
       exit(3);
     }
     player = player_new(playername, "./maps/main.txt");
@@ -101,7 +103,7 @@ parseArgs(const int argc, char* argv[])
 
   // if neither 2 nor 3 args provided
   else {
-    fprintf(stderr, "usage: Client can take either 2 args (spectator) or 3 args (player). Player names cannot include spaces.\n");
+    log_v("usage: Client takes 2 or 3 args. names cannot have spaces");
     exit(3);
   }
 
@@ -116,7 +118,7 @@ static void joinGame()
   // if spectator
   if ((strcmp("spectator", name)) == 0) {
     message_send(player_getAddr(player), "SPECTATE");
-    fprintf(stderr, "SPECTATE message sent to server\n"); // log
+    log_v("SPECTATE message sent to server"); // log
   }
 
   // if player
@@ -127,7 +129,7 @@ static void joinGame()
     
     message_send(player_getAddr(player), playMsg);
 
-    fprintf(stderr, "PLAYER message sent to server\n"); // log
+    log_v("PLAYER message sent to server"); // log
   
   }
 
@@ -144,7 +146,7 @@ static void initCurses()
   start_color();
   init_pair(1, COLOR_YELLOW, COLOR_BLACK);
   attron(COLOR_PAIR(1));
-
+  
 } 
   
 /******************** handleMessage *****************/
@@ -184,12 +186,12 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
   else {
     return updatePlayer(remainder, first);
   }  
-
 }
 
-
 /****************** initialGrid ******************/
-/* On reception of GRID message, start ncurses and check that display will fit grid. */
+/* On reception of GRID message, start ncurses 
+ * and check that display will fit grid. 
+ */
 static bool initialGrid(const char* gridInfo)
 {
   // store nrows and ncols
@@ -198,16 +200,18 @@ static bool initialGrid(const char* gridInfo)
 
   // start ncurses
   initCurses();
-
+  log_v("ncurses initialized");
+  
   // check that display fits grid; return true if it does not, otherwise return false
   int uy, ux; 
   getmaxyx(stdscr, uy, ux);
   if ((ux < ncols) || (uy < nrows)) {
+    // compiler error if this split into two lines
     fprintf(stderr, "Window must be expanded to play Nuggets. Window is %d by %d and must be %d by %d.", uy, ux, nrows, ncols);
     return true;
   }
  
-  fprintf(stderr, "Game initialized successfully.\n"); // log successful boot up
+  log_v("Game initialized successfully."); // log successful boot up
   return false;
 
 }
@@ -216,6 +220,7 @@ static bool initialGrid(const char* gridInfo)
 /* updates map */
 static bool renderMap(const char* mapString)
 {
+  log_v("rendering map");
   // print map starting at 1, 0 (header starts at 0, 0)
   mvprintw(1, 0, mapString); 
   refresh();
@@ -238,7 +243,7 @@ static bool leaveGame(const char* message)
   printf("%s", message);
   player_delete(player);
 
-  fprintf(stderr, "Game ended without fatal error."); // log successful shutdown
+  log_v("Game ended without fatal error."); // log successful shutdown
   return true; // ends message loop
 
 }
@@ -291,11 +296,13 @@ static bool updatePlayer(const char* message, const char* first)
       char letter = player_getCharID(player); 
       // if player collected gold
       if (n != 0) {
-        mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d                                  ", letter, p, r, n);      
+        // compiler error if split over two lines
+        mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d                                  ", letter, p, r, n);
         clrtoeol();
       }
       // if player did not collect any gold
       else {
+        // compiler error if split over two lines
         mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed).                        ", letter, p, r);
       }
     }
@@ -305,7 +312,7 @@ static bool updatePlayer(const char* message, const char* first)
 
   // if unidentifiable message type received, log error and move on
   else {
-    fprintf(stderr, "Unknown message type received: %s", first);
+    log_s("Unknown message type received: %s", first);
     return false;
   }
 }
@@ -356,6 +363,3 @@ static bool handleInput(void* arg)
   return false;
 
 }
-  
-
-
