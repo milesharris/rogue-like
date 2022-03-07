@@ -561,10 +561,12 @@ pickupGold(player_t* player)
     game_subtractGold(game, piles[i]);
     piles[i] = -1;
 
-    // then GOLD to all players, this time w/ 0 picked up
+    // notify all players of new gold state using GOLD message w/ 0 picked up
     hashtable_iterate(game_getPlayers(game), NULL, pickupGoldHelper);
     // update all client's vision
     updatePlayersVision();
+    // exit loop once gold picked up
+    break;
   }
 
   // return up the chain to trigger gameOver if all gold collected
@@ -707,7 +709,7 @@ movePlayerHelper(player_t* player, int directionValue)
       bumpedPlayerCharID = player_getCharID(bumpedPlayer);
       grid_replace(grid, player_getPos(bumpedPlayer), bumpedPlayerCharID);
       grid_replace(grid, player_getPos(player), playerCharID);
-r
+      
     // if normal move, no gold or collision
     } else {
       // revert player's old position to reference
@@ -1104,7 +1106,7 @@ static void sendDisplay(player_t* player, char* displayString) {
   
   addr_t to;                           // address to send message to
   char* initial = "DISPLAY\n";         // beginning of display messages
-  char* message;                       // final message sent to clients
+  char* message = NULL;                // final message sent to clients
   
   // check params
   if (player == NULL || displayString == NULL) {

@@ -21,7 +21,7 @@ all:
 	(cd $L && if [ -r set.c ]; then make $L.a; else cp $L-given.a $L.a; fi)
 	make -C support
 	make -C common
-#	server
+	make server
 #	client
 
 # exectuables
