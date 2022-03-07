@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "game.h"
+#include "mem.h"
 #include "grid.h"
 #include "hashtable.h"
 #include "player.h"
@@ -16,7 +17,7 @@
 
 //TODO: Document in specs
 // file-local constants (consistent with those in server)
-static const int MAXPLAYERS = 26;      // max # players in game
+static const int MAXPLAYERS = 25;      // max # players in game
 static const int MAXGOLD = 250;        // max # gold in game
 
 /**************** file-local functions ****************/
@@ -250,9 +251,11 @@ bool game_addPlayer(game_t* game, player_t* player)
   // get name for key and add to hashtable
   playerName = player_getName(player);
   if (hashtable_insert(game->players, playerName, player)) {
-    // increment numPlayers and lastCharID for next add
-    game->numPlayers++;
-    game->lastCharID++;
+    // increment values for next add unless handling spectator
+    if (strcmp(player_getName(player), "spectator") != 0) {
+      game->numPlayers++;
+      game->lastCharID++;
+    }
     return true;
   } else {
     return false;
@@ -265,9 +268,16 @@ player_t* game_getPlayerAtAddr(game_t* game, addr_t address)
 {
   hashtable_t* players;                        // table of players in game
   player_t* player = NULL;                     // player with given address
-  
+  const char* addrStr = message_stringAddr(address); // string for comparision
+  void* voidplayer = NULL;              // allows pulling player from container
+
+  // copy string to avoid compiler warnings
+  char* addrStrCpy = mem_malloc_assert(strlen(addrStr) + 1, 
+                                       "failed to alloc addrstrcpy");
+  strcpy(addrStrCpy, addrStr);
+
   // takes a name string and message string to give to hashtable_iterate
-  void* container[] = {&address, player};
+  void* container[2] = {addrStrCpy, voidplayer};
   // check params
   if (game == NULL || ! message_isAddr(address)) {
     return NULL;
@@ -280,7 +290,10 @@ player_t* game_getPlayerAtAddr(game_t* game, addr_t address)
 
   // iterate over hashtable, returning the player with given address if exist
   hashtable_iterate(players, container, game_getAtAddrHelper);
-
+  // clean up and return
+  player = container[1];
+  log_done();
+  free(addrStrCpy);
   return player;
 }
 
@@ -288,12 +301,14 @@ player_t* game_getPlayerAtAddr(game_t* game, addr_t address)
 static void game_getAtAddrHelper(void* arg, const char* key, void* item) {
   // extract params
   void** container = arg;
-  addr_t* targetAddr = container[0];
+  char* targetAddrStr = container[0];
   player_t* currPlayer = item;
+  const char* currAddrStr = message_stringAddr(player_getAddr(currPlayer));
   
   // compares addresses and sends matching player back to parent functions
-  if (message_eqAddr(*targetAddr, player_getAddr(currPlayer))) {
+  if (strcmp(targetAddrStr, currAddrStr) == 0) {
     container[1] = currPlayer;
+    return;
   }
 }
 
