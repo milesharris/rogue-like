@@ -1,5 +1,5 @@
 START OF LOG
-client on port 54972
+client on port 42655
 interactive player mode; name 'one'
 GOLD message received: GOLD 0 0 250
 GRID message received: GRID 5 14
@@ -7,35 +7,6 @@ displayStart
 wRows = 11
 wCols = 105
 OK message received: OK A
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
 DISPLAY message received
 DISPLAY message received
 DISPLAY message received

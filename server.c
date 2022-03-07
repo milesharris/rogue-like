@@ -511,7 +511,6 @@ static void gameOver(bool normalExit)
 /************** gameOverHelper *************/
 /* sends appropriate messages to all players
  * for use in gameOver, passed to hashtable_iterate
- * TODO: this segfaults because gameSummary never properly assigned
  */
 static void gameOverHelper(void* arg, const char* key, void* item)
 {
@@ -610,6 +609,7 @@ static void pickupGoldHelper(void* arg, const char* key, void* item)
 /************** moveIterateHelper*********/
 /* helper to pass into hashtable_iterate in moveHelper
  * finds a player with a provided charID
+ * // TODO: likely bug with container and void pointers
  * container passed into helper that holds the following items
  * void* container[2] = {bumpedPlayer, &next}; 
  * stores the matching player back in the container
@@ -680,13 +680,12 @@ movePlayerHelper(player_t* player, int directionValue)
   bool gameOverFlag = false;     // becomes true if pickupGold returns true
 
   // grid tile that client is trying to move to 
-  // TODO: not sure if this will cast
   char next = grid_getActive(grid)[player_getPos(player) + directionValue];
   // char representation of moving player on map
   const char playerCharID = player_getCharID(player); 
   
   playerPos = player_getPos(player);
-
+  log_d("initial pos in moveHelper: %d", playerPos);
   // if the move is valid (does not hit a wall or similar)
   if (next == ROOMTILE || next == PASSAGETILE || next == GOLDTILE 
       || isupper(next) != 0) {
@@ -704,10 +703,11 @@ movePlayerHelper(player_t* player, int directionValue)
 
     // update player's position
     player_setPos(player, player_getPos(player) + directionValue);
-    
+    log_d("new pos in movehelper is %d", player_getPos(player));
+
     // if we hit another player, handle collision
     } else if (isupper(next) != 0) {
-
+      log_v("handling a collision");
       // holds two items to pass into iterator
       void* container[2] = {bumpedPlayer, &next}; 
       // iterate over the hashtable to find the player bumped into
