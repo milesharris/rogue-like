@@ -12,7 +12,6 @@
 #include "hashtable.h"
 #include "player.h"
 
-
 /**************** global types ****************/
 typedef struct game game_t;  // opaque to users of the module
 
@@ -64,7 +63,8 @@ int game_setNumPiles(game_t* game, int numPiles);
  * it only malloc's space for itself. All other memory must be allocated before
  * for example, a `game` takes non-null `grids` as parameters
  * so grid_new must be called on a grid before passing it to `game`
- * All memory allocated by the game and its grid, are freed in game_delete 
+ * All memory allocated by the game, its grid, and its int array 
+ * are freed in game_delete 
  */
 game_t* game_new(int* piles, grid_t* grid);
 

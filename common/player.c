@@ -22,7 +22,6 @@ typedef struct player {
   int gold;             // amount of gold held by player
 } player_t;
 
-//TODO: Document additions to player module in readme and specs
 /**** getter functions ***************************************/
 
 grid_t* 
@@ -260,7 +259,6 @@ player_updateVision(player_t* player, grid_t* grid)
 
 /***** player_delete *****************************************/
 /* see player.h for full details */
-
 void 
 player_delete(player_t* player)
 {

@@ -15,9 +15,8 @@
 #include "player.h"
 #include "log.h"
 
-//TODO: Document in specs
 // file-local constants (consistent with those in server)
-static const int MAXPLAYERS = 25;      // max # players in game
+static const int MAXPLAYERS = 26;      // max # players in game
 static const int MAXGOLD = 250;        // max # gold in game
 
 /**************** file-local functions ****************/
@@ -95,7 +94,6 @@ player_t* game_getPlayer(game_t* game, char* playerName)
 
 /***** game_setRemainingGold *********************************/
 /* see game.h for details */
-
 bool
 game_setRemainingGold(game_t* game, int gold)
 {
@@ -120,7 +118,6 @@ int game_setNumPiles(game_t* game, int numPiles)
 
 /******************* game_setGrid *******************/
 /* see game.h for details */
-
 bool
 game_setGrid(game_t* game, grid_t* grid)
 {
@@ -161,7 +158,6 @@ int game_setNumPlayers(game_t* game, int numPlayers)
 
 /**************** game_new ***************/
 /* see game.h or details */
-
 game_t* 
 game_new(int* piles, grid_t* grid)
 {
@@ -254,6 +250,7 @@ static void game_summaryHelper(void* arg, const char* key, void* item)
   gameSummary[0] = summary;
   free(toAdd);
 }
+
 /***************** game_subtractGold **************/
 /* see game.h for details */
 int
@@ -267,6 +264,7 @@ game_subtractGold(game_t* game, int gold)
 }
 
 /************** game_addPlayer **************/
+/* see header file for details */
 bool game_addPlayer(game_t* game, player_t* player)
 {
   char* playerName;                    // name of player being added (keys HT)
@@ -326,6 +324,13 @@ player_t* game_getPlayerAtAddr(game_t* game, addr_t address)
 }
 
 /***************** game_getAtAddrHelper ************/
+/* helper function for game_getPlayerAtAddr
+ * passed into hashtable_iterate
+ * takes the target address (in string form) and a void pointer
+ * that represents the player with the given address
+ * inside an array of void pointers
+ * updates the player pointer if there is a player matching the address
+ */
 static void game_getAtAddrHelper(void* arg, const char* key, void* item) {
   // extract params
   void** container = arg;
