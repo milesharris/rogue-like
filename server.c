@@ -210,8 +210,11 @@ static int* generateGold(grid_t* grid, int* piles, int* seed)
   // create and check piles array
   piles = mem_malloc_assert((sizeof(int) * goldMaxNumPiles), 
                             "failed to alloc piles\n");
-  memset(piles, -1, (size_t)(goldMaxNumPiles));
   
+  for(int i = 0; i < goldMaxNumPiles; i++){
+    piles[i] = -1;
+  }
+
   // generating random piles
   // loops until no more gold to distribute
   while ( totalGold > 0 ) {
@@ -222,7 +225,7 @@ static int* generateGold(grid_t* grid, int* piles, int* seed)
       totalGold = 0;
     } else {
       tmp = rand();
-      currPile = (tmp % totalGold);
+      currPile = (tmp % (totalGold/10));
       // if random number is greater than gold left to distribute
       if (currPile > totalGold) {
         currPile = totalGold;
