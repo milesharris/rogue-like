@@ -497,9 +497,6 @@ static void gameOver(bool normalExit)
   log_s("gameSummary: is %s", gameSummary);
   // to pass into hashtable_iterate
   void* container[2] = {&normalExit, gameSummary};
-  // fill container
-  // container[0] = &normalExit;
-  // container[1] = &gameSummary;
 
   // send table to all clients
   hashtable_iterate(playerTable, container, gameOverHelper);
@@ -576,8 +573,8 @@ pickupGold(player_t* player)
 
     // notify all players of new gold state using GOLD message w/ 0 picked up
     hashtable_iterate(game_getPlayers(game), NULL, pickupGoldHelper);
-    // update all client's vision
-    updatePlayersVision();
+    // // update all client's vision
+    // updatePlayersVision();
     // exit loop once gold picked up
     break;
   }
@@ -683,27 +680,24 @@ movePlayerHelper(player_t* player, int directionValue)
   char next = grid_getActive(grid)[player_getPos(player) + directionValue];
   // char representation of moving player on map
   const char playerCharID = player_getCharID(player); 
-  
   playerPos = player_getPos(player);
   log_d("initial pos in moveHelper: %d", playerPos);
+
   // if the move is valid (does not hit a wall or similar)
   if (next == ROOMTILE || next == PASSAGETILE || next == GOLDTILE 
       || isupper(next) != 0) {
 
     // if we land on a pile of gold
     if (next == GOLDTILE) {
+      
+      // update map with removed gold pile and new player position
+      grid_revertTile(grid, player_getPos(player));
+      player_setPos(player, player_getPos(player) + directionValue);
+      log_d("new pos in movehelper is %d", player_getPos(player));
+      grid_replace(grid, player_getPos(player), playerCharID);
 
-    // update player gold and the game's piles
-    gameOverFlag = pickupGold(player);
-
-    // update map with removed gold pile and new player position
-    grid_revertTile(grid, player_getPos(player));
-    grid_replace(grid, player_getPos(player) + directionValue, 
-                 playerCharID);
-
-    // update player's position
-    player_setPos(player, player_getPos(player) + directionValue);
-    log_d("new pos in movehelper is %d", player_getPos(player));
+      // update player gold and the game's piles
+      gameOverFlag = pickupGold(player);
 
     // if we hit another player, handle collision
     } else if (isupper(next) != 0) {
@@ -731,7 +725,7 @@ movePlayerHelper(player_t* player, int directionValue)
       
       // then set their new position and update map accordingly
       player_setPos(player, player_getPos(player) + directionValue);
-      grid_replace(grid, player_getPos(player) + directionValue, playerCharID);
+      grid_replace(grid, player_getPos(player), playerCharID);
     }
   // if move is invalid log and do nothing
   } else {
