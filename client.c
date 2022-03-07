@@ -48,14 +48,20 @@ static player_t* player;
 
 
 /* Ncurses debugging 11:23 PM
+ * 
  *
- * -> "unknown message type: DISPLAY" might be an error with parsing and strtok_r
- *    strange because the map gets rendered ? 
+ * strange error with letter disappearing after gold picked up... almost like letter is being changed on receipt of gold message? 
  *
- *  Display isn't showing right -> change renderMap
+ *  need to test spectator 
  *
- *  header is overwritten -> increase distance between small messages being written and big messages 
- *        Miles thinks maybe int overflow w numbers in header also
+ *  memory stuff
+ *
+ *  test GRID 
+ *
+ *
+ *
+ *  dont spend any more time fixing the overwriting of display messages thing. Just use the clear eol thing to fix at end
+ *
  */
 
 /********************* main ********************/
@@ -186,11 +192,39 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
   char* messageCpy = malloc(strlen(message) + 1);
   strcpy(messageCpy, message);
   first = __strtok_r(messageCpy, " ", &remainder);
+  free(messageCpy);
+
+  move(0,0);
+
+  if ((strcmp(first, "GRID")) == 0) {
+    return initialGrid(remainder);
+  }
+
+  if ((strcmp(first, "QUIT")) == 0) {
+    return leaveGame(remainder);
+  }
+
+  if ((strcmp(first, "DISPLAY\n")) == 0) {
+    mvprintw(1, 0, "%s", remainder);
+    return renderMap(remainder);
+  }
+
+  if ((strcmp(first, "ERROR")) == 0) {
+    return handleError(remainder);
+  }
+
+  // if GOLD or OK or other unknown message
+  else {
+    return updatePlayer(remainder, first);
+  }  
+
+}
+
 
   // NOTE: I think the error is in parsing. Try to do it with their way
   
   // mvprintw(0, 50, "%s, and %s", first, remainder); // WHY DOES THIS MAKE DISPLAY WORK -> because then this is what prints the display?
-  move(0,0);
+  // move(0,0);
 /*
   if ((strncmp(message, "GRID ", strlen("GRID "))) == 0) {
     const char* content = message + strlen("GRID ");
@@ -219,31 +253,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
 
 */
 
-  if ((strcmp(first, "GRID")) == 0) {
-    return initialGrid(remainder);
-  }
 
-  if ((strcmp(first, "QUIT")) == 0) {
-    return leaveGame(remainder);
-  }
-
-  if ((strcmp(first, "DISPLAY\n")) == 0) {
-    mvprintw(1, 0, "%s", remainder);
-    return renderMap(remainder);
-  }
-
-  if ((strcmp(first, "ERROR")) == 0) {
-    return handleError(remainder);
-  }
-
-  // if GOLD or OK or other unknown message
-  else {
-    return updatePlayer(remainder, first);
-  }  
-
-
-  // free messageCpy?
-}
 
 /****************** initialGrid ******************/
 /* On reception of GRID message, start ncurses and check that display will fit grid. */
@@ -309,12 +319,6 @@ static bool renderMap(const char* mapString)
 */
   // move(0,0);
   refresh();
-
-
-
-
-
-
 
 
 
@@ -398,7 +402,7 @@ static bool updatePlayer(const char* message, const char* first)
 
     // if spectator
     if ((strcmp("spectator", name)) == 0) {
-      mvprintw(0,0, "Spectator: %d nuggets unclaimed.", &r);
+      mvprintw(0,0, "Spectator: %d nuggets unclaimed.", r);
     }
 
     // if player
@@ -410,11 +414,11 @@ static bool updatePlayer(const char* message, const char* first)
       char letter = player_getCharID(player); 
       // if player collected gold
       if (n != 0) {
-        mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d", &letter, &p, &r, &n); // TODO check with the overlapping, etc. I think the new line might do it, but need to try some stuff
+        mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d                                  ", letter, p, r, n); // TODO check with the overlapping, etc. I think the new line might do it, but need to try some stuff
       }
       // if player did not collect any gold
       else {
-        mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed).                        ", letter, &p, &r);
+        mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed).                        ", letter, p, r);
       }
     }
     refresh();
