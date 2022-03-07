@@ -1,22 +1,18 @@
 START OF LOG
-client on port 53983
+client on port 45632
 interactive player mode; name 'two'
 GOLD message received: GOLD 0 0 250
 GRID message received: GRID 5 14
 displayStart
 wRows = 10
-wCols = 105
+wCols = 51
 OK message received: OK B
 DISPLAY message received
 DISPLAY message received
-DISPLAY message received
-GOLD message received: GOLD 20 20 250
-GOLD message received: GOLD 0 20 230
+GOLD message received: GOLD 0 0 236
 DISPLAY message received
 DISPLAY message received
-DISPLAY message received
-GOLD message received: GOLD 5 25 230
-GOLD message received: GOLD 0 25 225
+GOLD message received: GOLD 0 0 190
 DISPLAY message received
 DISPLAY message received
 DISPLAY message received
@@ -40,10 +36,13 @@ DISPLAY message received
 DISPLAY message received
 DISPLAY message received
 DISPLAY message received
+GOLD message received: GOLD 26 26 190
+GOLD message received: GOLD 0 26 164
 DISPLAY message received
 DISPLAY message received
 DISPLAY message received
 DISPLAY message received
 DISPLAY message received
 QUIT message received: QUIT Thanks for playing!
+
 END OF LOG

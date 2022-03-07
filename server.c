@@ -620,7 +620,6 @@ static void pickupGoldHelper(void* arg, const char* key, void* item)
 /************** moveIterateHelper*********/
 /* helper to pass into hashtable_iterate in moveHelper
  * finds a player with a provided charID
- * // TODO: likely bug with container and void pointers
  * container passed into helper that holds the following items
  * void* container[2] = {bumpedPlayer, &next}; 
  * stores the matching player back in the container
@@ -632,13 +631,11 @@ moveIterateHelper(void* arg, const char* key, void* item)
   char* targetCharID = container[1];
   player_t* currPlayer = item;
 
-  // skip spectator as they have no "charID"
-  if (strcmp(player_getName(currPlayer), "spectator")) {
-    return;
-  }
   // matches player with target ID
-  if (player_getCharID(currPlayer) == *targetCharID) {
-    container[0] = currPlayer;
+  char targetID = *targetCharID;
+  char currID = player_getCharID(currPlayer);
+  if (targetID == currID) {
+    container[0] = item;
   }
 }
 
@@ -716,10 +713,13 @@ movePlayerHelper(player_t* player, int directionValue)
     } else if (isupper(next) != 0) {
       log_v("handling a collision");
       // holds two items to pass into iterator
-      void* container[2] = {bumpedPlayer, &next}; 
+      void* voidPlayer = NULL;
+      void* container[2] = {voidPlayer, &next}; 
+      
       // iterate over the hashtable to find the player bumped into
       // assigns bumpedPlayer
       hashtable_iterate(playerTable, container, moveIterateHelper);
+      bumpedPlayer = container[0];
 
       // switch the positions of the colliding players
       bumpedPos = player_getPos(bumpedPlayer);

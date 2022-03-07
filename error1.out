@@ -1,12 +1,21 @@
 START OF LOG
-client on port 37411
-interactive player mode; name 'two'
+client on port 45898
+interactive player mode; name 'one'
 GOLD message received: GOLD 0 0 250
 GRID message received: GRID 5 14
 displayStart
 wRows = 10
 wCols = 51
-OK message received: OK B
+OK message received: OK A
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
+GOLD message received: GOLD 14 14 250
+GOLD message received: GOLD 0 14 236
+DISPLAY message received
+DISPLAY message received
+GOLD message received: GOLD 46 60 236
+GOLD message received: GOLD 0 60 190
 DISPLAY message received
 DISPLAY message received
 DISPLAY message received
@@ -30,12 +39,10 @@ DISPLAY message received
 DISPLAY message received
 DISPLAY message received
 DISPLAY message received
+GOLD message received: GOLD 0 60 164
 DISPLAY message received
 DISPLAY message received
-QUIT message received: QUIT Thanks for playing!
-
-END OF LOG
-PLAY message received
+DISPLAY message received
 DISPLAY message received
 DISPLAY message received
 DISPLAY message received
