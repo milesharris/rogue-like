@@ -34,6 +34,7 @@ typedef struct game {
     int* piles;           // ptr to array of piles
     hashtable_t* players; // hashtable of player IDs
     int remainingGold;    // gold left in the game
+    int numPiles;         // number of gold piles in game
     grid_t* grid;         // current game grid
     int lastCharID;       // most recent 'player.charID'
     int numPlayers;       // number of players in a game
@@ -54,6 +55,10 @@ char* game_getMapfile(game_t* game)
 int* game_getPiles(game_t* game)
 {
   return game ? game->piles : NULL;
+}
+
+int game_getNumPiles(game_t* game) {
+  return game ? game->numPiles : -1;
 }
 
 hashtable_t* game_getPlayers(game_t* game) 
@@ -100,6 +105,17 @@ game_setRemainingGold(game_t* game, int gold)
     game->remainingGold = gold;
     return true;
   }
+}
+
+/**************** game_setNumPiles ******************/
+/* see header file for details */
+int game_setNumPiles(game_t* game, int numPiles)
+{
+  if (game == NULL) {
+    return -1;
+  }
+  game->numPiles = numPiles;
+  return game->numPiles;
 }
 
 /******************* game_setGrid *******************/
@@ -170,6 +186,7 @@ game_new(int* piles, grid_t* grid)
   game->numPlayers = 0;
   game->lastCharID = defaultCharID;
   game->piles = piles;
+  game->numPiles = -1;
   game->remainingGold = MAXGOLD;
   game->grid = grid;
   game->mapfile = grid_getMapfile(grid);

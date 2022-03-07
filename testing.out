@@ -1,1525 +1,569 @@
 START OF LOG
 parseargs passed
 
-adding pile of 20 gold to array
-adding pile of 5 gold to array
-adding pile of 10 gold to array
-adding pile of 18 gold to array
-adding pile of 2 gold to array
-adding pile of 19 gold to array
-adding pile of 176 gold to array
+adding pile of 32 gold to array
+adding pile of 23 gold to array
+adding pile of 11 gold to array
+adding pile of 11 gold to array
+adding pile of 173 gold to array
+added gold at index 37
 added gold at index 39
-added gold at index 23
-added gold at index 18
+added gold at index 35
+added gold at index 27
 added gold at index 49
-added gold at index 26
-added gold at index 48
-added gold at index 41
 generated gold
+piles array initially:
+32
+23
+11
+11
+173
+
 created game
 game initialized
 
 START OF LOG
-message_init: ready at port '47098'
-server listening on port 47098
+message_init: ready at port '57509'
+server listening on port 57509
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:38503
+message_loop: FROM 129.170.64.104:56825
 message_loop: 1 lines:
 PLAY one
 received message: PLAY one
-message_send: TO 129.170.64.104:38503
+message_send: TO 129.170.64.104:56825
 message_send: 1 lines:
 GOLD 0 0 250
-message_send: TO 129.170.64.104:38503
+message_send: TO 129.170.64.104:56825
 message_send: 1 lines:
 GRID 5 14
-message_send: TO 129.170.64.104:38503
+message_send: TO 129.170.64.104:56825
 message_send: 1 lines:
 OK A
 updating one's vision
-message_send: TO 129.170.64.104:38503
+message_send: TO 129.170.64.104:56825
 message_send: 6 lines:
 DISPLAY
-  +---------- 
-  |*....*..*.|
-  |@.....*.*.|
-  |**........|
-  +---------- 
+  +----------+
+  |.........*|
+  |..*.*.*...|
+  |.*....@...|
+    --------- 
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
+message_loop: FROM 129.170.64.104:56825
 message_loop: 1 lines:
-PLAY two
-received message: PLAY two
-message_send: TO 129.170.64.104:53983
-message_send: 1 lines:
-GOLD 0 0 250
-message_send: TO 129.170.64.104:53983
-message_send: 1 lines:
-GRID 5 14
-message_send: TO 129.170.64.104:53983
-message_send: 1 lines:
-OK B
+KEY h
+received message: KEY h
+key var set to: h
+player key input h valid
+valid key received
+in move, nextChar = .
+making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:38503
+message_send: TO 129.170.64.104:56825
 message_send: 6 lines:
 DISPLAY
-  +---------- 
-  |*..B.*..*.|
-  |@.....*.*.|
-  |**........|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +---------  
-  |*..@.*..*.|
-  |A.....*.*.|
-  |**........|
   +----------+
+  |.........*|
+  |..*.*.*...|
+  |.*...@....|
+    --------- 
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:37956
-message_loop: 1 lines:
-SPECTATE
-received message: SPECTATE
-message_send: TO 129.170.64.104:37956
-message_send: 1 lines:
-GRID 5 14
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*..B.*..*.|
-  |A.....*.*.|
-  |**........|
-  +----------+
-
-message_send: TO 129.170.64.104:37956
-message_send: 1 lines:
-GOLD 0 0 250
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
+message_loop: FROM 129.170.64.104:56825
 message_loop: 1 lines:
 KEY k
 received message: KEY k
 key var set to: k
-length of playerKeys array: 17
 player key input k valid
 valid key received
-initial pos in moveHelper: 21
-invalid move request from two
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*..B.*..*.|
-  |A.....*.*.|
-  |**........|
-  +----------+
-
+in move, nextChar = .
+making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:38503
+message_send: TO 129.170.64.104:56825
 message_send: 6 lines:
 DISPLAY
-  +---------- 
-  |*..B.*..*.|
-  |@.....*.*.|
-  |**........|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +---------  
-  |*..@.*..*.|
-  |A.....*.*.|
-  |**........|
+  +----------+
+  |.........*|
+  |..*.*@*...|
+  |.*........|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
+message_loop: FROM 129.170.64.104:56825
 message_loop: 1 lines:
 KEY l
 received message: KEY l
 key var set to: l
-length of playerKeys array: 17
 player key input l valid
 valid key received
-initial pos in moveHelper: 21
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*...B*..*.|
-  |A.....*.*.|
-  |**........|
-  +----------+
-
+in move, nextChar = *
+nextchar is a goldtile
+message_send: TO 129.170.64.104:56825
+message_send: 1 lines:
+GOLD 32 32 250
+message_send: TO 129.170.64.104:56825
+message_send: 1 lines:
+GOLD 0 32 218
 updating one's vision
-message_send: TO 129.170.64.104:38503
+message_send: TO 129.170.64.104:56825
 message_send: 6 lines:
 DISPLAY
-  +---------- 
-  |*...B*..*.|
-  |@.....*.*.|
-  |**........|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +---------  
-  |*...@*..*.|
-  |A.....*.*.|
-  |**........|
+  +----------+
+  |.........*|
+  |..*.*.@...|
+  |.*........|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
+message_loop: FROM 129.170.64.104:56825
 message_loop: 1 lines:
-KEY l
-received message: KEY l
-key var set to: l
-length of playerKeys array: 17
-player key input l valid
+KEY h
+received message: KEY h
+key var set to: h
+player key input h valid
 valid key received
-initial pos in moveHelper: 22
-new pos in movehelper is 23
-message_send: TO 129.170.64.104:53983
-message_send: 1 lines:
-GOLD 20 20 250
-message_send: TO 129.170.64.104:37956
-message_send: 1 lines:
-GOLD 0 0 230
-message_send: TO 129.170.64.104:38503
-message_send: 1 lines:
-GOLD 0 0 230
-message_send: TO 129.170.64.104:53983
-message_send: 1 lines:
-GOLD 0 20 230
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*....B..*.|
-  |A.....*.*.|
-  |**........|
-  +----------+
-
+in move, nextChar = .
+making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:38503
+message_send: TO 129.170.64.104:56825
 message_send: 6 lines:
 DISPLAY
-  +---------- 
-  |*....B..*.|
-  |@.....*.*.|
-  |**........|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*....@..*.|
-  |A.....*.*.|
-  |**........|
+  +----------+
+  |.........*|
+  |..*.*@....|
+  |.*........|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
+message_loop: FROM 129.170.64.104:56825
 message_loop: 1 lines:
-KEY l
-received message: KEY l
-key var set to: l
-length of playerKeys array: 17
-player key input l valid
+KEY h
+received message: KEY h
+key var set to: h
+player key input h valid
 valid key received
-initial pos in moveHelper: 23
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.....B.*.|
-  |A.....*.*.|
-  |**........|
-  +----------+
-
+in move, nextChar = *
+nextchar is a goldtile
+skipping empty pile of gold, value is: -1
+message_send: TO 129.170.64.104:56825
+message_send: 1 lines:
+GOLD 23 55 218
+message_send: TO 129.170.64.104:56825
+message_send: 1 lines:
+GOLD 0 55 195
 updating one's vision
-message_send: TO 129.170.64.104:38503
+message_send: TO 129.170.64.104:56825
 message_send: 6 lines:
 DISPLAY
-  +---------- 
-  |*.....B.*.|
-  |@.....*.*.|
-  |**........|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.....@.*.|
-  |A.....*.*.|
-  |**........|
+  +----------+
+  |.........*|
+  |..*.@.....|
+  |.*........|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
+message_loop: FROM 129.170.64.104:56825
 message_loop: 1 lines:
-KEY l
-received message: KEY l
-key var set to: l
-length of playerKeys array: 17
-player key input l valid
+KEY h
+received message: KEY h
+key var set to: h
+player key input h valid
 valid key received
-initial pos in moveHelper: 24
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*......B*.|
-  |A.....*.*.|
-  |**........|
-  +----------+
-
+in move, nextChar = .
+making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*......B*.|
-  |@.....*.*.|
-  |**........|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
+message_send: TO 129.170.64.104:56825
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |*......@*.|
-  |A.....*.*.|
-  |**........|
+  |.........*|
+  |..*@......|
+  |.*........|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
+message_loop: FROM 129.170.64.104:56825
 message_loop: 1 lines:
-KEY l
-received message: KEY l
-key var set to: l
-length of playerKeys array: 17
-player key input l valid
+KEY h
+received message: KEY h
+key var set to: h
+player key input h valid
 valid key received
-initial pos in moveHelper: 25
-new pos in movehelper is 26
-message_send: TO 129.170.64.104:53983
+in move, nextChar = *
+nextchar is a goldtile
+skipping empty pile of gold, value is: -1
+skipping empty pile of gold, value is: -1
+message_send: TO 129.170.64.104:56825
 message_send: 1 lines:
-GOLD 5 25 230
-message_send: TO 129.170.64.104:37956
+GOLD 11 66 195
+message_send: TO 129.170.64.104:56825
 message_send: 1 lines:
-GOLD 0 0 225
-message_send: TO 129.170.64.104:38503
-message_send: 1 lines:
-GOLD 0 0 225
-message_send: TO 129.170.64.104:53983
-message_send: 1 lines:
-GOLD 0 25 225
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.......B.|
-  |A.....*.*.|
-  |**........|
-  +----------+
-
+GOLD 0 66 184
 updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.......B.|
-  |@.....*.*.|
-  |**........|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
+message_send: TO 129.170.64.104:56825
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |*.......@.|
-  |A.....*.*.|
-  |**........|
+  |.........*|
+  |..@.......|
+  |.*........|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
+message_loop: FROM 129.170.64.104:56825
+message_loop: 1 lines:
+KEY h
+received message: KEY h
+key var set to: h
+player key input h valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:56825
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.........*|
+  |.@........|
+  |.*........|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:56825
 message_loop: 1 lines:
 KEY k
 received message: KEY k
 key var set to: k
-length of playerKeys array: 17
 player key input k valid
 valid key received
-initial pos in moveHelper: 26
-invalid move request from two
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.......B.|
-  |A.....*.*.|
-  |**........|
-  +----------+
-
+in move, nextChar = .
+making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.......B.|
-  |@.....*.*.|
-  |**........|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
+message_send: TO 129.170.64.104:56825
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |*.......@.|
-  |A.....*.*.|
-  |**........|
+  |.@.......*|
+  |..........|
+  |.*........|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
+message_loop: FROM 129.170.64.104:56825
 message_loop: 1 lines:
-KEY l
-received message: KEY l
-key var set to: l
-length of playerKeys array: 17
-player key input l valid
+KEY h
+received message: KEY h
+key var set to: h
+player key input h valid
 valid key received
-initial pos in moveHelper: 26
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*........B|
-  |A.....*.*.|
-  |**........|
-  +----------+
-
+in move, nextChar = .
+making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*........B|
-  |@.....*.*.|
-  |**........|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
+message_send: TO 129.170.64.104:56825
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |*........@|
-  |A.....*.*.|
-  |**........|
+  |@........*|
+  |..........|
+  |.*........|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
+message_loop: FROM 129.170.64.104:56825
 message_loop: 1 lines:
 KEY j
 received message: KEY j
 key var set to: j
-length of playerKeys array: 17
 player key input j valid
 valid key received
-initial pos in moveHelper: 27
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*.*B|
-  |**........|
-  +----------+
-
+in move, nextChar = .
+making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.....*.*B|
-  |**........|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
+message_send: TO 129.170.64.104:56825
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |*.........|
-  |A.....*.*@|
-  |**........|
+  |.........*|
+  |@.........|
+  |.*........|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY n
-received message: KEY n
-key var set to: n
-length of playerKeys array: 17
-player key input n valid
-valid key received
-initial pos in moveHelper: 42
-invalid move request from two
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*.*B|
-  |**........|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.....*.*B|
-  |**........|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*.*@|
-  |**........|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
+message_loop: FROM 129.170.64.104:56825
 message_loop: 1 lines:
 KEY j
 received message: KEY j
 key var set to: j
-length of playerKeys array: 17
 player key input j valid
 valid key received
-initial pos in moveHelper: 42
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*.*.|
-  |**.......B|
-  +----------+
-
+in move, nextChar = .
+making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.....*.*.|
-  |**.......B|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
+message_send: TO 129.170.64.104:56825
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |*.........|
-  |A.....*.*.|
-  |**.......@|
+  |.........*|
+  |..........|
+  |@*........|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY h
-received message: KEY h
-key var set to: h
-length of playerKeys array: 17
-player key input h valid
-valid key received
-initial pos in moveHelper: 57
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*.*.|
-  |**......B.|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.....*.*.|
-  |**......B.|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*.*.|
-  |**......@.|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY k
-received message: KEY k
-key var set to: k
-length of playerKeys array: 17
-player key input k valid
-valid key received
-initial pos in moveHelper: 56
-new pos in movehelper is 41
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*.B.|
-  |**........|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.....*.B.|
-  |**........|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*.@.|
-  |**........|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY j
-received message: KEY j
-key var set to: j
-length of playerKeys array: 17
-player key input j valid
-valid key received
-initial pos in moveHelper: 41
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*...|
-  |**......B.|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.....*...|
-  |**......B.|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*...|
-  |**......@.|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY k
-received message: KEY k
-key var set to: k
-length of playerKeys array: 17
-player key input k valid
-valid key received
-initial pos in moveHelper: 56
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*.B.|
-  |**........|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.....*.B.|
-  |**........|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*.@.|
-  |**........|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY n
-received message: KEY n
-key var set to: n
-length of playerKeys array: 17
-player key input n valid
-valid key received
-initial pos in moveHelper: 41
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*...|
-  |**.......B|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.....*...|
-  |**.......B|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*...|
-  |**.......@|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY h
-received message: KEY h
-key var set to: h
-length of playerKeys array: 17
-player key input h valid
-valid key received
-initial pos in moveHelper: 57
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*...|
-  |**......B.|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.....*...|
-  |**......B.|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*...|
-  |**......@.|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY h
-received message: KEY h
-key var set to: h
-length of playerKeys array: 17
-player key input h valid
-valid key received
-initial pos in moveHelper: 56
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*...|
-  |**.....B..|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.....*...|
-  |**.....B..|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*...|
-  |**.....@..|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY h
-received message: KEY h
-key var set to: h
-length of playerKeys array: 17
-player key input h valid
-valid key received
-initial pos in moveHelper: 55
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*...|
-  |**....B...|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.....*...|
-  |**....B...|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*...|
-  |**....@...|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY j
-received message: KEY j
-key var set to: j
-length of playerKeys array: 17
-player key input j valid
-valid key received
-initial pos in moveHelper: 54
-invalid move request from two
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*...|
-  |**....B...|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.....*...|
-  |**....B...|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....*...|
-  |**....@...|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY k
-received message: KEY k
-key var set to: k
-length of playerKeys array: 17
-player key input k valid
-valid key received
-initial pos in moveHelper: 54
-new pos in movehelper is 39
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....B...|
-  |**........|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.....B...|
-  |**........|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.....@...|
-  |**........|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY n
-received message: KEY n
-key var set to: n
-length of playerKeys array: 17
-player key input n valid
-valid key received
-initial pos in moveHelper: 39
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.........|
-  |**.....B..|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.........|
-  |**.....B..|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.........|
-  |**.....@..|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY h
-received message: KEY h
-key var set to: h
-length of playerKeys array: 17
-player key input h valid
-valid key received
-initial pos in moveHelper: 55
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.........|
-  |**....B...|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.........|
-  |**....B...|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.........|
-  |**....@...|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY h
-received message: KEY h
-key var set to: h
-length of playerKeys array: 17
-player key input h valid
-valid key received
-initial pos in moveHelper: 54
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.........|
-  |**...B....|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.........|
-  |**...B....|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.........|
-  |**...@....|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY h
-received message: KEY h
-key var set to: h
-length of playerKeys array: 17
-player key input h valid
-valid key received
-initial pos in moveHelper: 53
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.........|
-  |**..B.....|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.........|
-  |**..B.....|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.........|
-  |**..@.....|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY h
-received message: KEY h
-key var set to: h
-length of playerKeys array: 17
-player key input h valid
-valid key received
-initial pos in moveHelper: 52
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.........|
-  |**.B......|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.........|
-  |**.B......|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.........|
-  |**.@......|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY h
-received message: KEY h
-key var set to: h
-length of playerKeys array: 17
-player key input h valid
-valid key received
-initial pos in moveHelper: 51
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.........|
-  |**B.......|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.........|
-  |**B.......|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.........|
-  |**@.......|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY h
-received message: KEY h
-key var set to: h
-length of playerKeys array: 17
-player key input h valid
-valid key received
-initial pos in moveHelper: 50
-new pos in movehelper is 49
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.........|
-  |*B........|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.........|
-  |*B........|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.........|
-  |*@........|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY h
-received message: KEY h
-key var set to: h
-length of playerKeys array: 17
-player key input h valid
-valid key received
-initial pos in moveHelper: 49
-new pos in movehelper is 48
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.........|
-  |B.........|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.........|
-  |B.........|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.........|
-  |@.........|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
+message_loop: FROM 129.170.64.104:56825
 message_loop: 1 lines:
 KEY l
 received message: KEY l
 key var set to: l
-length of playerKeys array: 17
 player key input l valid
 valid key received
-initial pos in moveHelper: 48
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |A.........|
-  |.B........|
-  +----------+
-
+in move, nextChar = *
+nextchar is a goldtile
+skipping empty pile of gold, value is: -1
+skipping empty pile of gold, value is: -1
+skipping empty pile of gold, value is: -1
+message_send: TO 129.170.64.104:56825
+message_send: 1 lines:
+GOLD 11 77 184
+message_send: TO 129.170.64.104:56825
+message_send: 1 lines:
+GOLD 0 77 173
 updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@.........|
-  |.B........|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
+message_send: TO 129.170.64.104:56825
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |*.........|
-  |A.........|
+  |.........*|
+  |..........|
   |.@........|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
+message_loop: FROM 129.170.64.104:56825
+message_loop: 1 lines:
+KEY l
+received message: KEY l
+key var set to: l
+player key input l valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:56825
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.........*|
+  |..........|
+  |..@.......|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:56825
+message_loop: 1 lines:
+KEY l
+received message: KEY l
+key var set to: l
+player key input l valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:56825
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.........*|
+  |..........|
+  |...@......|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:56825
+message_loop: 1 lines:
+KEY l
+received message: KEY l
+key var set to: l
+player key input l valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:56825
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.........*|
+  |..........|
+  |....@.....|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:56825
+message_loop: 1 lines:
+KEY l
+received message: KEY l
+key var set to: l
+player key input l valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:56825
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.........*|
+  |..........|
+  |.....@....|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:56825
+message_loop: 1 lines:
+KEY l
+received message: KEY l
+key var set to: l
+player key input l valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:56825
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.........*|
+  |..........|
+  |......@...|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:56825
+message_loop: 1 lines:
+KEY l
+received message: KEY l
+key var set to: l
+player key input l valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:56825
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.........*|
+  |..........|
+  |.......@..|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:56825
+message_loop: 1 lines:
+KEY l
+received message: KEY l
+key var set to: l
+player key input l valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:56825
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.........*|
+  |..........|
+  |........@.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:56825
+message_loop: 1 lines:
+KEY l
+received message: KEY l
+key var set to: l
+player key input l valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:56825
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.........*|
+  |..........|
+  |.........@|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:56825
 message_loop: 1 lines:
 KEY k
 received message: KEY k
 key var set to: k
-length of playerKeys array: 17
 player key input k valid
 valid key received
-initial pos in moveHelper: 49
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*.........|
-  |AB........|
-  |..........|
-  +----------+
-
+in move, nextChar = .
+making a normal move
 updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*.........|
-  |@B........|
-  |..........|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
+message_send: TO 129.170.64.104:56825
 message_send: 6 lines:
 DISPLAY
   +----------+
-  |*.........|
-  |A@........|
+  |.........*|
+  |.........@|
   |..........|
   +----------+
 
 message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
+message_loop: FROM 129.170.64.104:56825
 message_loop: 1 lines:
 KEY k
 received message: KEY k
 key var set to: k
-length of playerKeys array: 17
 player key input k valid
 valid key received
-initial pos in moveHelper: 34
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*B........|
-  |A.........|
-  |..........|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |*B........|
-  |@.........|
-  |..........|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |*@........|
-  |A.........|
-  |..........|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY h
-received message: KEY h
-key var set to: h
-length of playerKeys array: 17
-player key input h valid
-valid key received
-initial pos in moveHelper: 19
-new pos in movehelper is 18
-updating spectator vision
-message_send: TO 129.170.64.104:37956
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |B.........|
-  |A.........|
-  |..........|
-  +----------+
-
-updating one's vision
-message_send: TO 129.170.64.104:38503
-message_send: 6 lines:
-DISPLAY
-  +---------- 
-  |B.........|
-  |@.........|
-  |..........|
-  +---------- 
-
-updating two's vision
-message_send: TO 129.170.64.104:53983
-message_send: 6 lines:
-DISPLAY
-  +----------+
-  |@.........|
-  |A.........|
-  |..........|
-  +----------+
-
-message_loop: message ready on socket
-message_loop: FROM 129.170.64.104:53983
-message_loop: 1 lines:
-KEY Q
-received message: KEY Q
-key var set to: Q
-length of playerKeys array: 17
-player key input Q valid
-valid key received
-message_send: TO 129.170.64.104:53983
+in move, nextChar = *
+nextchar is a goldtile
+skipping empty pile of gold, value is: -1
+skipping empty pile of gold, value is: -1
+skipping empty pile of gold, value is: -1
+skipping empty pile of gold, value is: -1
+message_send: TO 129.170.64.104:56825
 message_send: 1 lines:
-QUIT Thanks for playing!
-message_send: TO 129.170.64.104:53983
+GOLD 173 250 173
+message_send: TO 129.170.64.104:56825
 message_send: 1 lines:
-QUIT Thanks for playing!
+GOLD 0 250 0
+updating one's vision
+message_send: TO 129.170.64.104:56825
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.........@|
+  |..........|
+  |..........|
+  +----------+
 
 calling gameOver(success)
 gameSummary: is QUIT GAME OVER:
-A         0 one
-B        25 two
+A       250 one
 
 normalExit true
 gameSummary initial: QUIT GAME OVER:
-A         0 one
-B        25 two
+A       250 one
 
 sending summary: QUIT GAME OVER:
-A         0 one
-B        25 two
+A       250 one
 
-message_send: TO 129.170.64.104:37956
-message_send: 3 lines:
+message_send: TO 129.170.64.104:56825
+message_send: 2 lines:
 QUIT GAME OVER:
-A         0 one
-B        25 two
-
-normalExit true
-gameSummary initial: QUIT GAME OVER:
-A         0 one
-B        25 two
-
-sending summary: QUIT GAME OVER:
-A         0 one
-B        25 two
-
-message_send: TO 129.170.64.104:38503
-message_send: 3 lines:
-QUIT GAME OVER:
-A         0 one
-B        25 two
-
-normalExit true
-gameSummary initial: QUIT GAME OVER:
-A         0 one
-B        25 two
-
-sending summary: QUIT GAME OVER:
-A         0 one
-B        25 two
-
-message_send: TO 129.170.64.104:53983
-message_send: 3 lines:
-QUIT GAME OVER:
-A         0 one
-B        25 two
+A       250 one
 
 message_done: message module closing down.
 quitting game normally

@@ -1,5 +1,5 @@
 START OF LOG
-client on port 38503
+client on port 56825
 interactive player mode; name 'one'
 GOLD message received: GOLD 0 0 250
 GRID message received: GRID 5 14
@@ -10,26 +10,24 @@ OK message received: OK A
 DISPLAY message received
 DISPLAY message received
 DISPLAY message received
-DISPLAY message received
-GOLD message received: GOLD 0 0 230
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-GOLD message received: GOLD 0 0 225
+GOLD message received: GOLD 32 32 250
+GOLD message received: GOLD 0 32 218
 DISPLAY message received
 DISPLAY message received
+GOLD message received: GOLD 23 55 218
+GOLD message received: GOLD 0 55 195
 DISPLAY message received
 DISPLAY message received
-DISPLAY message received
-DISPLAY message received
+GOLD message received: GOLD 11 66 195
+GOLD message received: GOLD 0 66 184
 DISPLAY message received
 DISPLAY message received
 DISPLAY message received
 DISPLAY message received
 DISPLAY message received
 DISPLAY message received
-DISPLAY message received
-DISPLAY message received
+GOLD message received: GOLD 11 77 184
+GOLD message received: GOLD 0 77 173
 DISPLAY message received
 DISPLAY message received
 DISPLAY message received
@@ -40,12 +38,10 @@ DISPLAY message received
 DISPLAY message received
 DISPLAY message received
 DISPLAY message received
-DISPLAY message received
-DISPLAY message received
-DISPLAY message received
+GOLD message received: GOLD 173 250 173
+GOLD message received: GOLD 0 250 0
 DISPLAY message received
 QUIT message received: QUIT GAME OVER:
-A         0 one
-B        25 two
+A       250 one
 
 END OF LOG

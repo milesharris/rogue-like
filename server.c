@@ -20,7 +20,7 @@
 #include "log.h"
 
 // global constants
-static const int goldMaxNumPiles = 7; // maximum number of gold piles
+static const int goldMaxNumPiles = 5; // maximum number of gold piles
 //static const int goldMinNumPiles = 5;  // minimum number of gold piles
 static const char ROOMTILE = '.';      // char representation of room floor
 static const char PASSAGETILE = '#';   // char representation of passage tile
@@ -37,7 +37,7 @@ static game_t* game;
 // initialization functions and utilities
 static void parseArgs(const int argc, char* argv[], char** filepathname, int* seed);
 static bool initializeGame(char* filepathname, int* seed);
-static int* generateGold(grid_t* grid, int* piles, int* seed);
+static int generateGold(grid_t* grid, int* piles, int* seed);
 static bool strToInt(const char string[], int* number);
 // game state changes
 static bool handlePlayerConnect(char* playerName, const addr_t from);
@@ -169,28 +169,44 @@ static bool
 initializeGame(char* filepathname, int* seed)
 {
   grid_t* serverGrid = NULL;           // master grid held by server
-  int* goldPiles = NULL;               // array of gold piles
-
+  int numPiles;                        // number of gold piles generated
   // create the grid
   if ((serverGrid = grid_new(filepathname)) == NULL) {
     log_v("err loading grid from file");
     return false;
   }
+  
+  // create and check piles array
+  size_t toAlloc = (goldMaxNumPiles * sizeof(int));
+  int* goldPiles = malloc(toAlloc);
+  // set all values in the array to -1
+  for(int i = 0; i < goldMaxNumPiles; i++){
+    goldPiles[i] = -1;
+  }
 
   // randomly distribute gold
-  goldPiles = generateGold(serverGrid, goldPiles, seed); log_v("generated gold");
-
+  numPiles = generateGold(serverGrid, goldPiles, seed); 
+  log_v("generated gold");
+  log_v("piles array initially:");
+  for (int i = 0; i < goldMaxNumPiles; i++) {
+    log_d("%d", goldPiles[i]);
+  }
+  log_v("");
+  
   // create global game state
-  game = game_new(goldPiles, serverGrid); log_v("created game");
+  game = game_new(goldPiles, serverGrid);
+  game_setNumPiles(game, numPiles);
+  log_v("created game");
 
   return true;
 }
 
 /************* generateGold **************/
-/* randomly generates piles of gold and adds them to the map 
+/* randomly generates piles of gold and adds them to the map
+ * returns the number of piles generated 
  * helper for initializeGame
  */
-static int* generateGold(grid_t* grid, int* piles, int* seed)
+static int generateGold(grid_t* grid, int* piles, int* seed)
 {
   int totalGold = GoldTotal;                 // max gold
   int currPile = 0;                          // value (gold) of current pile
@@ -207,13 +223,6 @@ static int* generateGold(grid_t* grid, int* piles, int* seed)
   } else {
     srand(*seed);
   }
-  // create and check piles array
-  piles = mem_malloc_assert((sizeof(int) * goldMaxNumPiles), 
-                            "failed to alloc piles\n");
-  
-  for(int i = 0; i < goldMaxNumPiles; i++){
-    piles[i] = -1;
-  }
 
   // generating random piles
   // loops until no more gold to distribute
@@ -225,7 +234,8 @@ static int* generateGold(grid_t* grid, int* piles, int* seed)
       totalGold = 0;
     } else {
       tmp = rand();
-      currPile = (tmp % (totalGold/10));
+      // divides to get a more balanced distribution
+      currPile = (tmp % (totalGold/5));
       // if random number is greater than gold left to distribute
       if (currPile > totalGold) {
         currPile = totalGold;
@@ -235,10 +245,13 @@ static int* generateGold(grid_t* grid, int* piles, int* seed)
       totalGold -= currPile;
     }
     // add gold pile to array of piles
-    piles[currIndex] = currPile; log_d("adding pile of %d gold to array", currPile);
+    piles[currIndex] = currPile; 
+    log_d("adding pile of %d gold to array", currPile);
+    // update index and game state
     currIndex++;
   }
-  
+
+
   // insert piles into map
   // loop over all piles of gold
   while ( pilesInserted < currIndex ) {   // we don't want to insert more piles than we have
@@ -247,14 +260,15 @@ static int* generateGold(grid_t* grid, int* piles, int* seed)
     slot = (tmp % gridLen);
 
     if ( active[slot] == ROOMTILE ) { // we only insert into valid spaces in the map
-      if (grid_replace(grid, slot, GOLDTILE)) {  log_d("added gold at index %d", slot);
+      if (grid_replace(grid, slot, GOLDTILE)) {  
+        log_d("added gold at index %d", slot);
         pilesInserted++;
       } else {
         log_v("initializeGame: err inserting pile in map");
       }
     } 
   }
-  return piles;
+  return currIndex;
 }
 
 /************* GAME FUNCTIONS ****************/
@@ -548,7 +562,6 @@ static void gameOverHelper(void* arg, const char* key, void* item)
 static bool
 pickupGold(player_t* player)
 {
-  size_t arrayLen;                     // length of game.piles
   int* piles = game_getPiles(game);   // array of gold piles in game
 
   // check params and values
@@ -558,23 +571,22 @@ pickupGold(player_t* player)
   }
 
   // update player gold total
-  arrayLen = (sizeof(piles) / sizeof(int));
-  for (int i = 0; i < arrayLen; i++) {
+  for (int i = 0; i < game_getNumPiles(game); i++) {
+    int currPile = piles[i];
     // skip empty piles
-    if (piles[i] == -1) {
+    if (currPile == -1) {
+      log_d("skipping empty pile of gold, value is: %d", piles[i]);
       continue;
     }
     // modify player and message
-    player_addGold(player, piles[i]);
-    sendGold(player, piles[i]);
+    player_addGold(player, currPile);
+    sendGold(player, currPile);
     // modify game state
-    game_subtractGold(game, piles[i]);
+    game_subtractGold(game, currPile);
     piles[i] = -1;
 
     // notify all players of new gold state using GOLD message w/ 0 picked up
     hashtable_iterate(game_getPlayers(game), NULL, pickupGoldHelper);
-    // // update all client's vision
-    // updatePlayersVision();
     // exit loop once gold picked up
     break;
   }
@@ -682,7 +694,6 @@ movePlayerHelper(player_t* player, int directionValue)
   // char representation of moving player on map
   const char playerCharID = player_getCharID(player); 
   playerPos = player_getPos(player);
-  log_d("initial pos in moveHelper: %d", playerPos);
 
   // if the move is valid (does not hit a wall or similar)
   if (next == ROOMTILE || next == PASSAGETILE || next == GOLDTILE 
@@ -690,11 +701,10 @@ movePlayerHelper(player_t* player, int directionValue)
 
     // if we land on a pile of gold
     if (next == GOLDTILE) {
-      
+      log_v("nextchar is a goldtile");
       // update map with removed gold pile and new player position
       grid_revertTile(grid, player_getPos(player));
       player_setPos(player, player_getPos(player) + directionValue);
-      log_d("new pos in movehelper is %d", player_getPos(player));
       grid_replace(grid, player_getPos(player), playerCharID);
 
       // update player gold and the game's piles
@@ -721,6 +731,7 @@ movePlayerHelper(player_t* player, int directionValue)
       
     // if normal move, no gold or collision
     } else {
+      log_v("making a normal move");
       // revert player's old position to reference
       grid_revertTile(grid, player_getPos(player));
       
@@ -1008,7 +1019,6 @@ static bool handleKey(const char key, addr_t from)
 
   // validate key from player
   size_t arrayLen = sizeof(playerKeys); // sizeof(char) is 1 so len = size
-  log_d("length of playerKeys array: %d", (int)(arrayLen));
   for (int i = 0; i < arrayLen; i++) {
     // continue function execution if key valid
     if (key == playerKeys[i]) {
