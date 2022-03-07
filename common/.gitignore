@@ -4,3 +4,4 @@ gridtest
 player.o
 playertest
 game.o
+visiontest

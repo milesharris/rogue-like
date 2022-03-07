@@ -21,7 +21,7 @@ all:
 	(cd $L && if [ -r set.c ]; then make $L.a; else cp $L-given.a $L.a; fi)
 	make -C support
 	make -C common
-#	server
+	make server
 #	client
 
 # exectuables
@@ -29,7 +29,7 @@ server: server.o $(LLIBS)
 	$(CC) $(CFLAGS) $^ -o $@
 
 client: client.o $(LLIBS)
-		$(CC) $(CFLAGS) $^ -o $@
+		$(CC) $(CFLAGS) $^ -lcurses -o $@
 
 # Dependencies
 server.o: server.c
@@ -38,6 +38,8 @@ client.o: client.c
 ############## clean  ##########
 clean:
 	rm -f *~
+	rm -f client
+	rm -f server
 	make -C libcs50 clean
 	make -C common clean
 	make -C support clean

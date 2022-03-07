@@ -9,6 +9,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include "game.h"
+#include "mem.h"
 #include "grid.h"
 #include "hashtable.h"
 #include "player.h"
@@ -16,7 +17,7 @@
 
 //TODO: Document in specs
 // file-local constants (consistent with those in server)
-static const int MAXPLAYERS = 26;      // max # players in game
+static const int MAXPLAYERS = 25;      // max # players in game
 static const int MAXGOLD = 250;        // max # gold in game
 
 /**************** file-local functions ****************/
@@ -33,9 +34,11 @@ typedef struct game {
     int* piles;           // ptr to array of piles
     hashtable_t* players; // hashtable of player IDs
     int remainingGold;    // gold left in the game
+    int numPiles;         // number of gold piles in game
     grid_t* grid;         // current game grid
     int lastCharID;       // most recent 'player.charID'
     int numPlayers;       // number of players in a game
+    char* mapfile;        // filepath of the in-game map
 } game_t;
 
 /**************** getters ****************/
@@ -44,9 +47,18 @@ grid_t* game_getGrid(game_t* game)
   return game ? game->grid : NULL;
 }
 
+char* game_getMapfile(game_t* game)
+{
+  return game ? game->mapfile : NULL;
+}
+
 int* game_getPiles(game_t* game)
 {
   return game ? game->piles : NULL;
+}
+
+int game_getNumPiles(game_t* game) {
+  return game ? game->numPiles : -1;
 }
 
 hashtable_t* game_getPlayers(game_t* game) 
@@ -93,6 +105,17 @@ game_setRemainingGold(game_t* game, int gold)
     game->remainingGold = gold;
     return true;
   }
+}
+
+/**************** game_setNumPiles ******************/
+/* see header file for details */
+int game_setNumPiles(game_t* game, int numPiles)
+{
+  if (game == NULL) {
+    return -1;
+  }
+  game->numPiles = numPiles;
+  return game->numPiles;
 }
 
 /******************* game_setGrid *******************/
@@ -159,11 +182,14 @@ game_new(int* piles, grid_t* grid)
   }
 
   // initialize attributes to default values or parameters
+  game->players = players;
   game->numPlayers = 0;
   game->lastCharID = defaultCharID;
   game->piles = piles;
+  game->numPiles = -1;
   game->remainingGold = MAXGOLD;
   game->grid = grid;
+  game->mapfile = grid_getMapfile(grid);
 
   return game;
 }
@@ -186,8 +212,11 @@ char* game_buildSummary(game_t* game)
   }
   strcpy(gameSummary, firstLine);
 
+  // pass to iterator to avoid segfault on exit
+  char** summaryPtr = &gameSummary;
   // fill in rest of table and return
-  hashtable_iterate(game->players, gameSummary, game_summaryHelper);
+  hashtable_iterate(game->players, summaryPtr, game_summaryHelper);
+  gameSummary = summaryPtr[0];
   return gameSummary;
 }
 
@@ -201,20 +230,28 @@ char* game_buildSummary(game_t* game)
 static void game_summaryHelper(void* arg, const char* key, void* item)
 {
   // extract from params
-  char* gameSummary = arg;
+  char** gameSummary = arg;
+  char* summary = *gameSummary;
   player_t* player = item;
-  char* toAdd = player_summarize(player);  // string to concat to summary
   char* temp;                              // checks realloc success           
   
+  // ignore spectator in table
+  if (strcmp("spectator", player_getName(player)) == 0) {
+    return;
+  }
+
+  char* toAdd = player_summarize(player);  // string to concat to summary
+
   // allocate enough memory to concat
-  temp = realloc(gameSummary, strlen(gameSummary) + strlen(toAdd) + 1);
+  temp = realloc(summary, (strlen(summary) + strlen(toAdd) + 1));
   // exit on malloc failure. 
   if (temp == NULL) {
     return;
   }
-  gameSummary = temp;
+  summary = temp;
   // add the player's summary to the game string, then clean up memory
-  strcat(gameSummary, toAdd);
+  strcat(summary, toAdd);
+  gameSummary[0] = summary;
   free(toAdd);
 }
 /***************** game_subtractGold **************/
@@ -242,9 +279,11 @@ bool game_addPlayer(game_t* game, player_t* player)
   // get name for key and add to hashtable
   playerName = player_getName(player);
   if (hashtable_insert(game->players, playerName, player)) {
-    // increment numPlayers and lastCharID for next add
-    game->numPlayers++;
-    game->lastCharID++;
+    // increment values for next add unless handling spectator
+    if (strcmp(player_getName(player), "spectator") != 0) {
+      game->numPlayers++;
+      game->lastCharID++;
+    }
     return true;
   } else {
     return false;
@@ -257,9 +296,16 @@ player_t* game_getPlayerAtAddr(game_t* game, addr_t address)
 {
   hashtable_t* players;                        // table of players in game
   player_t* player = NULL;                     // player with given address
-  
+  const char* addrStr = message_stringAddr(address); // string for comparision
+  void* voidplayer = NULL;              // allows pulling player from container
+
+  // copy string to avoid compiler warnings
+  char* addrStrCpy = mem_malloc_assert(strlen(addrStr) + 1, 
+                                       "failed to alloc addrstrcpy");
+  strcpy(addrStrCpy, addrStr);
+
   // takes a name string and message string to give to hashtable_iterate
-  void* container[] = {&address, player};
+  void* container[2] = {addrStrCpy, voidplayer};
   // check params
   if (game == NULL || ! message_isAddr(address)) {
     return NULL;
@@ -272,7 +318,10 @@ player_t* game_getPlayerAtAddr(game_t* game, addr_t address)
 
   // iterate over hashtable, returning the player with given address if exist
   hashtable_iterate(players, container, game_getAtAddrHelper);
-
+  // clean up and return
+  player = container[1];
+  log_done();
+  free(addrStrCpy);
   return player;
 }
 
@@ -280,12 +329,14 @@ player_t* game_getPlayerAtAddr(game_t* game, addr_t address)
 static void game_getAtAddrHelper(void* arg, const char* key, void* item) {
   // extract params
   void** container = arg;
-  addr_t* targetAddr = container[0];
+  char* targetAddrStr = container[0];
   player_t* currPlayer = item;
+  const char* currAddrStr = message_stringAddr(player_getAddr(currPlayer));
   
   // compares addresses and sends matching player back to parent functions
-  if (message_eqAddr(*targetAddr, player_getAddr(currPlayer))) {
+  if (strcmp(targetAddrStr, currAddrStr) == 0) {
     container[1] = currPlayer;
+    return;
   }
 }
 
