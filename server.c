@@ -974,11 +974,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
   }
   else if (strncmp("KEY ", message, 4) == 0) {
     // send just key to helper func
-    // const char* content = message + strlen("KEY ");
-    // sscanf(content, "%c", &key);
-    // TESTING FOR SENDING KEY INPUT TO HANDLEKEY
     const char key = message[4];
-    log_c("key var set to: %c", key);
     // set to true if gold picked up and remaining is 0
     gameOverFlag = handleKey(key, from);
     return gameOverFlag;
@@ -1028,7 +1024,6 @@ static bool handleKey(const char key, addr_t from)
       message_send(from, "QUIT Thanks for watching!\n");
       return false;
     } else {
-      log_v("invalid key received");
       message_send(from, "ERROR invalid key for spectator");
       return false;
     }
@@ -1040,7 +1035,6 @@ static bool handleKey(const char key, addr_t from)
     // continue function execution if key valid
     if (key == playerKeys[i]) {
       validKey = true;
-      log_c("player key input %c valid", key);
       break;
     }
   }
@@ -1060,7 +1054,6 @@ static bool handleKey(const char key, addr_t from)
     }
   } else {
     // send error message if key is invalid
-    log_v("invalid key received");
     message_send(from, "ERROR invalid key for player");
     return gameOverFlag;
   }
