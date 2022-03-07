@@ -158,7 +158,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
   char* messageCpy = malloc(strlen(message) + 1);
   strcpy(messageCpy, message);
   first = __strtok_r(messageCpy, " ", &remainder);
-  free(messageCpy);
+  // free(messageCpy);
 
   // put cursor at 0,0 
   move(0,0);
