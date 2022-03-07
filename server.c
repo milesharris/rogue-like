@@ -55,7 +55,7 @@ static void gameOverHelper(void* arg, const char* key, void* item);
 static void sendGrid(addr_t to);
 static bool handleMessage(void* arg, const addr_t from, const char* message);
 static void sendGold(player_t* player, int goldCollected);
-static bool handleKey(char key, addr_t from);
+static bool handleKey(const char key, addr_t from);
 static void sendOK(player_t* player);
 static void sendDisplay(player_t* player, char* displayString);
 
@@ -897,7 +897,7 @@ static void updatePlayersVision()
  */
 static bool handleMessage(void* arg, const addr_t from, const char* message)
 {
-  char key;                            // key input from key message
+  //char key;                            // key input from key message
   bool gameOverFlag = false;           // true if all gold collected
 
   // if invalid message (bad address or null string) log and continue looping
@@ -935,8 +935,11 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
   }
   else if (strncmp("KEY ", message, 4) == 0) {
     // send just key to helper func
-    const char* content = message + strlen("KEY ");
-    sscanf(content, "%c", &key);
+    // const char* content = message + strlen("KEY ");
+    // sscanf(content, "%c", &key);
+    // TESTING FOR SENDING KEY INPUT TO HANDLEKEY
+    const char key = message[4];
+    log_c("key var set to: %c", key);
     // set to true if gold picked up and remaining is 0
     gameOverFlag = handleKey(key, from);
   } else {
@@ -955,7 +958,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
  * which happens when the game ends or encounters a critical error
  * and false if it should continue
  */
-static bool handleKey(char key, addr_t from)
+static bool handleKey(const char key, addr_t from)
 {
   player_t* player;                    // player that input is coming from
   bool validKey = false;               // flags if given key is valid input
@@ -968,6 +971,7 @@ static bool handleKey(char key, addr_t from)
   
   // assign player to corresponding address
   if ((player = game_getPlayerAtAddr(game, from)) == NULL) {
+    log_v("failed to get player from addr passed to handleKey");
     // TODO: evaluate whether this is critical or not
     return false;
   }
@@ -981,6 +985,7 @@ static bool handleKey(char key, addr_t from)
 
   // validate key from spectator and handle accordingly
   if (strcmp(player_getName(player), "spectator") == 0) {
+    log_v("player is spectator, only allowing 'Q' key");
     if (key == quitKey) {
       message_send(from, "QUIT Thanks for watching!\n");
       return false;
@@ -993,10 +998,12 @@ static bool handleKey(char key, addr_t from)
 
   // validate key from player
   size_t arrayLen = sizeof(playerKeys); // sizeof(char) is 1 so len = size
+  log_d("length of playerKeys array: %d", (int)(arrayLen));
   for (int i = 0; i < arrayLen; i++) {
     // continue function execution if key valid
     if (key == playerKeys[i]) {
       validKey = true;
+      log_c("player key input %c valid", key);
       break;
     }
   }
