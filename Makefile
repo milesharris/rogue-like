@@ -22,14 +22,14 @@ all:
 	make -C support
 	make -C common
 	make server
-#	client
+	make client
 
 # exectuables
 server: server.o $(LLIBS)
 	$(CC) $(CFLAGS) $^ -o $@
 
 client: client.o $(LLIBS)
-		$(CC) $(CFLAGS) $^ -lcurses -o $@
+	$(CC) $(CFLAGS) $^ -lcurses -o $@
 
 # Dependencies
 server.o: server.c

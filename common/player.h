@@ -73,7 +73,6 @@ int player_addGold(player_t* player, int newGold);
  * where, in game, the grid is the server's grid
  * Returns void
  */
-
 void player_updateVision(player_t* player, grid_t* grid);
 
 /***** player_summarize **************************************/

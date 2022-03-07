@@ -1,6 +1,5 @@
 /* 
  * server.c - defines implements the server for Nuggets game
- * more comments to come
  * see design and implementation specs for more details
  * CS50, Winter 2022, team 1
  */
@@ -60,6 +59,11 @@ static void sendOK(player_t* player);
 static void sendDisplay(player_t* player, char* displayString);
 
 /******************** main *******************/
+/* master function for the server
+ * initializes all modules
+ * loops to receive messages until fatal error or game ends
+ * exits 0 if game ends normally, non-zero if error
+ */
 int
 main(const int argc, char* argv[])
 {
@@ -97,10 +101,10 @@ main(const int argc, char* argv[])
   // handles inbound messages until gameOver or fatal error
   if (message_loop(NULL, 0, NULL, NULL, handleMessage)) {
     // if loop completed successfully, send quit info and close down module
+    log_v("quitting game normally");
     // clean up and exit
     gameOver(true);
     message_done();
-    log_v("quitting game normally");
     log_done();
     exit(0);
   } else {
@@ -169,7 +173,10 @@ static bool strToInt(const char string[], int* number)
 }
 
 /******************* initializeGame *************/
-/* set up data structures for game */
+/* set up data structures for game 
+ * allocates memory for the global game struct using game_new
+ * which must later be free'd using game_delete
+ */
 static bool
 initializeGame(char* filepathname, int seed)
 {
@@ -183,7 +190,7 @@ initializeGame(char* filepathname, int seed)
   
   // create and check piles array
   size_t toAlloc = (goldMaxNumPiles * sizeof(int));
-  int* goldPiles = malloc(toAlloc);
+  int* goldPiles = mem_malloc_assert(toAlloc, "failed to alloc piles");
   // set all values in the array to -1
   for(int i = 0; i < goldMaxNumPiles; i++){
     goldPiles[i] = -1;
@@ -196,7 +203,6 @@ initializeGame(char* filepathname, int seed)
   for (int i = 0; i < goldMaxNumPiles; i++) {
     log_d("%d", goldPiles[i]);
   }
-  log_v("");
   
   // create global game state
   game = game_new(goldPiles, serverGrid);
@@ -252,7 +258,6 @@ static int generateGold(grid_t* grid, int* piles, int seed)
     currIndex++;
   }
 
-
   // insert piles into map
   // loop over all piles of gold
   while ( pilesInserted < currIndex ) {   // we don't want to insert more piles than we have
@@ -280,7 +285,10 @@ static int generateGold(grid_t* grid, int* piles, int seed)
 
 /************ handlePlayerConnect ************/
 /* takes a given playername, which is received from a message in handleMessage
- * and create a new player struct with the given playerName
+ * allocates a new player struct with the given playerName
+ * that must later be free'd using player_delete
+ * within the server, this is done using the game_delete function
+ * 
  * randomizes player's initial position and assigns a letter representation
  * then generates vision based on that position
  * sends approriate messages to all clients
@@ -406,8 +414,10 @@ static bool handlePlayerConnect(char* playerName, addr_t from)
 /**************** handleSpectator **************/
 /* handles case where spectator asks to connect
  * takes an address as a parameter
- * creates a spectator player and adds them to the player list
+ * creates a spectator player (mallocs memory) and adds them to the player list
  * with some special behavior
+ * that must be free'd later using player_delete, called in game_delete
+ * 
  * returns true if successful or non-critical error
  * false if otherwise
  * NOTE: since spectator is in hashtable
@@ -490,7 +500,9 @@ static void handlePlayerQuit(player_t* player)
 
 /*************** gameOver ******************/
 /* the gameOver function encapsulates the process of ending the game
- * it takes a boolean parameter that indicates the circumstances the game ending
+ * it takes a boolean parameter 
+ * that indicates the circumstances of the game ending
+ * calls game_delete, free'ing all memory held within the game struct
  * if its true, the game is exiting because the all the gold was collected
  * if false, the game is exiting due to a critical error
  */ 
@@ -629,9 +641,7 @@ static void pickupGoldHelper(void* arg, const char* key, void* item)
 /************** moveIterateHelper*********/
 /* helper to pass into hashtable_iterate in moveHelper
  * finds a player with a provided charID
- * container passed into helper that holds the following items
- * void* container[2] = {bumpedPlayer, &next}; 
- * stores the matching player back in the container
+ * stores the matching player back in the container of void pointers
  */
 static void
 moveIterateHelper(void* arg, const char* key, void* item)
@@ -964,11 +974,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
   }
   else if (strncmp("KEY ", message, 4) == 0) {
     // send just key to helper func
-    // const char* content = message + strlen("KEY ");
-    // sscanf(content, "%c", &key);
-    // TESTING FOR SENDING KEY INPUT TO HANDLEKEY
     const char key = message[4];
-    log_c("key var set to: %c", key);
     // set to true if gold picked up and remaining is 0
     gameOverFlag = handleKey(key, from);
     return gameOverFlag;
@@ -1018,7 +1024,6 @@ static bool handleKey(const char key, addr_t from)
       message_send(from, "QUIT Thanks for watching!\n");
       return false;
     } else {
-      log_v("invalid key received");
       message_send(from, "ERROR invalid key for spectator");
       return false;
     }
@@ -1030,7 +1035,6 @@ static bool handleKey(const char key, addr_t from)
     // continue function execution if key valid
     if (key == playerKeys[i]) {
       validKey = true;
-      log_c("player key input %c valid", key);
       break;
     }
   }
@@ -1050,7 +1054,6 @@ static bool handleKey(const char key, addr_t from)
     }
   } else {
     // send error message if key is invalid
-    log_v("invalid key received");
     message_send(from, "ERROR invalid key for player");
     return gameOverFlag;
   }

@@ -248,7 +248,6 @@ static int longestRowLength(char* map)
 
 /***** posToCoordinates ***************************************/
 /* converts the position integer into cartesian coordinates to make mathematic manipulation easier */
-
 static void
 posToCoordinates(grid_t* grid, int pos, int* tuple)
 {
@@ -271,7 +270,6 @@ posToCoordinates(grid_t* grid, int pos, int* tuple)
 
 /***** coordinatesToPos ***************************************/
 /* converts cartesian coordinates back into an integer representation */
-
 static int
 coordinatesToPos(grid_t* grid, int x, int y)
 {
@@ -299,7 +297,6 @@ coordinatesToPos(grid_t* grid, int x, int y)
  *
  * Returns:     void
  */
-
 void
 grid_calculateVision(grid_t* grid, int pos, int* vision)
 { 

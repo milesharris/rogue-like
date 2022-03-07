@@ -38,7 +38,8 @@ char* grid_getMapfile(grid_t* grid);
 /**************** grid_new ***************/
 /* initialize a new "grid"
  * takes a string as a parameter where the string is the path to the map file
- * allocates memory for the map string that must then be free'd in grid_delete 
+ * allocates memory for the map string and struct itself 
+ * that must then be free'd in grid_delete 
  * also stores the number of rows and columns in the grid within the struct
  * returns the grid if process successful
  * returns NULL if error at any point in the process (including allocating memory)
