@@ -65,7 +65,7 @@ static bool renderMap(const char* mapString);
 Renders the map in response to DISPLAY message. 
 
 ```c
-static bool joinGame(const addr_t to);
+static bool joinGame();
 ```
 Sends message containing player's 'real name' (taken from the command line) and initializes player. If there was no player name passed in from the command line (so the client is a spectator) send the `SPECTATOR` message.
 
@@ -103,16 +103,13 @@ Updates player struct as new information (GOLD, OK, or unknown message) comes in
         pass message to renderMap
     if first is ERROR
         pass message to handleError
-    if first is GOLD or OK
-        pass message, first to updatePlayer
     if first is QUIT
         pass message to leaveGame
-
+    if first is GOLD or OK or an unknown message
+        pass message, first to updatePlayer
+  
 #### `handleInput`:
 
-    allocate buffer
-    read input into buffer
-        strip newline
     send message to server in 'KEY [key]' format as in requirements
 
 #### `initialGrid`:
@@ -122,7 +119,7 @@ Updates player struct as new information (GOLD, OK, or unknown message) comes in
     
 #### `renderMap`:
 
-   print local map string to console 
+   print map string to console 
     
 #### `joinGame`:
 
@@ -139,7 +136,7 @@ Updates player struct as new information (GOLD, OK, or unknown message) comes in
     if GOLD message
         read string into variables
         update player gold
-        print all gold info to display
+        print all gold info to header
     if OK message
         update player letter
     if unknown message type
