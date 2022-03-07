@@ -881,6 +881,124 @@ iterate through map length
     replace player active value with corresponding char from global active map
 ```
 
+## Game
+The *game* module defines and implements the `struct game` that stores all information about the current state of a game. 
+
+### Data structures
+The primary data structure within the *game* module is the `struct game`, which is then used by both the `server`. It is defined as follows:
+```c
+typedef struct game {
+    int* piles;          
+    hashtable_t* players; 
+    int remainingGold;  
+    int numPiles;       
+    grid_t* grid;        
+    int lastCharID;      
+    int numPlayers;      
+    char* mapfile;        
+} game_t;
+```
+### Definition of function prototypes
+#### Getters
+Getters are fairly self-explanatory, returning the relevant values or `NULL`/ 0 if they don't exist. 
+```c
+grid_t* game_getGrid(game_t* game);
+char* game_getMapfile(game_t* game);
+int* game_getPiles(game_t* game);
+int game_getNumPiles(game_t* game);
+hashtable_t* game_getPlayers(game_t* game);
+int game_getNumPlayers(game_t* game);
+int game_getRemainingGold(game_t* game);
+int game_getLastCharID(game_t* game);
+player_t* game_getPlayer(game_t* game, char* playerName);
+```
+#### Setters
+Setters are fairly self-explanatory, providing the ability to set member values without directly referencing them. Stylistic choice to make code more readable.
+```c
+bool game_setRemainingGold(game_t* game, int gold);
+int game_setNumPiles(game_t* game, int numPiles);
+bool game_setGrid(game_t* game, grid_t* grid);
+int game_setLastCharID(game_t* game, int charID);
+int game_setNumPlayers(game_t* game, int numPlayers);
+
+#### `game_new`
+The *game_new* function allocates space for a new 'struct game'. It only malloc's space for itself. All other memory must be allocated before
+A `game` takes non-null `grids` as parameters so grid_new must be called on a grid before passing it to `game`. All memory allocated by the game, its grid, and its int array are freed in game_delete.
+```c
+game_t* game_new(int* piles, grid_t* grid);
+```
+
+#### `game_addPlayer`
+The *game_addPlayer* adds a struct player to the hashtable of players within a given game struct. The player is keyed by their name, which is copied into the hashtable's memory. Thus, in the game module's memory. All "players" are free'd with game_delete. The function returns false if invalid params or if failure to add player true on success.
+```c
+bool game_addPlayer(game_t* game, player_t* player);
+```
+
+#### `game_buildSummary`
+The *game_buildSummary* builds the summary table displayed to players when the game ends normally. Also includes the corresponding QUIT message. Returns a malloc'd string, caller is responsible for free'ing it. Returns NULL if malloc failure or game does not exist.
+```c
+char* game_buildSummary(game_t* game); 
+```
+
+#### `game_getPlayer`
+The *game_getPlayer* returns a pointer to the player struct corresponding to the given name. Returns NULL if given string or game invalid, or if player not in hashtable.
+```c
+player_t* game_getPlayer(game_t* game, char* playerName);
+```
+
+#### `game_subtractGold`
+The *game_subtractGold* reduces a game's remaining gold by the given amount. It returns -1 if game does not exist. It returns the new value of game->remainingGold on success.
+```c
+int game_subtractGold(game_t* game, int gold);
+```
+
+#### `game_delete`
+The *game_delete* free's all memory assosciated with a `game`. It sets the int array of gold piles to NULL, calls hashtable_delete on the table of players, calls grid_delete on the grid, and then free's the game itself.
+```c
+void game_delete(game_t* game);
+```
+
+### Detailed pseudo code
+
+#### `game_new`
+```
+    initialize hashtable
+    allocate memory for game struct
+    initialize attributes of game struct
+```
+
+#### `game_addPlayer`
+```
+    validate parameters
+    get playername and add to hashtable
+    return true if success
+    return false if fail
+
+```
+
+#### `game_buildSummary`
+```
+    validate parameters
+    build summary by line
+    iterate over player hashtable to print out information
+    return gameSummary
+```
+
+#### `game_subtractGold`
+```
+    validate game
+    subtract from game's remainingGold
+    return game
+```
+
+#### `game_delete`
+```
+    validate game
+    free piles of gold
+    iterate over hashtable to delete players
+    delete grid
+    free game struct
+```
 ## Testing plan
 
 ### unit testing
@@ -905,9 +1023,4 @@ Then, we will test the complete product by connecting several player clients to 
 
 ## Limitations
 
-<<<<<<< HEAD
 None as of inital specs, will potentially be filled in later.
-=======
-For client to properly display its graphics it has to be run with stderr redirected away from the terminal.
-
->>>>>>> 9c949c2d322bfbf656783923da037deb1aeb5911
