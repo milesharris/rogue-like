@@ -145,7 +145,9 @@ player_new(char* name, char* mapfile)
   int mapLen = grid_getMapLen(vision);
 
   for(int i = 0; i < mapLen; i++){
-    active[i] = ' ';
+    if(active[i] != '\n'){
+      active[i] = ' ';
+    }
   }
 
   // initialize all other values address to defaults and return
@@ -222,7 +224,7 @@ player_updateVision(player_t* player, grid_t* grid)
   // initialize the vision array
   size_t mapLen = grid_getMapLen(grid);
   int vision[mapLen + 1];
-  int rowLen = grid_getNumColumns(grid);
+  //int rowLen = grid_getNumColumns(grid);
 
   for(int i = 0; i < mapLen + 1; i++){
     vision[i] = 0;
@@ -244,10 +246,10 @@ player_updateVision(player_t* player, grid_t* grid)
   // updating PAST player vision to reference map values
   for(int i = 0; i < mapLen; i++){
     // inserting new line characters into vision map
-    if( i != 0 && ( i % (rowLen + 1) == 0 ) ){
-      grid_replace(currPlayerVision, i, '\n');
-    }
-    else if( isblank(playerActive[i]) == 0 ){ // is slot is not whitespace, revert it to its reference map tile
+    //if( i != 0 && ( i % (rowLen + 1) == 0 ) ){
+    //  grid_replace(currPlayerVision, i, '\n');
+    //}
+    if( isblank(playerActive[i]) == 0 ){ // is slot is not whitespace, revert it to its reference map tile
       grid_revertTile(currPlayerVision, i);
     } 
     // check if the corresponding value in vision has a value of 1, in which case we use the active map value for this position
