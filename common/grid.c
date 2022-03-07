@@ -288,6 +288,8 @@ coordinatesToPos(grid_t* grid, int x, int y)
   return pos;
 }
 
+/***** VISION GLOBAL FUNCTION *********************************/
+
 /***** calculateVision ****************************************/
 /* Calculates a player's current vision, 
  * modifies a given integer array representing the player's vision
@@ -324,10 +326,10 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
   int up = pos - (grid->numColumns + 1);
 
   while( up > 0 ){ // while we are still within the map
-    if(reference[up] == '.' && !wallFound){ // marks room squares
+    if(reference[up] == ROOMTILE && !wallFound){ // marks room squares
       vision[up] = 1;
     } 
-    else if(reference[up] != '.' && !wallFound){ // marks first obstruction in this direction
+    else if(reference[up] != ROOMTILE && !wallFound){ // marks first obstruction in this direction
       vision[up] = 1;
       wallFound = true;
     } else {    // marks non-visible 
@@ -341,10 +343,10 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
   wallFound = false; // reset wall boolean
   int down = pos + (grid->numColumns + 1);
   while( down < grid->mapLen ){
-    if(reference[down] == '.' && !wallFound){
+    if(reference[down] == ROOMTILE && !wallFound){
       vision[down] = 1;
     }
-    else if(reference[down] != '.' && !wallFound){
+    else if(reference[down] != ROOMTILE && !wallFound){
       vision[down] = 1;
       wallFound = true;
     } else {
@@ -361,10 +363,10 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
   reference = grid_getReference(grid);
 
   while( reference[right] != '\n' ){ // within the current line
-    if(reference[right] == '.' && !wallFound){
+    if(reference[right] == ROOMTILE && !wallFound){
       vision[right] = 1;
     }
-    else if(reference[right] != '.' && !wallFound){
+    else if(reference[right] != ROOMTILE && !wallFound){
       vision[right] = 1;
       wallFound = true;
     } else {
@@ -378,10 +380,10 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
   wallFound = false;
   int left = pos - 1;
   while( reference[left] != '\n' && left >= 0 ){
-    if(reference[left] == '.' && !wallFound){
+    if(reference[left] == ROOMTILE && !wallFound){
       vision[left] = 1;
     }
-    else if(reference[left] != '.' && !wallFound){
+    else if(reference[left] != ROOMTILE && !wallFound){
       vision[left] = 1;
       wallFound = true;
     } else {
@@ -450,17 +452,13 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
               currPos = coordinatesToPos(grid, (int) currVal, posCoor[1] + step);
             }
 
-            if( (reference[currPos] == '.' || isalpha(reference[currPos]) != 0) && !wallFound ){  // check if room tile or player
+            if( (reference[currPos] == ROOMTILE || isalpha(reference[currPos]) != 0) && !wallFound ){  // check if room tile or player
               vision[currPos] = 1;
             }
-            else if( reference[currPos] != '.' && !wallFound ){ // check if this is the first wall we've seen
+            else if( reference[currPos] != ROOMTILE && !wallFound ){ // check if this is the first wall we've seen
               vision[currPos] = 1;
               wallFound = true;
             } else { // otherwise we've already seen a wall, so this point is not visible
-              // if statements such as this subordinate non-visible determinations to visible ones, 
-              // so if a tile is first found to be visible and later is deemed non-visible, it remains marked as visible
-              // the result is a guarantee all visible tiles will be marked visible, with the caveat that certain 
-              // non-visible tiles also marked visible, this is also documented in the README.md file
               if(vision[currPos] == 0){
                 vision[currPos] = -1;
               }
@@ -479,7 +477,7 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
               midPos = coordinatesToPos(grid, mid, posCoor[1] + step);
             }
             
-            if( (reference[midPos] == '.' || isalpha(reference[mid]) != 0) && !wallFound ){ // haven't hit a wall yet, and current position is between room tiles
+            if( (reference[midPos] == ROOMTILE || isalpha(reference[mid]) != 0) && !wallFound ){ // haven't hit a wall yet, and current position is between room tiles
               vision[pos1] = 1;
               vision[pos2] = 1;
             }
@@ -530,10 +528,10 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
               currPos = coordinatesToPos(grid, (int) currVal, posCoor[1] - step);
             }
 
-            if( (reference[currPos] == '.' || isalpha(currPos) != 0 ) && !wallFound ){
+            if( (reference[currPos] == ROOMTILE || isalpha(currPos) != 0 ) && !wallFound ){
               vision[currPos] = 1;
             }
-            else if( reference[currPos] != '.' && !wallFound ){
+            else if( reference[currPos] != ROOMTILE && !wallFound ){
               vision[currPos] = 1;
               wallFound = true;
             } else {
@@ -556,7 +554,7 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
               midPos = coordinatesToPos(grid, mid, posCoor[1] - step);
             }
             
-            if( (reference[midPos] == '.' || isalpha(reference[midPos]) != 0 ) && !wallFound){
+            if( (reference[midPos] == ROOMTILE || isalpha(reference[midPos]) != 0 ) && !wallFound){
               vision[pos1] = 1;
               vision[pos2] = 1;
             }

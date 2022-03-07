@@ -20,8 +20,8 @@
 #include "log.h"
 
 // global constants
-static const int goldMaxNumPiles = 25; // maximum number of gold piles
-//static const int goldMinNumPiles = 5;  // minimum number of gold piles
+static const int goldMaxNumPiles = 30; // maximum number of gold piles
+static const int goldMinNumPiles = 10;  // minimum number of gold piles
 static const char ROOMTILE = '.';      // char representation of room floor
 static const char PASSAGETILE = '#';   // char representation of passage tile
 static const char GOLDTILE = '*';      // char representation of gold
@@ -236,7 +236,7 @@ static int generateGold(grid_t* grid, int* piles, int seed)
     } else {
       tmp = rand();
       // divides to get a more balanced distribution
-      currPile = (tmp % (totalGold/5));
+      currPile = (tmp % (totalGold/goldMinNumPiles));
       // if random number is greater than gold left to distribute
       if (currPile > totalGold) {
         currPile = totalGold;
