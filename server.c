@@ -125,6 +125,7 @@ parseArgs(const int argc, char* argv[], char** filepathname, int* seed)
   // make sure arg count is 2 or 3 (depending on if seed is passed)
   if (argc != 2 && argc != 3) {
     log_v("parseArgs: need either 1 arg (map file) or 2 args (map and seed)");
+    log_done();
     exit(1);
   }
 
@@ -133,6 +134,7 @@ parseArgs(const int argc, char* argv[], char** filepathname, int* seed)
     // convert seed string into an integer
     if ( ! strToInt(argv[2], seed) || *seed < 0) {
       log_s("Seed: %s not a valid integer", argv[2]);
+      log_done();
       exit(2);
     }
   }
@@ -140,12 +142,14 @@ parseArgs(const int argc, char* argv[], char** filepathname, int* seed)
   // check filepathname is not NULL
   if ((*filepathname = argv[1]) == NULL) {
     log_v("parseArgs: NULL arg given");
+    log_done();
     exit(1);
   }
   
   // create a filepointer and check it 
   if ((fp = fopen(*filepathname, "r")) == NULL ) {
     log_v("parseArgs: err creating filepointer");
+    log_done();
     exit(1);
   }
 
@@ -897,14 +901,10 @@ static void updatePlayersVision()
 {
   hashtable_t* playerTable;            // table of players in game
 
-  // check global variable
-  if (game == NULL) {
-    return;
-  }
   // assign and check playerTable
-  if ((playerTable = game_getPlayers(game)) == NULL) {
-    return;
-  }
+  playerTable = mem_assert(game_getPlayers(game), 
+                           "players NULL in updateVision"); 
+
   // iterate over all players and update their vision
   hashtable_iterate(playerTable, NULL, updateHelper);
 }
@@ -993,7 +993,6 @@ static bool handleKey(const char key, addr_t from)
   player_t* player;                    // player that input is coming from
   bool validKey = false;               // flags if given key is valid input
   bool gameOverFlag = false;           // true if all gold picked up
-
   // array of all valid inputs from players
   const char playerKeys[17] = {'Q', 'h', 'H', 'l', 'L', 'j', 'J', 'k', 'K', 'y',
                                'Y', 'u', 'U', 'b', 'B', 'n', 'N'};    
@@ -1002,7 +1001,6 @@ static bool handleKey(const char key, addr_t from)
   // assign player to corresponding address
   if ((player = game_getPlayerAtAddr(game, from)) == NULL) {
     log_v("failed to get player from addr passed to handleKey");
-    // TODO: evaluate whether this is critical or not
     return false;
   }
 

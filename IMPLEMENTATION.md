@@ -25,7 +25,8 @@ All: Server (split by function), Server Testing, Documentation.
 
 ### Data structures
 
-Client will use the static `struct player`, as defined below. 
+Client and Server will use the `struct player`, as defined below. 
+Server will make use of the `struct player`, as defined below.
 
 ### Definition of function prototypes
 
@@ -34,15 +35,6 @@ static int parseArgs(const int argc, char* argv[]);
 ```
 Parses arguments to make sure they are valid. Decide if client is player or spectator. 
 
-```c
-static void initCurses();
-```
-Initializes curses. 
-
-```c
-static bool handleMessage(void* arg, const addr_t from, const char* message);
-```
-Framework for receiving messages; calls appropriate function based on message received. Returns true on fatal error. 
 
 ```c
 static bool handleInput(void* arg);
@@ -50,47 +42,50 @@ static bool handleInput(void* arg);
 Reads lines from stdin and sends them to server if valid. Returns true if message loop should end. 
 
 ```c
-static bool handleError(const char* message);
+static bool checkInput(void* arg);
 ```
-Responds to ERROR message. 
+Checks input to ensure it is valid. Returns true if yes, false if no. Helper to handleInput. 
 
 ```c
-static bool initialGrid(const char* gridInfo);
+static void initialGrid(const char* gridInfo);
 ```
-Deals with initial GRID message (checks size of display). Calls initCurses(). 
+Deals with initial GRID message (checks size of display). 
 
 ```c
-static bool renderMap(const char* mapString);
+static void renderScreen(const char* mapString, player_t* player);
 ```
-Renders the map in response to DISPLAY message. 
+Renders the map. 
 
 ```c
+<<<<<<< HEAD
+static void joinGame(void* arg, player_t* player);
+=======
 static bool joinGame();
+>>>>>>> 9c949c2d322bfbf656783923da037deb1aeb5911
 ```
 Sends message containing player's 'real name' (taken from the command line) and initializes player. If there was no player name passed in from the command line (so the client is a spectator) send the `SPECTATOR` message.
 
 ```c
-static bool leaveGame(const char* message);
+static void leaveGame(const char* message, player_t* player);
 ```
-Prints disconnect message from server, closes curses and frees all data structures. 
+Prints disconnect message from server and frees all data structures. 
 
 ```c
-static bool updatePlayer(const char* message, const char* first);
+static void updatePlayer(const char* message, const char* first, player_t* player);
 ```
-Updates player struct as new information (GOLD, OK, or unknown message) comes in. 
+Updates player struct as new information (GOLD, OK, DISPLAY) comes in. 
 
 
 ### Detailed pseudo code
 
+
 #### `parseArgs`:
 
 	validate commandline
+	initialize message module
+	print assigned port number
 	decide whether spectator or player
     initialize player
-
-#### `initCurses`:
-
-  initialize everything needed for curses
     
 #### `handleMessage`:
     
@@ -99,6 +94,19 @@ Updates player struct as new information (GOLD, OK, or unknown message) comes in
     if first is GRID
         pass message to initialGrid
         call joinGame
+<<<<<<< HEAD
+    if first is GOLD or DISPLAY or OK
+        pass message, first, player to updatePlayer
+    if first is QUIT
+        pass message, player to leaveGame
+
+#### `handleInput`:
+
+    checkInput
+    allocate buffer
+    read input into buffer
+        strip newline
+=======
     if first is DISPLAY
         pass message to renderMap
     if first is ERROR
@@ -110,16 +118,30 @@ Updates player struct as new information (GOLD, OK, or unknown message) comes in
   
 #### `handleInput`:
 
+>>>>>>> 9c949c2d322bfbf656783923da037deb1aeb5911
     send message to server in 'KEY [key]' format as in requirements
+
+#### `checkInput`:
+
+    check that arg is not null
+    check that server exists
+    read input
+    check that input is a valid command (keystroke)
+        if spectator, q is only valid keystroke
 
 #### `initialGrid`:
 
     read string into two integers, row num and column num
     check that display fits grid
     
-#### `renderMap`:
+#### `renderScreen`:
 
+<<<<<<< HEAD
+    print "header string" with information described in requirements spec
+    print local map string (stored in player) to console 
+=======
    print map string to console 
+>>>>>>> 9c949c2d322bfbf656783923da037deb1aeb5911
     
 #### `joinGame`:
 
@@ -133,14 +155,20 @@ Updates player struct as new information (GOLD, OK, or unknown message) comes in
     
 #### `updatePlayer`:
 
+
     if GOLD message
         read string into variables
         update player gold
+<<<<<<< HEAD
+        print all gold info
+    if DISPLAY message
+        update player display
+        call renderScreen with map string
+=======
         print all gold info to header
+>>>>>>> 9c949c2d322bfbf656783923da037deb1aeb5911
     if OK message
         update player letter
-    if unknown message type
-        do nothing
 
 #### `leaveGame`:
 
@@ -148,10 +176,6 @@ Updates player struct as new information (GOLD, OK, or unknown message) comes in
     delete player struct
     free everything else
     
-#### `handleError`:
-
-    print error message from server
-
 ---
 
 ## Server
@@ -181,13 +205,13 @@ static int initializeGame(char* filepathname, int seed);
 Initializes a new player setting their gold to 0 and placing them randomly on the map, connects player with server
 
 ```c
-static void handlePlayerConnect(char* name);
+static void handlePlayerConnect(char* playerName, addr_t from);
 ```
 
 Handles player disconnects, if a player disconnects early, print QUIT message and remove player. If game is over, disconnects all players and sends end of game message
 
 ```c
-static void handlePlayerDisconnect(int playerIndex, player_t** players);
+static void handlePlayerQuit(player_t* player);
 ```
 
 Updates all players to a statechange, calculating new visibility and updating their maps
@@ -199,32 +223,117 @@ static void updateClientState(char* map);
 Creates a new spectator if one does not exists, otherwise sends QUIT message to current spectator and creates a new spectator
 
 ```c
-static void handleSpectator(void);
+static void handleSpectator(addr_t from);
 ```
 
 Send each client a GAMEOVER message, including results from the game, disconnect each client from the game.
 
 ```c
-static void gameOver(void);
+static void gameOver(bool normalExit);
 ```
 
 Handles a player move, validating move and updating map
 
 ```c
-static void movePlayer(int playerID, char directionChar);
+static void movePlayer(player_t* player, char directionChar);
 ```
 
-Handles when a player picks ups gold, updating their total, updating the map, and sending a GOLD message to all clients
+Updates vision for all players in the game.
 
 ```c
-static void goldPickup(int playerID, int[] piles);
+static void updatePlayersVision();
 ```
 
-Calculates a player's current vision based on location, updates their map accordingly
+Converts a given string of of all numbers to an integer, returns true if successful, false otherwise
+```c=
+static bool strToInt(const char string[], int* number);
+```
+
+Randomly generates piles of gold and adds them to the map, returns the number of piles generated
+```c=
+static int generateGold(grid_t* grid, int* piles, int* seed);
+```
+
+Sends approriate messages to all players for use in gameOver, passed to hashtable_iterate
+```c=
+static void gameOverHelper(void* arg, const char* key, void* item);
+```
+
+Handles event when a client picks up gold. Passed a player, returns true if last pile is picked up, otherwise false. A true result indicates the game should end.
+```c=
+static bool pickupGold(player_t* player);
+```
+
+Sends the GOLD message to a client saying they picked up gold, for use in pickupDolg, possed to hashtable_iterate 
+
+```c=
+static void pickupGoldHelper(void* arg, const char* key, void* item);
+
+```
+
+Updates the players about the game state whenever a player picks up gold.
+
+```c=
+static void moveIterateHelper(void* arg, const char* key, void* item);
+```
+
+Used in movePlayer in order to find a player with a given characterID.
+
+```c=
+static void repeatMovePlayerHelper(player_t* player, int directionValue);
+```
+
+Used in movePlayer to repeatedly move a given player in the direction of a given integer value.
+
+```c=
+static void movePlayerHelper(player_t* player, int directionValue);
+```
+
+Used in movePlayer to move a given player in the direction of a given integer value once.
+
+```c=
+static void updateHelper(void*arg, const char* key, void* item);
+```
+
+Updates the vision and sends display messages for each player in the game.
+
+```c=
+static void sendGrid(addr_t to);
+```
+
+Sends the grid message to a given address.
+
+```c=
+static void sendGold(player_t* player, int goldCollected);
+```
+
+Abstracts the process of sending the gold message to a client.
+
+```c=
+static void sendOk(player_t* player);
+```
+
+Abstracts the process of sending the ok message to a client.
+
+```c=
+static void sendDisplay(player_t* player, char* displayString);
+```
+
+Sends the client the string that it needs to render.
 
 ```c
-static void updateVision(int playerID);
+static bool handleMessage(void* arg, const addr_t from, const char* message);
 ```
+Framework for receiving messages; calls appropriate function based on message received. Returns true on fatal error. 
+
+```c=
+static bool handleKey(char key, addr_t from);
+```
+
+Handles key input from the client and calls appropriate function based on the input.
+
+
+
 
 ### Detailed pseudo code
 
@@ -233,10 +342,7 @@ static void updateVision(int playerID);
 	validate commandline
 	verify map file can be opened for reading
 	if seed provided
-		verify it is a valid seed number
-		seed the random-number generator with that seed
-	else
-		seed the random-number generator with getpid()
+		convert seed string to integer
         
 #### `initializeGame`:
 
@@ -244,7 +350,6 @@ static void updateVision(int playerID);
     create grid calling grid_new
     generate random gold piles
     place piles randomly in grid, checking that they are placed in valid spots
-    generate global game state struct
         
 #### `handlePlayerConnect`:
 
@@ -266,7 +371,7 @@ static void updateVision(int playerID);
         error message
         
              
-#### `handlePlayerDisconnect`:
+#### `handlePlayerQuit`:
         
     if early disconnect
         grab player data struct from hashtable
@@ -300,24 +405,125 @@ static void updateVision(int playerID);
         send the player the updated map
 
 #### `gameOver`
-    Iterate through players:
+    iterate through players:
         call handle player disconnect
+
+#### `gameOverHelper`
+    initialize string for game summary
+    initialize boolean for exit check
+    initialize address
+    
+    if not a normal exit
+        throw error
+    else
+        send summary string to client
+    
+
     
 #### `movePlayer`
-    check move is valid
-    if move is capitalised: 
-        while move is valid:
-            if gold pile is in new position
-                call goldPickup
-            update player location
-            update map
-            update all player vision
-    else:
-        if gold pile is in new position
-            call goldPickup
-        update player location
-        update map
-        update all player vision
+    switch and call movePlayerHeper with parameters based on directionChar
+        
+#### `moveIteratePlayer`
+    if spectator
+        skip
+    if player id matches target id
+        save currPlayer
+
+
+#### `repeatMovePlayerHelper`
+    while we encounter a valid move tile
+        call movePlayerHelper
+    return gameOverFlag
+ 
+#### `movePlayerHelper`
+    get the character from the active grid at the player's position
+    get the player position
+    get the player's charID
+    if the next move is valid
+        if we land on a pile of gold
+            update player gold and game's piles
+            update map with removed ogld pile and new player position
+            update player position
+        if we hit another player
+            iterate over hashtable to find the player bumped into
+            switch positions of colliding players
+            update map with the positions of both players
+        if normal move
+            revert player's old position to reference
+            set their new position and update map
+    else
+        invalid move error
+    update all player's vision
+    return gameOverFlag
+
+#### `sendGrid`
+    if parameters are invalid
+        return
+    get grid
+    build message
+    send message
+    free message
+
+#### `sendGold`
+    if parameters are invalid
+        return
+    get player gold
+    get remaining gold
+    send message
+    free message
+
+#### `sendOk`
+    if parameters are invalid
+        return
+    build message
+    send message
+    free message
+    
+#### `sendDisplay`
+    if parameters are invalid
+        return
+    build string
+    send message
+    free message
+
+#### `handleMessage`
+    if invalid message
+        send error
+    if play message
+        send playername to handlePlayer
+        if failure to create player
+            return false
+            free message
+        free message
+    else if spectate
+        if handleSpecator is false
+            send message
+    else if key
+        handle key
+        send message
+    return gameOverFlag
+
+#### `handleKey`
+    assign player to corresponding address
+    check parameters
+    validate key from spectator
+    if spectator
+        if key is quit
+            send quit message
+        else
+            invalid key receive
+    validate player key
+    if valid player key
+        if key is quit
+            send quit message
+            handle player quitting
+            return true
+        else
+            call movement
+            return gameover
+    else
+        send error
+        return false
 
 #### `pickupGold`
     update player gold total
@@ -326,12 +532,46 @@ static void updateVision(int playerID);
     update piles[] to reflect absence of pile
     send GOLD message to all clients
     update clients to state change
+
+#### `pickupGoldHelper`
+    extract players from params
+    update player using remaining gold
     
 #### `updateVision`
     set all previously seen points to 'reference' grid values
     calculate range of vision
     set current range of vision to values from "active" grid
     return updated map
+
+#### `updatePlayersVision`
+    initialize a hashtable of the game's players
+    iterate through the hashtable calling the updateHelper
+    
+#### `updateHelper`
+    if the player is a spectator
+        send them the active map if they are spectating
+    if the player is a normal player
+        get the vision and position of the player
+        calculate and update the player's vision grid
+        replace the character with the @ symbol
+        message player with updated vision grid
+        
+#### `strToInt`
+    initialize char
+    scans string of integers into char
+    
+#### `generateGold`
+    create pseudo-random number sequence if given seed
+    create and check piles array
+    while totalGold is greater than 0
+        if we reach max piles
+            place remaining gold into a pile
+        else
+            create piles of gold
+            add gold pile to array of piles
+    while we have piles
+        insert piles into valid spaces in the map
+    return piles
     
 ---
 
@@ -350,6 +590,7 @@ typedef struct grid {
   size_t mapLen;
   int numColumns;
   int numRows;
+  char* mapFile;
 } grid_t;
 
 ```
@@ -360,9 +601,11 @@ typedef struct grid {
 Getters are fairly self-explanatory, returning the relevant values or `NULL`/ 0 if they don't exist. 
 ```c
 char* grid_getReference(grid_t* grid);
+char* grid_getMapFile(grid_t* grid);
 char* grid_getActive(grid_t* grid);
 int grid_getNumRows(grid_t* grid);
 int grid_getNumColumns(grid_t* grid);
+size_t grid_getMapLen(grid_t* grid);
 ```
 
 #### `grid_new`
@@ -372,17 +615,10 @@ grid_t* grid_new(char* mapFile);
 ```
 
 #### `grid_replace`
-The grid_replace function provides the ability to replace the character at the given index position in the given grid's active map with the given character.
+The grid_replace function provides the ability to replace the character at the given index position in the given grid's active map with the given character. It is primarily used as a helper for other functions, but is still exported for its general functionality.
 
 ```c
 bool grid_replace(grid_t* grid, int pos, char newChar);
-```
-
-#### `grid_revertTile`
-The grid_revertTile provides the ability to revert the tile at the given position in the active map to its value in the reference map. This is most used when players move off of tiles, when players leave a room that contains gold or other players (and therefore lose their vision of those items), and when players pick up gold.
-
-```c
-bool grid_revertTile(grid_t* grid, int pos);
 ```
 
 #### `grid_delete`
@@ -399,6 +635,39 @@ The longestRowLength function finds the length of the longest row in a map, whic
 static int longestRowLength(char* map);
 ```
 
+#### `posToCoordinates`
+Converts a position integer into cartesian coordinates in the form of a int array
+
+```c=
+static void posToCoordinates(grid_t* grid, int pos, int* tuple);
+```
+
+#### `coordinatesToPos`
+Converts cartesian coordinates to a position within the map string.
+
+```c=
+static int coordinatesToPos(grid_t* grid, int x, int y);
+```
+
+#### `grid_containsEmptyTile`
+Returns a boolean true if there is an empty room tile within the map, false otherwise.
+```c=
+bool grid_containsEmptyTile
+```
+
+#### `grid_revertTile`
+Takes a grid and position int as arguments, reverts the tile back to its reference map values.
+```c=
+bool grid_revertTile(grid_t* grid, int pos);
+```
+
+#### `grid_calculateVision`
+Given a grid, position, and vision array and calculates a player's current vision based on the position, modifies the given integer array, populating it with 1
+```c=
+void grid_calculateVision(grid_t* grid, int pos, int* vision);
+```
+
+
 ### Detailed pseudo code
 
 Getters are fairly self-explanatory and will not be detailed here, see the appropriate README for details.
@@ -410,7 +679,6 @@ open map file
 if it opens successfully
   find number of rows using file_numLines
   read reference map into memory using file_readFile
-  set mapLen by calling strLen on reference
   create active map as a copy of reference
   set number of columns using findLongestRow()
   return the grid
@@ -420,17 +688,9 @@ delete grid and return NULL in case of failure to open file or allocate memory
 
 #### `grid_replace`:
 ```
-if either string in parameters are NULL or if given index is out of bounds
+if either string in parameters are NULL or if given index is less than 0
   return false
 set the character at the given position in the given grid's active map to the given character
-return true
-```
-
-#### `grid_revertTile`
-```
-if either string in parameters are NULL or if given index is out of bounds
-  return false
-set the character at the given position in the given grid's active map to the character at the same position in the reference map
 return true
 ```
 
@@ -457,6 +717,68 @@ loop over all characters in the map
 return max length
 ```
 
+#### `posToCoordinates`:
+```
+store x as the pos mod row length
+store y as the pos / row length
+input values into the int array
+return
+```
+
+#### `coordinatesToPos`
+```
+pos = y * row length + x
+return pos
+```
+
+#### `grid_containsEmptyTile`
+```
+iterate through map
+  if room tile found:
+    return true
+    
+return false
+```
+
+#### `grid_revertTile`
+```
+check parametes
+change grid active position to reference grid value
+```
+
+#### `grid_calculateVision`
+```
+given a grid, position and int array
+starting at the given position:
+check cardinal directions (up, down, left, right)
+  walk in a direction until you hit the edge of the map
+    if a wall has not been found mark position as visible
+    if the current tile is a wall, mark wall as being found
+    otherwise the current tile is not visible
+    
+iterate through all points in the map
+  mark wall as not seen
+  if the point has not yet been visited
+    calculate slope between position and point
+    decide whether the slope squared is <= 1
+    if slope <= 1 walk along on the x axis, otherwise walk along the y axis
+    if position < point walk:
+      walk in the positive direction
+    else:
+      walk in the negative direction
+  
+  walk from the position to the point along the approprate axis
+    if the dependent variable intersects exactly at a point:
+      if a wall hasn't been seen, mark the point as visible
+      if the point is a wall, note a wall has been found
+      if wall has previously been found mark point as not visible
+    if the dependent variable intersects between two points:
+      select the point which the dependent variable is closer to
+      if a wall has not been seen mark both points as visible
+      if the closer point is a wall, mark wall as found
+      if wall has previously been found mark point as not visible
+```
+
 
 ---
 
@@ -469,9 +791,9 @@ The primary data structure within the *player* module is the `struct player`, wh
 ```c
 typedef struct player {
   char* name;
-  char* letter;
   grid_t* vision;
   addr_t address;
+  char charID;
   int pos;
   int gold;
 } player_t
@@ -486,30 +808,47 @@ char* player_getName(player_t* player);
 char* player_getLetter(player_t* player);
 int player_getPos(player_t* player);
 int player_getGold(player_t* player);
+char player_getCharID(player_t* player);
+addr_t player_getAddr(player_t* player);
 ```
+
 #### Setters
 Setters are fairly self-explanatory, providing the ability to set member values without directly referencing them. Stylistic choice to make code more readable.
 ```c
 grid_t* player_setVision(player_t* player, grid_t* vision);
 int player_setPos(player_t* player, int pos);
 int player_setGold(player_t* player, int gold);
+addr_t player_setAddr(player_t* player, addr_t address);
+char player_setCharID(player_t* player, char newChar);
 ```
 #### `player_new`
-The *player_new* function creates a new `struct player` with the given name, position, and vision. The name string and vision grid are copied by the `player` so the original strings can be free'd by the user after function call. Gold is initialized to 0.
+The *player_new* function creates a new `struct player` with the given name, position, and vision. The name and vision strings are copied by the `player` so the original strings can be free'd by the user after function call. Gold is initialized to 0.
 ```c
 player_t* player_new(char* name);
-```
-
-#### `player_addGold`
-The *player_addGold* function adds a given amount of gold to a given player's purse. It returns the player's new gold total if successful, and returns -1 if the given player does not exist or if the given amount of gold is less than 0.
-```c
-int player_addGold(player_t* player, int newGold);
 ```
 
 #### `player_delete`
 The *player_delete* function frees all the memory in use by a `struct player`. It free's the name and vision strings if they are not `NULL`, and always free's the struct itself.
 ```c
 void player_delete(player_t* player);
+```
+
+#### `player_addGold`
+Takes a player and int newGold as parameters, adds newGold to a player's existing gold total
+```c=
+int player_addGold(player_t* player, int newGold);
+```
+
+#### `player_summarize`
+Returns a string summarizing important information about a player, specifically a player's charID, name, and gold in purse
+```c=
+char* player_summarize(player_t* player);
+```
+
+#### `player_updateVision`
+Given a player and grid calculates a player's vision at their current position and updates their vision grid->active map to reflect what they can currently see and resets previous vision to reference map values
+```c=
+void player_updateVision(player_t* player, grid_t* grid)
 ```
 
 ### Detailed pseudo code
@@ -524,13 +863,7 @@ if name parameter not null
 else
   return NULL
 ```
-#### `player_addGold`
-```
-if given player NULL or given amount of gold less than 0
-  return -1
-add given amount of gold to player's total
-return player's gold total
-```
+
 #### `player_delete`
 ```
 if player not null
@@ -543,118 +876,36 @@ else
   do nothing
 ```
 
----
-
-## Game
-The game module defines, and implements a structure to hold the state of the game, allowing the struct to be used as a global variable in `server.c` and `client.c` for readability. It also provides a range of functions to interact with a `struct game`. 
-
-### Data Structures
-The primary data structure for this module is the `struct game`, defined below. It contains the relevant information about the current game state, and it held by both the server and each client. It is fairly simple, just a container for a collection of information.
-
-```c
-typedef struct game {
-    int* piles;            // ptr to array of piles
-    hashtable_t* players;  // hashtable of player structs
-    int remainingGold;     // gold left in the game
-    grid_t* grid;          // current game grid
-} game_t;
-
+#### `player_addGold`
+```
+check parameters
+grab player gold 
+add new gold to it 
+return new player gold amount
 ```
 
-### Definition of Function Prototypes
-#### Getters
-These are self-explanatory and will not be heavily detailed. They return NULL or 0 on error when appropriate.
-```c
-grid_t* game_getGrid(game_t* game);
-int* game_getPiles(game_t* game);
-hashtable_t* game_getPlayers(game_t* game);
-int game_getRemainingGold(game_t* game);
-
+#### `player_summarize`
+```
+check parameter
+malloc string of correct length
+copy charID, purse, and name into string
+return string
 ```
 
-#### Setters
-Once again self-explanatory. The one detail of note is that game_setGrid calls grid_delete on that game's previous grid.
-
-```c
-bool game_setRemainingGold(game_t* game, int gold);
-bool game_setGrid(game_t* game, grid_t* grid);
-
+#### `player_updateVision`
 ```
-
-#### game_new
-The game_new function creates a new `struct game`. It only allocates space for the struct itself, all parameters must be allocated before being passed into the function.
-
-```c
-game_t* game_new(int* piles, grid_t* grid);
-
+check parameters
+initialize vision to correct length
+populate vision with zeros 
+call grid_calculateVision on the vision array
+grab player vision grid_t
+grab global active map string and player active map string
+iterate through map length
+  if a players active map is not blank at this index:
+    revert tile value back to reference map value
+  if vision array has value 1 (visible) at this index:
+    replace player active value with corresponding char from global active map
 ```
-#### game_addPlayer
-The game_addPlayer function adds a given player struct with a given playerName key to the inner hashtable of a game. It leverages hashtable_insert. It returns false if failure and true if success.
-```c
-bool game_addPlayer(game_t* game, player_t* player);
-
-```
-#### game_subtractGold
-The game_subtractGold function subtracts a given amount of gold from a given game's remainingGold member. It returns the new value on success, and -1 if the game does not exist.
-
-```c
-int game_subtractGold(game_t* game, int gold);
-
-```
-#### game_getPlayer
-The game_getPlayer function returns a player_t* corresponding to the given playername in the parameters. It leverages hashtable_find.
-
-```c
-player_t* game_getPlayer(game_t* game, char* playerName);
-
-```
-#### game_delete
-The game_delete function free's all memory associated with a given game. It sets the arrays within the game to NULL and calls grid_delete on the grid. If the given game does not exist it does nothing.
-
-```c
-void game_delete(game_t* game);
-
-```
-### Detailed Pseudocode
-
-#### `game_new`
-```
-allocate space for a game_t
-if malloc failure, return NULL
-create players hashtable, return NULL if failure
-set game members to values given as params
-return game
-```
-
-#### `game_subtractGold`
-```
-if given game is NULL return -1
-else subtract the given amount of gold from the game's gold
-return new value of game->remainingGold
-```
-
-#### `game_addPlayer`
-```
-if params NULL return false
-call hashtable_insert with given params on the inner hashtable
-return true if success
-false if otherwise
-```
-
-#### `game_getPlayer`
-```
-if null params return null
-return the result of hashtable_find(playerName)
-```
-#### `game_delete`
-```
-if game is not NULL
-  set game->piles and game->players to NULL
-  call grid_delete on the grid
-  free the struct itself
-```
-
----
 
 ## Testing plan
 
@@ -662,7 +913,7 @@ if game is not NULL
 
 The grid module contains a small unit test that is enabled by compiling it with the GRIDTEST flag. It reads a grid into memory from a given file, prints the intial states of both reference and active maps, then modifies the active map and reprints. The grid module was tested on a variety of map files during development.
 
-The player and game modules are small enough that they do not require a seperate unit test. Their functionality can be determined during our larger integration and systems tests. 
+The player module is small enough that it does not require a seperate unit test. Its functionality can be determined during our larger integration and systems tests. 
 
 ### integration testing
 
@@ -679,7 +930,10 @@ Then, we will test the complete product by connecting several player clients to 
 ---
 
 ## Limitations
-Our game does not allow two players with the same name to connect. It asks the 2nd player to input a new name and try again. 
 
+<<<<<<< HEAD
+None as of inital specs, will potentially be filled in later.
+=======
 For client to properly display its graphics it has to be run with stderr redirected away from the terminal.
 
+>>>>>>> 9c949c2d322bfbf656783923da037deb1aeb5911
