@@ -20,7 +20,7 @@
 #include "log.h"
 
 // global constants
-static const int goldMaxNumPiles = 5; // maximum number of gold piles
+static const int goldMaxNumPiles = 25; // maximum number of gold piles
 //static const int goldMinNumPiles = 5;  // minimum number of gold piles
 static const char ROOMTILE = '.';      // char representation of room floor
 static const char PASSAGETILE = '#';   // char representation of passage tile
@@ -36,8 +36,8 @@ static game_t* game;
 // function prototypes
 // initialization functions and utilities
 static void parseArgs(const int argc, char* argv[], char** filepathname, int* seed);
-static bool initializeGame(char* filepathname, int* seed);
-static int generateGold(grid_t* grid, int* piles, int* seed);
+static bool initializeGame(char* filepathname, int seed);
+static int generateGold(grid_t* grid, int* piles, int seed);
 static bool strToInt(const char string[], int* number);
 // game state changes
 static bool handlePlayerConnect(char* playerName, const addr_t from);
@@ -64,14 +64,15 @@ int
 main(const int argc, char* argv[])
 {
   char* filepathname = NULL;           // filepath of the map file
-  int* seed = NULL;                    // seed for random number gen (optional)
+  // seed for random number gen, changed in parseArgs if applicable
+  int seed = getpid();               
   int ourPort;                         // port that server runs on
   
   // initialize logging
   log_init(stderr);
 
   // validate arguments
-  parseArgs(argc, argv, &filepathname, seed); log_v("parseargs passed\n");
+  parseArgs(argc, argv, &filepathname, &seed); log_v("parseargs passed\n");
   // generate necessary data structures
   if (! initializeGame(filepathname, seed)) { 
     log_v("failed to initialize game, exiting non-zero");
@@ -130,7 +131,7 @@ parseArgs(const int argc, char* argv[], char** filepathname, int* seed)
   // set seed if given
   if (argc == 3) {
     // convert seed string into an integer
-    if ( ! strToInt(argv[2], seed)) {
+    if ( ! strToInt(argv[2], seed) || *seed < 0) {
       log_s("Seed: %s not a valid integer", argv[2]);
       exit(2);
     }
@@ -166,7 +167,7 @@ static bool strToInt(const char string[], int* number)
 /******************* initializeGame *************/
 /* set up data structures for game */
 static bool
-initializeGame(char* filepathname, int* seed)
+initializeGame(char* filepathname, int seed)
 {
   grid_t* serverGrid = NULL;           // master grid held by server
   int numPiles;                        // number of gold piles generated
@@ -206,7 +207,7 @@ initializeGame(char* filepathname, int* seed)
  * returns the number of piles generated 
  * helper for initializeGame
  */
-static int generateGold(grid_t* grid, int* piles, int* seed)
+static int generateGold(grid_t* grid, int* piles, int seed)
 {
   int totalGold = GoldTotal;                 // max gold
   int currPile = 0;                          // value (gold) of current pile
@@ -217,12 +218,8 @@ static int generateGold(grid_t* grid, int* piles, int* seed)
   int pilesInserted = 0;
   int slot = 0;
 
-  // setup pseudo-random number sequence
-  if ( seed == NULL ) {
-    srand(getpid());
-  } else {
-    srand(*seed);
-  }
+  // seed random gen
+  srand(seed);
 
   // generating random piles
   // loops until no more gold to distribute
@@ -391,9 +388,11 @@ static bool handlePlayerConnect(char* playerName, addr_t from)
     }
   }
   
-  sendGold(player, 0);                 // a player has no gold on entry
-  sendGrid(from);
+  // update client with their ID and the state of the game
   sendOK(player);
+  sendGrid(from);
+  sendGold(player, 0);                 // a player has no gold on entry
+
   // update all player's vision with new information
   updatePlayersVision();
   // return after successfully initializing all player values
@@ -574,21 +573,22 @@ pickupGold(player_t* player)
 
   // update player gold total
   for (int i = 0; i < game_getNumPiles(game); i++) {
-    int currPile = piles[i];
+    const int currPile = piles[i];
     // skip empty piles
     if (currPile == -1) {
       log_d("skipping empty pile of gold, value is: %d", piles[i]);
       continue;
     }
-    // modify player and message
+    // modify player and game state
     player_addGold(player, currPile);
-    sendGold(player, currPile);
-    // modify game state
     game_subtractGold(game, currPile);
     piles[i] = -1;
+    
+    // notify player
+    sendGold(player, currPile);
 
     // notify all players of new gold state using GOLD message w/ 0 picked up
-    hashtable_iterate(game_getPlayers(game), NULL, pickupGoldHelper);
+    hashtable_iterate(game_getPlayers(game), player, pickupGoldHelper);
     // exit loop once gold picked up
     break;
   }
@@ -612,10 +612,15 @@ pickupGold(player_t* player)
 static void pickupGoldHelper(void* arg, const char* key, void* item) 
 {
   // extract from params
-  player_t* player = item;
+  player_t* triggerPlayer = arg;       // player who picked up gold
+  player_t* currPlayer = item;         // current player in iteration
 
   // update each player regarding gold remaining
-  sendGold(player, 0);
+  if (strcmp(player_getName(triggerPlayer), player_getName(currPlayer)) != 0) {
+    // dont double-update player who picked up gold
+    sendGold(currPlayer, 0);
+  }
+  
 }
 /************** moveIterateHelper*********/
 /* helper to pass into hashtable_iterate in moveHelper
