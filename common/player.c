@@ -223,6 +223,11 @@ player_updateVision(player_t* player, grid_t* grid)
   size_t mapLen = grid_getMapLen(grid);
   int vision[mapLen + 1];
   int rowLen = grid_getNumColumns(grid);
+
+  for(int i = 0; i < mapLen + 1; i++){
+    vision[i] = 0;
+  }
+
   // populate vision array
   grid_calculateVision(grid, pos, vision);
   
