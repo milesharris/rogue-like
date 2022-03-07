@@ -214,14 +214,14 @@ player_updateVision(player_t* player, grid_t* grid)
     return;
   }
   
-  int pos = player_getPos(player);
+  int pos = player->pos;
   if( pos < 0 ){
     return;
   }
 
   // initialize the vision array
   size_t mapLen = grid_getMapLen(grid);
-  int vision[mapLen];
+  int vision[mapLen + 1];
   int rowLen = grid_getNumColumns(grid);
   // populate vision array
   grid_calculateVision(grid, pos, vision);

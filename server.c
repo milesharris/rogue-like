@@ -707,7 +707,7 @@ movePlayerHelper(player_t* player, int directionValue)
       bumpedPlayerCharID = player_getCharID(bumpedPlayer);
       grid_replace(grid, player_getPos(bumpedPlayer), bumpedPlayerCharID);
       grid_replace(grid, player_getPos(player), playerCharID);
-r
+      
     // if normal move, no gold or collision
     } else {
       // revert player's old position to reference
