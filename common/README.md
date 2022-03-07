@@ -15,6 +15,8 @@ Implements a suite of functions to handle actions involving player. It defines a
 
 To build common.a, run `make`.
 To run the grid unit test, run `make gridtest`.
+To run the vision unit test, run `make visiontest`.
+To run the player unit test, run  make playertest`.
 To clean up, run `make clean`.
 
 ### grid
@@ -31,12 +33,31 @@ bool grid_replace(grid_t* grid, int pos, char newChar);
 bool grid_containsEmptyTile(grid_t* grid);
 bool grid_revertTile(grid_t* grid, int pos);
 void grid_delete(grid_t* grid);
-
 ```
 
 ### player
 
-The player module...
+The player module define and implements a structure to contain and manipulate information pertinent to a playe, including name, vision grid, address, char ID, and current gold. Includes the following types and functions:
+
+```c
+typedef struct player player_t;
+grid_t* player_getVision(player_t* player);
+char* player_getName(player_t* player);
+int player_getPos(player_t* player);
+int player_getGold(player_t* player);
+char player_getCharID(player_t* player);
+addr_t player_getAddr(player_t* player);
+grid_t* player_setVision(player_t* player, grid_t* vision);
+int player_setPos(player_t* player, int pos);
+int player_setGold(plauer_t* player, in gold);
+addr_t player_setAddr(player_t* player, addr_t address);
+char player_setCharID(player_t* player, char newChar);
+player_t* player_new(char* name, char* mapfile);
+int player_addGold(player_t* player, int newGold);
+char* player_summarize(player_t* player);
+void player_updateVision(player_t* player, grid_t* grid);
+void player_delete(player_t* player);
+```
 
 ### game
 
