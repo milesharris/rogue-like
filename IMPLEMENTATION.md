@@ -57,11 +57,7 @@ static void renderScreen(const char* mapString, player_t* player);
 Renders the map. 
 
 ```c
-<<<<<<< HEAD
 static void joinGame(void* arg, player_t* player);
-=======
-static bool joinGame();
->>>>>>> 9c949c2d322bfbf656783923da037deb1aeb5911
 ```
 Sends message containing player's 'real name' (taken from the command line) and initializes player. If there was no player name passed in from the command line (so the client is a spectator) send the `SPECTATOR` message.
 
@@ -94,7 +90,6 @@ Updates player struct as new information (GOLD, OK, DISPLAY) comes in.
     if first is GRID
         pass message to initialGrid
         call joinGame
-<<<<<<< HEAD
     if first is GOLD or DISPLAY or OK
         pass message, first, player to updatePlayer
     if first is QUIT
@@ -106,19 +101,6 @@ Updates player struct as new information (GOLD, OK, DISPLAY) comes in.
     allocate buffer
     read input into buffer
         strip newline
-=======
-    if first is DISPLAY
-        pass message to renderMap
-    if first is ERROR
-        pass message to handleError
-    if first is QUIT
-        pass message to leaveGame
-    if first is GOLD or OK or an unknown message
-        pass message, first to updatePlayer
-  
-#### `handleInput`:
-
->>>>>>> 9c949c2d322bfbf656783923da037deb1aeb5911
     send message to server in 'KEY [key]' format as in requirements
 
 #### `checkInput`:
@@ -136,12 +118,8 @@ Updates player struct as new information (GOLD, OK, DISPLAY) comes in.
     
 #### `renderScreen`:
 
-<<<<<<< HEAD
     print "header string" with information described in requirements spec
     print local map string (stored in player) to console 
-=======
-   print map string to console 
->>>>>>> 9c949c2d322bfbf656783923da037deb1aeb5911
     
 #### `joinGame`:
 
@@ -159,14 +137,10 @@ Updates player struct as new information (GOLD, OK, DISPLAY) comes in.
     if GOLD message
         read string into variables
         update player gold
-<<<<<<< HEAD
         print all gold info
     if DISPLAY message
         update player display
         call renderScreen with map string
-=======
-        print all gold info to header
->>>>>>> 9c949c2d322bfbf656783923da037deb1aeb5911
     if OK message
         update player letter
 
