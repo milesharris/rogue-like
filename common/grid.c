@@ -11,6 +11,7 @@
 #include <stdio.h>
 #include <string.h>
 #include <stdbool.h>
+#include <ctype.h>
 #include "grid.h"
 #include "mem.h"
 #include "file.h"
@@ -449,17 +450,10 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
               currPos = coordinatesToPos(grid, (int) currVal, posCoor[1] + step);
             }
 
-            if( reference[currPos] == '.' && !wallFound ){      // check if room tile
-              //if(vision[currPos] == 0){
-              //  vision[currPos] = 1;
-              //}
+            if( (reference[currPos] == '.' || isalpha(reference[currPos]) != 0) && !wallFound ){  // check if room tile or player
               vision[currPos] = 1;
             }
             else if( reference[currPos] != '.' && !wallFound ){ // check if this is the first wall we've seen
-              //if(vision[currPos] == 0){
-              //  vision[currPos] = 1;
-              //  wallFound = true;
-              //}
               vision[currPos] = 1;
               wallFound = true;
             } else { // otherwise we've already seen a wall, so this point is not visible
@@ -485,13 +479,7 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
               midPos = coordinatesToPos(grid, mid, posCoor[1] + step);
             }
             
-            if(reference[midPos] == '.' && !wallFound){ // haven't hit a wall yet, and current position is between room tiles
-              //if(vision[pos1] == 0){
-              //  vision[pos1] = 1;
-              //}
-              //if(vision[pos2]==0){
-              //  vision[pos2] = 1;
-              //}
+            if( (reference[midPos] == '.' || isalpha(reference[mid]) != 0) && !wallFound ){ // haven't hit a wall yet, and current position is between room tiles
               vision[pos1] = 1;
               vision[pos2] = 1;
             }
@@ -499,14 +487,6 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
               vision[pos1] = 1;
               vision[pos2] = 1;
               wallFound = true;
-              //if(vision[pos1] == 0){
-              //  vision[pos1] = 1;
-              //  wallFound = true;
-              //}
-              //if(vision[pos2] == 0){
-              //  vision[pos2] = 1;
-              //  wallFound = true;
-              //}
 
             } else { // we've already see a wall, current position is not visible
               if(vision[pos1] == 0){
@@ -515,8 +495,6 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
               if(vision[pos2] == 0){
                 vision[pos2] = -1;
               }
-              //vision[pos1] = -1;
-              //vision[pos2] = -1;
             }
           }
           step++; // increment current x
@@ -552,7 +530,7 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
               currPos = coordinatesToPos(grid, (int) currVal, posCoor[1] - step);
             }
 
-            if( reference[currPos] == '.' && !wallFound ){
+            if( (reference[currPos] == '.' || isalpha(currPos) != 0 ) && !wallFound ){
               vision[currPos] = 1;
             }
             else if( reference[currPos] != '.' && !wallFound ){
@@ -578,25 +556,11 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
               midPos = coordinatesToPos(grid, mid, posCoor[1] - step);
             }
             
-            if(reference[midPos] == '.' && !wallFound){
-              //if(vision[pos1] == 0){
-              //  vision[pos1] = 1;
-              //}
-              //if(vision[pos2]){
-              //  vision[pos2] = 1;
-              //}
+            if( (reference[midPos] == '.' || isalpha(reference[midPos]) != 0 ) && !wallFound){
               vision[pos1] = 1;
               vision[pos2] = 1;
             }
             else if(!wallFound){
-              //if(vision[pos1]){
-              //  vision[pos1] = 1;
-              //  wallFound = true;
-              //}
-              //if(vision[pos2]){
-              //  vision[pos2] = 1;
-              //  wallFound = true;
-              //}
               vision[pos1] = 1;
               vision[pos2] = 1;
               wallFound = true;
@@ -607,8 +571,6 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
               if(vision[pos2] == 0){
                 vision[pos2] = -1;
               }
-              //vision[pos1] = -1;
-              //vision[pos2] = -1;
             }
           } 
           step++;
