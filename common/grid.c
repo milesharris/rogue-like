@@ -449,9 +449,15 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
             }
 
             if( reference[currPos] == '.' && !wallFound ){      // check if room tile
+              //if(vision[currPos] == 0){
+              //  vision[currPos] = 1;
+              //}
               vision[currPos] = 1;
             }
             else if( reference[currPos] != '.' && !wallFound ){ // check if this is the first wall we've seen
+              //if(vision[currPos] == 0){
+              //  vision[currPos] = 1;
+              //}
               vision[currPos] = 1;
               wallFound = true;
             } else { // otherwise we've already seen a wall, so this point is not visible
@@ -474,7 +480,13 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
               pos2 = coordinatesToPos(grid, rounded + 1, posCoor[1] + step);
             }
             
-            if((reference[pos1] == '.' || reference[pos2] == '.') && !wallFound){ // haven't hit a wall yet, and current position is between room tiles
+            if((reference[pos1] == '.' && reference[pos2] == '.') && !wallFound){ // haven't hit a wall yet, and current position is between room tiles
+              //if(vision[pos1] == 0){
+              //  vision[pos1] = 1;
+              //}
+              //if(vision[pos2]==0){
+              //  vision[pos2] = 1;
+              //}
               vision[pos1] = 1;
               vision[pos2] = 1;
             }
@@ -489,6 +501,8 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
               if(vision[pos2] == 0){
                 vision[pos2] = -1;
               }
+              //vision[pos1] = -1;
+              //vision[pos2] = -1;
             }
           }
           step++; // increment current x
@@ -530,7 +544,9 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
               vision[currPos] = 1;
               wallFound = true;
             } else {
+              if(vision[currPos] == 0){
               vision[currPos] = -1;
+              }
             }
           } else { // otherwise the point falls between two points in the map and we must check both
             int pos1;
@@ -544,11 +560,23 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
               pos2 = coordinatesToPos(grid, rounded + 1, posCoor[1] - step);
             }
             
-            if((reference[pos1] == '.' || reference[pos2] == '.') && !wallFound){
+            if((reference[pos1] == '.' && reference[pos2] == '.') && !wallFound){
+              //if(vision[pos1] == 0){
+              //  vision[pos1] = 1;
+              //}
+              //if(vision[pos2]){
+              //  vision[pos2] = 1;
+              //}
               vision[pos1] = 1;
               vision[pos2] = 1;
             }
             else if(!wallFound){
+              //if(vision[pos1]){
+              //  vision[pos1] = 1;
+              //}
+              //if(vision[pos2]){
+              //  vision[pos2] = 1;
+              //}
               vision[pos1] = 1;
               vision[pos2] = 1;
               wallFound = true;
@@ -559,6 +587,8 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
               if(vision[pos2] == 0){
                 vision[pos2] = -1;
               }
+              //vision[pos1] = -1;
+              //vision[pos2] = -1;
             }
           } 
           step++;
@@ -666,7 +696,8 @@ main(int argc, char* argv[])
  // initialize vision array to correct size
  int vision[grid->mapLen];
  // specific location chosen to illustrate features vision behavior with corners
- int pos = 1397;
+ //int pos = 1397;
+ int pos = 578;
  // initialize vision to zeros
  for(int i = 0; i < grid->mapLen; i++){
   vision[i] = 0;
@@ -692,6 +723,8 @@ main(int argc, char* argv[])
    }
  }
  fprintf(stdout, "\n");
+
+ return 0;
 
  // testing with a new position this time in a tunnel
  pos = 594;
