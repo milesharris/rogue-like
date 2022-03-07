@@ -1,12 +1,19 @@
 START OF LOG
-client on port 32872
-interactive player mode; name 'two'
-GOLD message received: GOLD 0 0 250
+client on port 37956
+spectate
 GRID message received: GRID 5 14
 displayStart
-wRows = 11
+wRows = 10
 wCols = 105
-OK message received: OK B
+DISPLAY message received
+GOLD message received: GOLD 0 0 250
+DISPLAY message received
+DISPLAY message received
+GOLD message received: GOLD 0 0 230
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
+GOLD message received: GOLD 0 0 225
 DISPLAY message received
 DISPLAY message received
 DISPLAY message received
@@ -29,12 +36,14 @@ DISPLAY message received
 DISPLAY message received
 DISPLAY message received
 DISPLAY message received
-GOLD message received: GOLD 250 250 250
-GOLD message received: GOLD 0 250 0
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
 DISPLAY message received
 QUIT message received: QUIT GAME OVER:
-?         0 spectator
 A         0 one
-B       250 two
+B        25 two
 
 END OF LOG

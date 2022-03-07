@@ -20,7 +20,7 @@
 #include "log.h"
 
 // global constants
-static const int goldMaxNumPiles = 1; // maximum number of gold piles
+static const int goldMaxNumPiles = 7; // maximum number of gold piles
 //static const int goldMinNumPiles = 5;  // minimum number of gold piles
 static const char ROOMTILE = '.';      // char representation of room floor
 static const char PASSAGETILE = '#';   // char representation of passage tile
@@ -1021,9 +1021,9 @@ static bool handleKey(const char key, addr_t from)
     log_v("valid key received");
     // quit if appropriate
     if (key == quitKey) {
-      message_send(from, "QUIT Thanks for playing!");
+      // send message, remove chaar from map, and continue looping
       handlePlayerQuit(player);
-      return true;
+      return gameOverFlag;
     } else {
       // all keys except 'Q' are movement keys
       gameOverFlag = movePlayer(player, key);

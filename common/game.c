@@ -216,9 +216,15 @@ static void game_summaryHelper(void* arg, const char* key, void* item)
   char** gameSummary = arg;
   char* summary = *gameSummary;
   player_t* player = item;
-  char* toAdd = player_summarize(player);  // string to concat to summary
   char* temp;                              // checks realloc success           
   
+  // ignore spectator in table
+  if (strcmp("spectator", player_getName(player)) == 0) {
+    return;
+  }
+
+  char* toAdd = player_summarize(player);  // string to concat to summary
+
   // allocate enough memory to concat
   temp = realloc(summary, (strlen(summary) + strlen(toAdd) + 1));
   // exit on malloc failure. 
