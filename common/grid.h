@@ -60,11 +60,31 @@ bool grid_replace(grid_t* grid, int pos, char newChar);
  */
 bool grid_revertTile(grid_t* grid, int pos);
 
+/************ grid_containsEmptyTile *********/
+/* allows a user to determine whether or not a given grid's active map 
+ * contains an empty room tile. Most useful when adding a player
+ * because it determines whether a player can be added or not
+ * returns true if there is at least one ROOMTILE ('.')
+ * false if there is not
+ */
+bool grid_containsEmptyTile(grid_t* grid);
+
 /*************** grid_delete **************/
 /* free's all memory in use by the given grid
  * checks for existence of strings before deleting them
  * allows function to be called in cases when failure to allocate memory
  */
 void grid_delete(grid_t* grid);
+
+/********** grid_calculateVision ***********/
+/* Calculates a player's current vision, in the form of an integer array the same size as our map
+ * indicating which points are visible with a 1 indicating visibility or -1 indicating non-visibility
+ * modifies the given array
+ * Parameters:  grid - the grid of the map we are playing the game on 
+ *              pos - a players position within the map (int)
+ *              vision - the int array which stores corresponding visibility information 
+ * Returns:     void
+ */
+void grid_calculateVision(grid_t* grid, int pos, int* vision);
 
 #endif

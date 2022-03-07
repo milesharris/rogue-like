@@ -25,7 +25,11 @@ gridtest: grid.c
 
 playertest: player.c
 	$(CC) $(CFLAGS) -DPLAYERTEST player.c -o $@
-	$(VALGRIND) ./playertest testname &> playertest.out
+	$(VALGRIND) ./playertest testname ../maps/main.txt &> playertest.out
+
+visiontest: grid.c
+	$(CC) $(CFLAGS) -DVISIONTEST grid.c $L/libcs50.a -o $@
+	$(VALGRIND) ./visiontest ../maps/main.txt &> visiontest.out
 
 # Dependencies: object files depend on header files
 grid.o: grid.h
@@ -40,3 +44,4 @@ clean:
 	rm -f $(LIB) *~ *.o
 	rm -f gridtest
 	rm -f playertest
+	rm -f visiontest

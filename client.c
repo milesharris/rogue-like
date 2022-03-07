@@ -308,7 +308,7 @@ static bool handleInput(void* arg)
 {
 
   int c = getch();
-  addr_t to = *player_getServer(player); // am I using the * and & right? TODO need to free later?
+  addr_t to = player_getAddr(player); // am I using the * and & right? TODO need to free later?
 
   // if spectator
   if (strcmp("spectator", name)) {
