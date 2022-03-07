@@ -186,10 +186,38 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
   char* messageCpy = malloc(strlen(message) + 1);
   strcpy(messageCpy, message);
   first = __strtok_r(messageCpy, " ", &remainder);
+
+  // NOTE: I think the error is in parsing. Try to do it with their way
   
   // mvprintw(0, 50, "%s, and %s", first, remainder); // WHY DOES THIS MAKE DISPLAY WORK -> because then this is what prints the display?
   move(0,0);
-  refresh();
+/*
+  if ((strncmp(message, "GRID ", strlen("GRID "))) == 0) {
+    const char* content = message + strlen("GRID ");
+    return initialGrid(content);
+  }
+
+
+
+  if ((strncmp(message, "QUIT ", strlen("QUIT "))) == 0) {
+    return leaveGame(remainder);
+  }
+
+  if ((strncmp(message, "DISPLAY\n", strlen("DISPLAY\n"))) == 0) {
+    mvprintw(1, 0, "%s", remainder);
+    return renderMap(remainder);
+  }
+
+  if ((strncmp(message, "ERROR ", strlen("ERROR "))) == 0) {
+    return handleError(remainder);
+  }
+
+  // if GOLD or OK or other unknown message
+  else {
+    return updatePlayer(remainder, first);
+  }  
+
+*/
 
   if ((strcmp(first, "GRID")) == 0) {
     return initialGrid(remainder);
@@ -199,7 +227,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
     return leaveGame(remainder);
   }
 
-  if ((strcmp(first, "DISPLAY")) == 0) {
+  if ((strcmp(first, "DISPLAY\n")) == 0) {
     mvprintw(1, 0, "%s", remainder);
     return renderMap(remainder);
   }
@@ -213,6 +241,8 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
     return updatePlayer(remainder, first);
   }  
 
+
+  // free messageCpy?
 }
 
 /****************** initialGrid ******************/
@@ -244,7 +274,7 @@ static bool initialGrid(const char* gridInfo)
 static bool renderMap(const char* mapString)
 {
   // print map starting at 1, 0 (header starts at 0, 0)
-  mvprintw(1, 10, "%s", mapString); // TODO correct way to print it? Or should I do line by line like in life example
+  mvprintw(1, 0, mapString); // TODO correct way to print it? Or should I do line by line like in life example
 
   // move mouse
  /* int initx, inity, x, y;
@@ -346,15 +376,20 @@ static bool handleError(const char* message)
  */
 static bool updatePlayer(const char* message, const char* first)
 {
-  // char* remainder;
-  if ((strcmp(first, "OK")) == 0) {
+
+ // if ((strncmp(message, "OK", strlen("OK "))) == 0) {
+    // get remainder of message
+  if (strcmp(first, "OK") == 0) {
     // get first char of message
     char letter = message[0];
     player_setCharID(player, letter);
     return false;
   }
 
-  if ((strcmp(first, "GOLD")) == 0) {
+  // if ((strncmp(message, "GOLD", strlen("GOLD "))) == 0) {
+    // get remainder of message
+
+  if (strcmp(first, "GOLD") == 0) {
     // store gold info
     int n, p, r;
     sscanf(message, "%d %d %d", &n, &p, &r);
