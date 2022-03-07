@@ -678,6 +678,7 @@ movePlayerHelper(player_t* player, int directionValue)
 
   // grid tile that client is trying to move to 
   char next = grid_getActive(grid)[player_getPos(player) + directionValue];
+  log_c("in move, nextChar = %c", next);
   // char representation of moving player on map
   const char playerCharID = player_getCharID(player); 
   playerPos = player_getPos(player);
@@ -1034,7 +1035,7 @@ static bool handleKey(const char key, addr_t from)
     // send error message if key is invalid
     log_v("invalid key received");
     message_send(from, "ERROR invalid key for player");
-    return false;
+    return gameOverFlag;
   }
 }
 
