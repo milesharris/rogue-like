@@ -317,7 +317,7 @@ main(const int argc, char* argv[])
   
   // creating a new player
   fprintf(stdout, "Creating new player... ");
-  player_t* player = player_new(name);
+  player_t* player = player_new(name, mapFile);
 
   if( player != NULL ){
     fprintf(stdout, "success!\n");
@@ -334,12 +334,20 @@ main(const int argc, char* argv[])
   int amt = player_setGold(player, 50);
   fprintf(stdout," set to %d\n", amt);
   fprintf(stdout, "Getting player gold... got %d\n", player_getGold(player));
+  fprintf(stdout, "Adding 25 gold... ");
+  player_addGold(player, 25);
+  fprintf(stdout, "curr gold %d\n", player_getGold(player));
 
   // tesing pos
   fprintf(stdout, "\nSetting player pos to 1394... ");
   int position = player_setPos(player, 1394);
   fprintf(stdout, " set to %d\n", position);
   fprintf(stdout, "Getting player pos... got %d\n", player_getPos(player));
+
+  // testing summarize
+  player_setCharID(player, 'A');
+  char* summary = player_summarize(player);
+  fprintf(stdout, "Player summary: %s\n", summary);
 
   // testing vision 
   player_updateVision(player, grid);
@@ -359,6 +367,7 @@ main(const int argc, char* argv[])
 
   // valgrind will show if there is mem issue
   player_delete(player);
+  exit(0);
 }
 
 #endif
