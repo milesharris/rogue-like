@@ -195,8 +195,11 @@ char* game_buildSummary(game_t* game)
   }
   strcpy(gameSummary, firstLine);
 
+  // pass to iterator to avoid segfault on exit
+  char** summaryPtr = &gameSummary;
   // fill in rest of table and return
-  hashtable_iterate(game->players, gameSummary, game_summaryHelper);
+  hashtable_iterate(game->players, summaryPtr, game_summaryHelper);
+  gameSummary = summaryPtr[0];
   return gameSummary;
 }
 
@@ -210,20 +213,22 @@ char* game_buildSummary(game_t* game)
 static void game_summaryHelper(void* arg, const char* key, void* item)
 {
   // extract from params
-  char* gameSummary = arg;
+  char** gameSummary = arg;
+  char* summary = *gameSummary;
   player_t* player = item;
   char* toAdd = player_summarize(player);  // string to concat to summary
   char* temp;                              // checks realloc success           
   
   // allocate enough memory to concat
-  temp = realloc(gameSummary, strlen(gameSummary) + strlen(toAdd) + 1);
+  temp = realloc(summary, (strlen(summary) + strlen(toAdd) + 1));
   // exit on malloc failure. 
   if (temp == NULL) {
     return;
   }
-  gameSummary = temp;
+  summary = temp;
   // add the player's summary to the game string, then clean up memory
-  strcat(gameSummary, toAdd);
+  strcat(summary, toAdd);
+  gameSummary[0] = summary;
   free(toAdd);
 }
 /***************** game_subtractGold **************/

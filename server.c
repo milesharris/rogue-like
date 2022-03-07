@@ -20,7 +20,7 @@
 #include "log.h"
 
 // global constants
-static const int goldMaxNumPiles = 30; // maximum number of gold piles
+static const int goldMaxNumPiles = 1; // maximum number of gold piles
 //static const int goldMinNumPiles = 5;  // minimum number of gold piles
 static const char ROOMTILE = '.';      // char representation of room floor
 static const char PASSAGETILE = '#';   // char representation of passage tile
@@ -477,7 +477,6 @@ static void gameOver(bool normalExit)
   hashtable_t* playerTable;            // table of players in game
   playerTable = game_getPlayers(game);
   char* gameSummary;                   // game over summary table
-  void* container[2];                  // to pass into hashtable_iterate
 
   // exit procedure if error
   if ( ! normalExit) {
@@ -492,10 +491,12 @@ static void gameOver(bool normalExit)
   log_v("calling gameOver(success)");
   // build summary table
   gameSummary = game_buildSummary(game);
-
+  log_s("gameSummary: is %s", gameSummary);
+  // to pass into hashtable_iterate
+  void* container[2] = {&normalExit, gameSummary};
   // fill container
-  container[0] = &normalExit;
-  container[1] = gameSummary;
+  // container[0] = &normalExit;
+  // container[1] = &gameSummary;
 
   // send table to all clients
   hashtable_iterate(playerTable, container, gameOverHelper);
@@ -507,6 +508,7 @@ static void gameOver(bool normalExit)
 /************** gameOverHelper *************/
 /* sends appropriate messages to all players
  * for use in gameOver, passed to hashtable_iterate
+ * TODO: this segfaults because gameSummary never properly assigned
  */
 static void gameOverHelper(void* arg, const char* key, void* item)
 {
@@ -514,7 +516,16 @@ static void gameOverHelper(void* arg, const char* key, void* item)
   // extract player and exit status from arg
   player_t* player = item;
   bool* normalExit = container[0];
+  // log status of bool
+  if (*normalExit) {
+    log_v("normalExit true");
+  } else {
+    log_v("normalExit false");
+  }
+
   char* gameSummary = container[1];    // summary of game for normal exit
+  log_s("gameSummary initial: %s", gameSummary);
+
   // set the address to send messages to
   addr_t to = player_getAddr(player);
 
@@ -593,6 +604,7 @@ static void pickupGoldHelper(void* arg, const char* key, void* item)
   // update each player regarding gold remaining
   sendGold(player, 0);
 }
+
 /************** moveIterateHelper*********/
 /* helper to pass into hashtable_iterate in moveHelper
  * finds a player with a provided charID
