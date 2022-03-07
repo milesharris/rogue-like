@@ -83,7 +83,7 @@ parseArgs(const int argc, char* argv[])
   // check arg count
   // if spectator
   if (argc == 3) {
-    player = player_new("spectator"); // spectator's player name is "spectator"
+    player = player_new("spectator", "./maps/main.txt"); // spectator's player name is "spectator"
     return 0;
   }
 
@@ -95,7 +95,7 @@ parseArgs(const int argc, char* argv[])
       fprintf(stderr, "usage: Playername cannot be 'spectator'");
       exit(3);
     }
-    player = player_new(playername);
+    player = player_new(playername, "./maps/main.txt");
     return 0;
   }
 
@@ -297,7 +297,6 @@ static bool updatePlayer(const char* message, const char* first)
       // if player did not collect any gold
       else {
         mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed).                        ", letter, p, r);
-        clrtoeol();
       }
     }
     refresh();
