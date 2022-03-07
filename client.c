@@ -33,8 +33,6 @@ static player_t* player;
 /* NOTES
  *
  * - need to do logging
- *  
- * - add IMPLEMENTATION changes
  *
  * - see if it compiles
  */
