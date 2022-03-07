@@ -438,6 +438,7 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
           }
 
           int rounded = (int) currVal;
+          int mid = (int) (currVal + 0.5);
           double roundedD = (double) rounded;
           
           if( currVal == roundedD ){ // the case where currVal lies exactly on a point
@@ -457,6 +458,7 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
             else if( reference[currPos] != '.' && !wallFound ){ // check if this is the first wall we've seen
               //if(vision[currPos] == 0){
               //  vision[currPos] = 1;
+              //  wallFound = true;
               //}
               vision[currPos] = 1;
               wallFound = true;
@@ -472,15 +474,18 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
           } else { // the more likely case currVal falls between two points and we need to check both
             int pos1; 
             int pos2;
+            int midPos;
             if( mSqr <= 1){
               pos1 = coordinatesToPos(grid, posCoor[0] + step, rounded);    // the two positions in reference we need to check
               pos2 = coordinatesToPos(grid, posCoor[0] + step, rounded + 1);
+              midPos = coordinatesToPos(grid, posCoor[0] + step, mid);
             } else {
               pos1 = coordinatesToPos(grid, rounded, posCoor[1] + step);
               pos2 = coordinatesToPos(grid, rounded + 1, posCoor[1] + step);
+              midPos = coordinatesToPos(grid, mid, posCoor[1] + step);
             }
             
-            if((reference[pos1] == '.' && reference[pos2] == '.') && !wallFound){ // haven't hit a wall yet, and current position is between room tiles
+            if(reference[midPos] && !wallFound){ // haven't hit a wall yet, and current position is between room tiles
               //if(vision[pos1] == 0){
               //  vision[pos1] = 1;
               //}
@@ -494,6 +499,15 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
               vision[pos1] = 1;
               vision[pos2] = 1;
               wallFound = true;
+              //if(vision[pos1] == 0){
+              //  vision[pos1] = 1;
+              //  wallFound = true;
+              //}
+              //if(vision[pos2] == 0){
+              //  vision[pos2] = 1;
+              //  wallFound = true;
+              //}
+
             } else { // we've already see a wall, current position is not visible
               if(vision[pos1] == 0){
                 vision[pos1] = -1;
@@ -527,6 +541,7 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
           }
 
           int rounded = (int) currVal;
+          int mid = (int) (currVal - 0.5);
           double roundedD = (double) rounded;
 
           if( currVal == roundedD ){ // we have the case where the point falls exactly on a point in a map (not between two points)
@@ -551,16 +566,19 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
           } else { // otherwise the point falls between two points in the map and we must check both
             int pos1;
             int pos2;
+            int midPos;
 
             if( mSqr <= 1 ){
               pos1 = coordinatesToPos(grid, posCoor[0] - step, rounded);
               pos2 = coordinatesToPos(grid, posCoor[0] - step, rounded + 1);
+              midPos = coordinatesToPos(grid, posCoor[0] - step, mid);
             } else {
               pos1 = coordinatesToPos(grid, rounded, posCoor[1] - step);
               pos2 = coordinatesToPos(grid, rounded + 1, posCoor[1] - step);
+              midPos = coordinatesToPos(grid, mid, posCoor[1] - step);
             }
             
-            if((reference[pos1] == '.' && reference[pos2] == '.') && !wallFound){
+            if(reference[midPos] == '.' && !wallFound){
               //if(vision[pos1] == 0){
               //  vision[pos1] = 1;
               //}
@@ -573,9 +591,11 @@ grid_calculateVision(grid_t* grid, int pos, int* vision)
             else if(!wallFound){
               //if(vision[pos1]){
               //  vision[pos1] = 1;
+              //  wallFound = true;
               //}
               //if(vision[pos2]){
               //  vision[pos2] = 1;
+              //  wallFound = true;
               //}
               vision[pos1] = 1;
               vision[pos2] = 1;
@@ -697,7 +717,7 @@ main(int argc, char* argv[])
  int vision[grid->mapLen];
  // specific location chosen to illustrate features vision behavior with corners
  //int pos = 1397;
- int pos = 578;
+ int pos = 284;
  // initialize vision to zeros
  for(int i = 0; i < grid->mapLen; i++){
   vision[i] = 0;
@@ -709,14 +729,18 @@ main(int argc, char* argv[])
 
  for(int i = 0; i < grid->mapLen; i++){
    // inserting new lines in correct spots
-   if(i % (grid->numColumns+1)==0){
-    fprintf(stdout, "\n");
-   }
+   //if(i % (grid->numColumns+1)==0){
+   // fprintf(stdout, "\n");
+   //}
    // print player location as @ char
-   else if( i == pos ){
+   if( i == pos ){
     fprintf(stdout, "@");
    }
-   else if(vision[i] == 1){
+   else if(i % (grid->numColumns+1)==0 && i != 0){
+     fprintf(stdout, "\n");
+     fprintf(stdout, "%c", reference[i]);
+   }
+   else if(vision[i] == 1 && reference[i] != '\n'){
       fprintf(stdout, "%c", reference[i]);
    } else {
       fprintf(stdout, " ");
@@ -727,7 +751,7 @@ main(int argc, char* argv[])
  return 0;
 
  // testing with a new position this time in a tunnel
- pos = 594;
+ pos = 560;
  // resetting vision
  for(int i = 0; i < grid->mapLen; i++){
   vision[i] = 0;
