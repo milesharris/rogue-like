@@ -604,6 +604,7 @@ static void pickupGoldHelper(void* arg, const char* key, void* item)
   // update each player regarding gold remaining
   sendGold(player, 0);
 }
+
 /************** moveIterateHelper*********/
 /* helper to pass into hashtable_iterate in moveHelper
  * finds a player with a provided charID
