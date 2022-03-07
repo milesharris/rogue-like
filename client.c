@@ -31,39 +31,6 @@ static bool handleInput(void* arg);
 // static global variable, player
 static player_t* player; 
 
-
-
-/* NOTES 9:40 PM 3/6
- *
- * Def need to debug:
- * 1. memory (see notes)
- * 2. what display looks like (see notes)
- *    renderMap
- *    messages printed with big spaces/briefly displayed stuff
- * 3. make sure message is parsed correctly
- * 4. whether I'm using * and & correctly w the address in player
- *
- * Looks like handleInput is working
- */
-
-
-/* Ncurses debugging 11:23 PM
- * 
- *
- * strange error with letter disappearing after gold picked up... almost like letter is being changed on receipt of gold message? 
- *
- *  need to test spectator 
- *
- *  memory stuff
- *
- *  test GRID 
- *
- *
- *
- *  dont spend any more time fixing the overwriting of display messages thing. Just use the clear eol thing to fix at end
- *
- */
-
 /********************* main ********************/
 int
 main(const int argc, char* argv[])
@@ -81,7 +48,7 @@ main(const int argc, char* argv[])
   const char* serverHost = argv[1];
   const char* serverPort = argv[2];
   fprintf(stderr, "Port %s\n", serverPort); // log port number to stderr
-  addr_t server; // TODO is addr_t supposed to be opaque/unusable?
+  addr_t server; 
   if (!message_setAddr(serverHost, serverPort, &server)) {
     fprintf(stderr, "Failed to form address from %s %s\n", serverHost, serverPort);
     exit(4);
@@ -149,7 +116,7 @@ static void joinGame()
   // if spectator
   if ((strcmp("spectator", name)) == 0) {
     message_send(player_getAddr(player), "SPECTATE");
-    fprintf(stderr, "SPECTATE message sent to server"); // log
+    fprintf(stderr, "SPECTATE message sent to server\n"); // log
   }
 
   // if player
@@ -160,9 +127,8 @@ static void joinGame()
     
     message_send(player_getAddr(player), playMsg);
 
-    fprintf(stderr, "PLAYER message sent to server"); // log
+    fprintf(stderr, "PLAYER message sent to server\n"); // log
   
-    // free playMsg? idt it is necessary, but idk why it isn't
   }
 
 }
@@ -194,6 +160,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
   first = __strtok_r(messageCpy, " ", &remainder);
   free(messageCpy);
 
+  // put cursor at 0,0 
   move(0,0);
 
   if ((strcmp(first, "GRID")) == 0) {
@@ -221,40 +188,6 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
 }
 
 
-  // NOTE: I think the error is in parsing. Try to do it with their way
-  
-  // mvprintw(0, 50, "%s, and %s", first, remainder); // WHY DOES THIS MAKE DISPLAY WORK -> because then this is what prints the display?
-  // move(0,0);
-/*
-  if ((strncmp(message, "GRID ", strlen("GRID "))) == 0) {
-    const char* content = message + strlen("GRID ");
-    return initialGrid(content);
-  }
-
-
-
-  if ((strncmp(message, "QUIT ", strlen("QUIT "))) == 0) {
-    return leaveGame(remainder);
-  }
-
-  if ((strncmp(message, "DISPLAY\n", strlen("DISPLAY\n"))) == 0) {
-    mvprintw(1, 0, "%s", remainder);
-    return renderMap(remainder);
-  }
-
-  if ((strncmp(message, "ERROR ", strlen("ERROR "))) == 0) {
-    return handleError(remainder);
-  }
-
-  // if GOLD or OK or other unknown message
-  else {
-    return updatePlayer(remainder, first);
-  }  
-
-*/
-
-
-
 /****************** initialGrid ******************/
 /* On reception of GRID message, start ncurses and check that display will fit grid. */
 static bool initialGrid(const char* gridInfo)
@@ -274,7 +207,7 @@ static bool initialGrid(const char* gridInfo)
     return true;
   }
  
-  fprintf(stderr, "Game initialized successfully."); // log successful boot up
+  fprintf(stderr, "Game initialized successfully.\n"); // log successful boot up
   return false;
 
 }
@@ -284,61 +217,12 @@ static bool initialGrid(const char* gridInfo)
 static bool renderMap(const char* mapString)
 {
   // print map starting at 1, 0 (header starts at 0, 0)
-  mvprintw(1, 0, mapString); // TODO correct way to print it? Or should I do line by line like in life example
-
-  // move mouse
- /* int initx, inity, x, y;
-  getbegyx(stdscr, inity, initx);
-  y++;
-  move(inity, initx);
-  x = initx;
-  y = inity;
-
-  int x = 0;
-  int y = 1;
-  move(y, x);
-
-  // print map starting at (1,0)
-  char c;
-  for (int i = 0; i < strlen(mapString); i++) {
-    // if newline, move mouse to after newline
-    if (c == '\n') {
-      x = 0;
-      y++;
-      move(y, x);
-      continue;
-    }
-    // if normal character, put and move
-    else {
-    c = mapString[1];
-    addch(c);
-    x++;
-    move(y, x);
-    }
-  }
-*/
-  // move(0,0);
+  mvprintw(1, 0, mapString); 
   refresh();
-
-
-
 
   return false;
 
 }
-
-// I don't think this will work
-/*
- * int init_x, init_y, x, y;
- * getbegyx(stdscr, y, x);
- * y++;
- * move(y, x);
- * x = init_x;
- * y = init_y;
- *
- * char curr;
- * for (int i = 0; ...
- */
 
 /******************* leaveGame *******************/
 /* Close ncurses
@@ -353,7 +237,6 @@ static bool leaveGame(const char* message)
   endwin(); // close ncurses
   printf("%s", message);
   player_delete(player);
-  // nothing to free?
 
   fprintf(stderr, "Game ended without fatal error."); // log successful shutdown
   return true; // ends message loop
@@ -366,8 +249,7 @@ static bool leaveGame(const char* message)
  */
 static bool handleError(const char* message) 
 {
-  // prints at x = 50 because max length of normal status message is 50 char
-  // TODO also not sure if this will work well
+  // prints at x = 70 to make sure it is far over
   mvprintw(0, 70, "%s                     ", message); 
   refresh();
   return false;
@@ -381,17 +263,12 @@ static bool handleError(const char* message)
 static bool updatePlayer(const char* message, const char* first)
 {
 
- // if ((strncmp(message, "OK", strlen("OK "))) == 0) {
-    // get remainder of message
   if (strcmp(first, "OK") == 0) {
     // get first char of message
     char letter = message[0];
     player_setCharID(player, letter);
     return false;
   }
-
-  // if ((strncmp(message, "GOLD", strlen("GOLD "))) == 0) {
-    // get remainder of message
 
   if (strcmp(first, "GOLD") == 0) {
     // store gold info
@@ -414,11 +291,13 @@ static bool updatePlayer(const char* message, const char* first)
       char letter = player_getCharID(player); 
       // if player collected gold
       if (n != 0) {
-        mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d                                  ", letter, p, r, n); // TODO check with the overlapping, etc. I think the new line might do it, but need to try some stuff
+        mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d                                  ", letter, p, r, n);      
+        clrtoeol();
       }
       // if player did not collect any gold
       else {
         mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed).                        ", letter, p, r);
+        clrtoeol();
       }
     }
     refresh();
@@ -439,14 +318,12 @@ static bool handleInput(void* arg)
 {
 
   int c = getch();
-  // I think I have to malloc for addr_t
-  // addr_t to = malloc(sizeof(addr_t));
-  addr_t to = player_getAddr(player); // am I using the * and & right? TODO need to free later?
+  addr_t to = player_getAddr(player);
 
   // if spectator
   if ((strcmp("spectator", player_getName(player))) == 0) {
     switch(c) {
-    case 'q':  message_send(to, "KEY q"); break; 
+    case 'Q':  message_send(to, "KEY Q"); break; 
     default: mvprintw(0, 70, "unknown keystroke               ");
     }
   }
