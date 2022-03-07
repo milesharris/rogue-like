@@ -30,6 +30,19 @@ static bool handleInput(void* arg);
 // static global variable, player
 static player_t* player; 
 
+
+
+/* NOTES 9:40 PM 3/6
+ *
+ * Def need to debug:
+ * 1. memory (see notes)
+ * 2. what display looks like (see notes)
+ *    renderMap
+ *    messages printed with big spaces/briefly displayed stuff
+ * 3. make sure message is parsed correctly
+ * 4. whether I'm using * and & correctly w the address in player
+ */
+
 /********************* main ********************/
 int
 main(const int argc, char* argv[])
@@ -47,11 +60,12 @@ main(const int argc, char* argv[])
   const char* serverHost = argv[1];
   const char* serverPort = argv[2];
   fprintf(stderr, "Port %s", serverPort); // log port number to stderr
-  addr_t server; 
+  addr_t server; // TODO is addr_t supposed to be opaque/unusable?
   if (!message_setAddr(serverHost, serverPort, &server)) {
     fprintf(stderr, "Failed to form address from %s %s\n", serverHost, serverPort);
     exit(4);
   }
+  player_setAddr(server); // player->address is address of SERVER
 
   // send either SPECTATE or PLAYER [playername] message to join game
   joinGame(server);
@@ -80,7 +94,7 @@ parseArgs(const int argc, char* argv[])
   // check arg count
   // if spectator
   if (argc == 3) {
-    player = player_new("spectator"); // spectator's player name is "spectator"
+    player_t* player = player_new("spectator"); // spectator's player name is "spectator"
     return 0;
   }
 
@@ -92,7 +106,7 @@ parseArgs(const int argc, char* argv[])
       fprintf(stderr, "usage: Playername cannot be 'spectator'");
       exit(3);
     }
-    player = player_new(playername);
+    player_t* player = player_new(playername);
     return 0;
   }
 
@@ -125,6 +139,8 @@ static void joinGame(const addr_t to)
   
     // free playMsg? idt it is necessary, but idk why it isn't
   }
+
+  fprintf(stderr, "SPECTATE or PLAYER message sent to server");
 }
 
 /********************** initCurses ***************/
@@ -191,7 +207,7 @@ static bool initialGrid(const char* gridInfo)
   int uy, ux; 
   getmaxyx(stdscr, uy, ux);
   if ((ux < ncols) || (uy < nrows)) {
-    fprintf(stderr, "Window must be expanded to play Nuggets. Window is %d by %d and must be %d by %d.", uy, ux, nrows, ncols);
+    fprintf(stderr, "Window must be expanded to play Nuggets. Window is %d by %d and must be %d by %d.", &uy, &ux, &nrows, &ncols);
     return true;
   }
 
@@ -253,6 +269,7 @@ static bool handleError(const char* message)
   // prints at x = 50 because max length of normal status message is 50 char
   // TODO also not sure if this will work well
   mvprintw(0, 50, "%s                     ", message); 
+  refresh();
   return false;
 
 }
@@ -263,39 +280,40 @@ static bool handleError(const char* message)
  */
 static bool updatePlayer(const char* message, const char* first)
 {
-  char* remainder;
+  // char* remainder;
   if (strcmp(first, "OK")) {
+    // get first char of message
     char letter = message[0];
-    player_setLetter(player, letter);
+    player_setCharID(player, letter);
     return false;
   }
 
   if (strcmp(first, "GOLD")) {
     // store gold info
     int n, p, r;
-    sscanf(remainder, "%d %d %d", &n, &p, &r);
+    sscanf(message, "%d %d %d", &n, &p, &r);
     
     const char* name = player_getName(player);
 
     // if spectator
     if (strcmp("spectator", name)) {
-      mvprintw(0,0, "Spectator: %d nuggets unclaimed.", r);
+      mvprintw(0,0, "Spectator: %d nuggets unclaimed.", &r);
     }
 
     // if player
     else {
 
       // update player gold
-      player_setGold(player, p);
+      player_setGold(player, &p);
 
-      char letter = player_getLetter(player); 
+      char letter = player_getCharID(player); 
       // if player collected gold
       if (n != 0) {
-        mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d", letter, p, r, n); // TODO check with the overlapping, etc. I think the new line might do it, but need to try some stuff
+        mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d", &letter, &p, &r, &n); // TODO check with the overlapping, etc. I think the new line might do it, but need to try some stuff
       }
       // if player did not collect any gold
       else {
-        mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed).                        ", letter, p, r);
+        mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed).                        ", letter, &p, &r);
       }
     }
     refresh();
@@ -316,7 +334,9 @@ static bool handleInput(void* arg)
 {
 
   int c = getch();
-  addr_t to = player_getAddr(player); // am I using the * and & right? TODO need to free later?
+  // I think I have to malloc for addr_t
+  addr_t to = malloc(sizeof(addr_t));
+  to = player_getAddr(player); // am I using the * and & right? TODO need to free later?
 
   // if spectator
   if (strcmp("spectator", name)) {
