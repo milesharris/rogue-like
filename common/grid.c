@@ -678,8 +678,7 @@ main(int argc, char* argv[])
  // initialize vision array to correct size
  int vision[grid->mapLen];
  // specific location chosen to illustrate features vision behavior with corners
- //int pos = 1397;
- int pos = 2158;
+ int pos = 1447;
  // initialize vision to zeros
  for(int i = 0; i < grid->mapLen; i++){
   vision[i] = 0;
@@ -690,15 +689,12 @@ main(int argc, char* argv[])
  char* reference = grid_getReference(grid);
 
  for(int i = 0; i < grid->mapLen; i++){
-   
-   
    // print player location as @ char
    if( i == pos ){
     fprintf(stdout, "@");
    }
    else if(i % (grid->numColumns+1)==0 && i != 0){
      fprintf(stdout, "\n");
-     //fprintf(stdout, "%c", reference[i]);
    }
    else if(vision[i] == 1 && reference[i] != '\n'){
       fprintf(stdout, "%c", reference[i]);
@@ -709,11 +705,8 @@ main(int argc, char* argv[])
  }
  fprintf(stdout, "\n");
 
- grid_delete(grid);
- return 0;
-
  // testing with a new position this time in a tunnel
- pos = 560;
+ pos = 592;
  // resetting vision
  for(int i = 0; i < grid->mapLen; i++){
   vision[i] = 0;

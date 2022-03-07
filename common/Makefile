@@ -29,7 +29,7 @@ playertest: player.c
 
 visiontest: grid.c
 	$(CC) $(CFLAGS) -DVISIONTEST grid.c $L/libcs50.a -o $@
-	$(VALGRIND) ./visiontest ../maps/big.txt &> visiontest.out
+	$(VALGRIND) ./visiontest ../maps/main.txt &> visiontest.out
 
 # Dependencies: object files depend on header files
 grid.o: grid.h
