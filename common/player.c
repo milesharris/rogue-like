@@ -116,8 +116,13 @@ player_setCharID(player_t* player, char newChar)
 /* see player.h for details */ 
 
 player_t* 
-player_new(char* name)
+player_new(char* name, char* mapfile)
 {
+  // check params
+  if (name == NULL || mapfile == NULL) {
+    return NULL;
+  }
+  
   player_t* player = malloc(sizeof(player_t));
 
   // handle malloc error, return NULL if failure to allocate
@@ -126,14 +131,27 @@ player_new(char* name)
   } 
 
   // save a copy of the name string in memory and handle malloc failure
-  if ((player->name = malloc(sizeof(name))) == NULL) {
+  if ((player->name = malloc(strlen(name) + 1)) == NULL) {
     return NULL;
   }
   // copy param string into player struct
   strcpy(player->name, name);
 
+  // the mapfile is verified by the server before ever being passed here
+  grid_t* vision = grid_new(mapfile);
+
+  // initialize values of active vision to be white space
+  char* active = grid_getActive(vision);
+  int mapLen = grid_getMapLen(vision);
+
+  for(int i = 0; i < mapLen; i++){
+    if(active[i] != '\n'){
+      active[i] = ' ';
+    }
+  }
+
   // initialize all other values address to defaults and return
-  player->vision = NULL;
+  player->vision = vision;
   player->pos = -1;
   player->gold = 0;
   player->charID = DEFAULTCHAR;
@@ -191,29 +209,46 @@ char* player_summarize(player_t* player)
 /***** player_updateVision ***********************************/
 /* see player.h for full details */
 void
-player_updateVision(player_t* player, grid_t* grid, int pos)
+player_updateVision(player_t* player, grid_t* grid)
 {
   // check parameters
-  if( player == NULL || grid == NULL || pos < 0 ){
+  if( player == NULL || grid == NULL ){
     return;
   }
+  
+  int pos = player->pos;
+  if( pos < 0 ){
+    return;
+  }
+
   // initialize the vision array
   size_t mapLen = grid_getMapLen(grid);
-  int vision[mapLen];
+  int vision[mapLen + 1];
+  //int rowLen = grid_getNumColumns(grid);
+
+  for(int i = 0; i < mapLen + 1; i++){
+    vision[i] = 0;
+  }
+
   // populate vision array
   grid_calculateVision(grid, pos, vision);
   
   // grabbing necessary map copies
   grid_t* currPlayerVision = player_getVision(player);
-  char* playerActive = grid_getActive(currPlayerVision);
-  char* globalActive = grid_getActive(currPlayerVision);
 
-  if ( playerActive == NULL || globalActive == NULL || currPlayerVision == NULL ) {
+  char* globalActive = grid_getActive(grid);
+  char* playerActive = grid_getActive(currPlayerVision);
+
+  if ( globalActive == NULL ) {
     return;
   }
 
   // updating PAST player vision to reference map values
   for(int i = 0; i < mapLen; i++){
+    // inserting new line characters into vision map
+    //if( i != 0 && ( i % (rowLen + 1) == 0 ) ){
+    //  grid_replace(currPlayerVision, i, '\n');
+    //}
     if( isblank(playerActive[i]) == 0 ){ // is slot is not whitespace, revert it to its reference map tile
       grid_revertTile(currPlayerVision, i);
     } 
@@ -257,25 +292,38 @@ int
 main(const int argc, char* argv[])
 {
   char* name = NULL;
+  char* mapFile = NULL;
   
   // check command line args
-  if( argc != 2 ){
+  if( argc != 3 ){
     fprintf(stderr, "Player test: invalid num args\n");
     exit(1);
   }
   
   // assign name
   name = argv[1];
+  mapFile = argv[2];
+
+  // make grid
+  fprintf(stdout, "Creating grid... ");
+  grid_t* grid = grid_new(mapFile);
+  
+  if( grid != NULL ){
+    fprintf(stdout, "success\n");
+  } else {
+    fprintf(stdout, "failed\n");
+    exit(2);
+  }
   
   // creating a new player
   fprintf(stdout, "Creating new player... ");
-  player_t* player = player_new(name);
+  player_t* player = player_new(name, mapFile);
 
   if( player != NULL ){
     fprintf(stdout, "success!\n");
   } else {
     fprintf(stdout, "failed to create new player\n");
-    exit(2);
+    exit(3);
   }
 
   fprintf(stdout, "name given: %s\n", name);
@@ -286,21 +334,40 @@ main(const int argc, char* argv[])
   int amt = player_setGold(player, 50);
   fprintf(stdout," set to %d\n", amt);
   fprintf(stdout, "Getting player gold... got %d\n", player_getGold(player));
+  fprintf(stdout, "Adding 25 gold... ");
+  player_addGold(player, 25);
+  fprintf(stdout, "curr gold %d\n", player_getGold(player));
 
   // tesing pos
-  fprintf(stdout, "\nSetting player pos to 100... ");
-  int position = player_setPos(player, 100);
+  fprintf(stdout, "\nSetting player pos to 1394... ");
+  int position = player_setPos(player, 1394);
   fprintf(stdout, " set to %d\n", position);
   fprintf(stdout, "Getting player pos... got %d\n", player_getPos(player));
 
+  // testing summarize
+  player_setCharID(player, 'A');
+  char* summary = player_summarize(player);
+  fprintf(stdout, "Player summary: %s\n", summary);
+
   // testing vision 
-  char example[] = "example str";
-  fprintf(stdout, "Setting vision to %s... ", example);
-  player_setVision(player, example);
-  fprintf(stdout, "vision set to %s\n", player_getVision(player));
+  player_updateVision(player, grid);
+  grid_t* vision = player_getVision(player);
+
+  if( vision == NULL ){
+    fprintf(stdout, "failed to get vision\n");
+  }
+  
+  char* visionActive = grid_getActive(vision);
+  int mapLen = grid_getMapLen(vision);
+
+  fprintf(stdout, "----- vision map ---------------------------------------------------------------");
+  for(int i = 0; i < mapLen; i++){
+    fprintf(stdout, "%c", visionActive[i]);
+  }
 
   // valgrind will show if there is mem issue
   player_delete(player);
+  exit(0);
 }
 
 #endif

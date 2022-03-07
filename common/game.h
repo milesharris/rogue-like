@@ -25,6 +25,8 @@ hashtable_t* game_getPlayers(game_t* game);
 int game_getRemainingGold(game_t* game);
 int game_getLastCharID(game_t* game);
 int game_getNumPlayers(game_t* game);
+char* game_getMapfile(game_t* game);
+int game_getNumPiles(game_t* game);
 
 /* finds the player in the game with the given address
  * returns NULL if player not found or bad parameters
@@ -51,6 +53,11 @@ int game_setLastCharID(game_t* game, int charID);
  * returns -1 when game NULL or numPlayers exceeds MAXPLAYERS
  * */
 int game_setNumPlayers(game_t* game, int numPlayers);
+
+/* sets the number of gold piles in a game
+ * returns the new number
+ */
+int game_setNumPiles(game_t* game, int numPiles);
 
 /**************** game_new *****************/
 /* The game_new function allocates space for a new 'struct game' 

@@ -1,0 +1,1245 @@
+==2387== Memcheck, a memory error detector
+==2387== Copyright (C) 2002-2017, and GNU GPL'd, by Julian Seward et al.
+==2387== Using Valgrind-3.13.0 and LibVEX; rerun with -h for copyright info
+==2387== Command: ./server ./maps/small.txt
+==2387== 
+START OF LOG
+parseargs passed
+
+adding pile of 14 gold to array
+adding pile of 46 gold to array
+adding pile of 26 gold to array
+adding pile of 4 gold to array
+adding pile of 160 gold to array
+added gold at index 38
+added gold at index 22
+added gold at index 48
+added gold at index 56
+added gold at index 20
+generated gold
+piles array initially:
+14
+46
+26
+4
+160
+
+created game
+game initialized
+
+START OF LOG
+message_init: ready at port '50374'
+server listening on port 50374
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45898
+message_loop: 1 lines:
+PLAY one
+received message: PLAY one
+message_send: TO 129.170.64.104:45898
+message_send: 1 lines:
+GOLD 0 0 250
+message_send: TO 129.170.64.104:45898
+message_send: 1 lines:
+GRID 5 14
+message_send: TO 129.170.64.104:45898
+message_send: 1 lines:
+OK A
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +-------    
+  |@.*.*.....|
+  |.....*....|
+  |*.......*.|
+   ----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45632
+message_loop: 1 lines:
+PLAY two
+received message: PLAY two
+message_send: TO 129.170.64.104:45632
+message_send: 1 lines:
+GOLD 0 0 250
+message_send: TO 129.170.64.104:45632
+message_send: 1 lines:
+GRID 5 14
+message_send: TO 129.170.64.104:45632
+message_send: 1 lines:
+OK B
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +-------    
+  |@.*.*.....|
+  |....B*....|
+  |*.......*.|
+   ----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |A.*.*.....|
+  |....@*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45898
+message_loop: 1 lines:
+KEY k
+received message: KEY k
+key var set to: k
+player key input k valid
+valid key received
+in move, nextChar = -
+invalid move request from one
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45898
+message_loop: 1 lines:
+KEY l
+received message: KEY l
+key var set to: l
+player key input l valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +--------   
+  |.@*.*.....|
+  |....B*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.A*.*.....|
+  |....@*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45898
+message_loop: 1 lines:
+KEY l
+received message: KEY l
+key var set to: l
+player key input l valid
+valid key received
+in move, nextChar = *
+nextchar is a goldtile
+message_send: TO 129.170.64.104:45898
+message_send: 1 lines:
+GOLD 14 14 250
+message_send: TO 129.170.64.104:45898
+message_send: 1 lines:
+GOLD 0 14 236
+message_send: TO 129.170.64.104:45632
+message_send: 1 lines:
+GOLD 0 0 236
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +--------   
+  |..@.*.....|
+  |....B*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..A.*.....|
+  |....@*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45898
+message_loop: 1 lines:
+KEY l
+received message: KEY l
+key var set to: l
+player key input l valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +---------  
+  |...@*.....|
+  |....B*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |...A*.....|
+  |....@*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45898
+message_loop: 1 lines:
+KEY l
+received message: KEY l
+key var set to: l
+player key input l valid
+valid key received
+in move, nextChar = *
+nextchar is a goldtile
+skipping empty pile of gold, value is: -1
+message_send: TO 129.170.64.104:45898
+message_send: 1 lines:
+GOLD 46 60 236
+message_send: TO 129.170.64.104:45898
+message_send: 1 lines:
+GOLD 0 60 190
+message_send: TO 129.170.64.104:45632
+message_send: 1 lines:
+GOLD 0 0 190
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +---------  
+  |....@.....|
+  |....B*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |....A.....|
+  |....@*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45898
+message_loop: 1 lines:
+KEY j
+received message: KEY j
+key var set to: j
+player key input j valid
+valid key received
+in move, nextChar = B
+handling a collision
+found match in moveiteratehelper
+bumpedPlayer name: two
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |....B.....|
+  |....@*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |....@.....|
+  |....A*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45898
+message_loop: 1 lines:
+KEY j
+received message: KEY j
+key var set to: j
+player key input j valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |....B.....|
+  |.....*....|
+  |*...@...*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |....@.....|
+  |.....*....|
+  |*...A...*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45898
+message_loop: 1 lines:
+KEY k
+received message: KEY k
+key var set to: k
+player key input k valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |....B.....|
+  |....@*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |....@.....|
+  |....A*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45898
+message_loop: 1 lines:
+KEY k
+received message: KEY k
+key var set to: k
+player key input k valid
+valid key received
+in move, nextChar = B
+handling a collision
+found match in moveiteratehelper
+bumpedPlayer name: two
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |....@.....|
+  |....B*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |....A.....|
+  |....@*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45632
+message_loop: 1 lines:
+KEY k
+received message: KEY k
+key var set to: k
+player key input k valid
+valid key received
+in move, nextChar = A
+handling a collision
+found match in moveiteratehelper
+bumpedPlayer name: one
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |....B.....|
+  |....@*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |....@.....|
+  |....A*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45632
+message_loop: 1 lines:
+KEY j
+received message: KEY j
+key var set to: j
+player key input j valid
+valid key received
+in move, nextChar = A
+handling a collision
+found match in moveiteratehelper
+bumpedPlayer name: one
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |....@.....|
+  |....B*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |....A.....|
+  |....@*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45632
+message_loop: 1 lines:
+KEY j
+received message: KEY j
+key var set to: j
+player key input j valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |....@.....|
+  |.....*....|
+  |*...B...*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |....A.....|
+  |.....*....|
+  |*...@...*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45632
+message_loop: 1 lines:
+KEY k
+received message: KEY k
+key var set to: k
+player key input k valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |....@.....|
+  |....B*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |....A.....|
+  |....@*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45632
+message_loop: 1 lines:
+KEY k
+received message: KEY k
+key var set to: k
+player key input k valid
+valid key received
+in move, nextChar = A
+handling a collision
+found match in moveiteratehelper
+bumpedPlayer name: one
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |....B.....|
+  |....@*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |....@.....|
+  |....A*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45632
+message_loop: 1 lines:
+KEY h
+received message: KEY h
+key var set to: h
+player key input h valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |...B......|
+  |....@*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |...@......|
+  |....A*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45632
+message_loop: 1 lines:
+KEY h
+received message: KEY h
+key var set to: h
+player key input h valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..B.......|
+  |....@*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..@.......|
+  |....A*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45632
+message_loop: 1 lines:
+KEY h
+received message: KEY h
+key var set to: h
+player key input h valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.B........|
+  |....@*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.@........|
+  |....A*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45632
+message_loop: 1 lines:
+KEY j
+received message: KEY j
+key var set to: j
+player key input j valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |.B..@*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |.@..A*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45632
+message_loop: 1 lines:
+KEY k
+received message: KEY k
+key var set to: k
+player key input k valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.B........|
+  |....@*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |.@........|
+  |....A*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45632
+message_loop: 1 lines:
+KEY j
+received message: KEY j
+key var set to: j
+player key input j valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |.B..@*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |.@..A*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45632
+message_loop: 1 lines:
+KEY l
+received message: KEY l
+key var set to: l
+player key input l valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |..B.@*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |..@.A*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45632
+message_loop: 1 lines:
+KEY j
+received message: KEY j
+key var set to: j
+player key input j valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |....@*....|
+  |*.B.....*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |....A*....|
+  |*.@.....*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45632
+message_loop: 1 lines:
+KEY k
+received message: KEY k
+key var set to: k
+player key input k valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |..B.@*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |..@.A*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45632
+message_loop: 1 lines:
+KEY h
+received message: KEY h
+key var set to: h
+player key input h valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |.B..@*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |.@..A*....|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45632
+message_loop: 1 lines:
+KEY L
+received message: KEY L
+key var set to: L
+player key input L valid
+valid key received
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |..B.@*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |..@.A*....|
+  |*.......*.|
+  +----------+
+
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |...B@*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |...@A*....|
+  |*.......*.|
+  +----------+
+
+in move, nextChar = A
+handling a collision
+found match in moveiteratehelper
+bumpedPlayer name: one
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |...@B*....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |...A@*....|
+  |*.......*.|
+  +----------+
+
+in move, nextChar = *
+nextchar is a goldtile
+skipping empty pile of gold, value is: -1
+skipping empty pile of gold, value is: -1
+message_send: TO 129.170.64.104:45632
+message_send: 1 lines:
+GOLD 26 26 190
+message_send: TO 129.170.64.104:45898
+message_send: 1 lines:
+GOLD 0 60 164
+message_send: TO 129.170.64.104:45632
+message_send: 1 lines:
+GOLD 0 26 164
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |...@.B....|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |...A.@....|
+  |*.......*.|
+  +----------+
+
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |...@..B...|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |...A..@...|
+  |*.......*.|
+  +----------+
+
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |...@...B..|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |...A...@..|
+  |*.......*.|
+  +----------+
+
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |...@....B.|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |...A....@.|
+  |*.......*.|
+  +----------+
+
+in move, nextChar = .
+making a normal move
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |...@.....B|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |...A.....@|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45632
+message_loop: 1 lines:
+KEY Q
+received message: KEY Q
+key var set to: Q
+player key input Q valid
+valid key received
+message_send: TO 129.170.64.104:45632
+message_send: 1 lines:
+QUIT Thanks for playing!
+
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |...@......|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |...A.....@|
+  |*.......*.|
+  +----------+
+
+message_loop: message ready on socket
+message_loop: FROM 129.170.64.104:45898
+message_loop: 1 lines:
+KEY Q
+received message: KEY Q
+key var set to: Q
+player key input Q valid
+valid key received
+message_send: TO 129.170.64.104:45898
+message_send: 1 lines:
+QUIT Thanks for playing!
+
+updating one's vision
+message_send: TO 129.170.64.104:45898
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |...@......|
+  |*.......*.|
+  +----------+
+
+updating two's vision
+message_send: TO 129.170.64.104:45632
+message_send: 6 lines:
+DISPLAY
+  +----------+
+  |..........|
+  |.........@|
+  |*.......*.|
+  +----------+
+
+==2387== 
+==2387== Process terminating with default action of signal 2 (SIGINT)
+==2387==    at 0x4F54CD7: select (select.c:41)
+==2387==    by 0x10EC6E: message_loop (message.c:333)
+==2387==    by 0x109536: main (server.c:97)
+==2387== 
+==2387== HEAP SUMMARY:
+==2387==     in use at exit: 1,286 bytes in 49 blocks
+==2387==   total heap usage: 170 allocs, 121 frees, 35,735 bytes allocated
+==2387== 
+==2387== 8 bytes in 2 blocks are still reachable in loss record 1 of 17
+==2387==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2387==    by 0x10CADA: player_new (player.c:134)
+==2387==    by 0x109B9F: handlePlayerConnect (server.c:344)
+==2387==    by 0x10AD2F: handleMessage (server.c:949)
+==2387==    by 0x10EF35: message_loop (message.c:387)
+==2387==    by 0x109536: main (server.c:97)
+==2387== 
+==2387== 8 bytes in 2 blocks are still reachable in loss record 2 of 17
+==2387==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2387==    by 0x10DEBC: mem_malloc (mem.c:69)
+==2387==    by 0x10E15A: setnode_new (set.c:101)
+==2387==    by 0x10E0CF: set_insert (set.c:68)
+==2387==    by 0x10DAF9: hashtable_insert (hashtable.c:89)
+==2387==    by 0x10D4D1: game_addPlayer (game.c:281)
+==2387==    by 0x109BDD: handlePlayerConnect (server.c:351)
+==2387==    by 0x10AD2F: handleMessage (server.c:949)
+==2387==    by 0x10EF35: message_loop (message.c:387)
+==2387==    by 0x109536: main (server.c:97)
+==2387== 
+==2387== 16 bytes in 1 blocks are still reachable in loss record 3 of 17
+==2387==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2387==    by 0x10DEBC: mem_malloc (mem.c:69)
+==2387==    by 0x10D984: hashtable_new (hashtable.c:47)
+==2387==    by 0x10D226: game_new (game.c:178)
+==2387==    by 0x109805: initializeGame (server.c:197)
+==2387==    by 0x109480: main (server.c:76)
+==2387== 
+==2387== 17 bytes in 1 blocks are still reachable in loss record 4 of 17
+==2387==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2387==    by 0x10DE5B: mem_malloc_assert (mem.c:54)
+==2387==    by 0x10B600: grid_new (grid.c:121)
+==2387==    by 0x109708: initializeGame (server.c:174)
+==2387==    by 0x109480: main (server.c:76)
+==2387== 
+==2387== 20 bytes in 1 blocks are still reachable in loss record 5 of 17
+==2387==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2387==    by 0x109744: initializeGame (server.c:181)
+==2387==    by 0x109480: main (server.c:76)
+==2387== 
+==2387== 34 bytes in 2 blocks are still reachable in loss record 6 of 17
+==2387==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2387==    by 0x10DE5B: mem_malloc_assert (mem.c:54)
+==2387==    by 0x10B600: grid_new (grid.c:121)
+==2387==    by 0x10CB1C: player_new (player.c:141)
+==2387==    by 0x109B9F: handlePlayerConnect (server.c:344)
+==2387==    by 0x10AD2F: handleMessage (server.c:949)
+==2387==    by 0x10EF35: message_loop (message.c:387)
+==2387==    by 0x109536: main (server.c:97)
+==2387== 
+==2387== 40 bytes in 1 blocks are still reachable in loss record 7 of 17
+==2387==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2387==    by 0x10DEBC: mem_malloc (mem.c:69)
+==2387==    by 0x10B4BC: grid_new (grid.c:87)
+==2387==    by 0x109708: initializeGame (server.c:174)
+==2387==    by 0x109480: main (server.c:76)
+==2387== 
+==2387== 48 bytes in 1 blocks are still reachable in loss record 8 of 17
+==2387==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2387==    by 0x10D205: game_new (game.c:172)
+==2387==    by 0x109805: initializeGame (server.c:197)
+==2387==    by 0x109480: main (server.c:76)
+==2387== 
+==2387== 48 bytes in 2 blocks are still reachable in loss record 9 of 17
+==2387==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2387==    by 0x10DEBC: mem_malloc (mem.c:69)
+==2387==    by 0x10E130: setnode_new (set.c:95)
+==2387==    by 0x10E0CF: set_insert (set.c:68)
+==2387==    by 0x10DAF9: hashtable_insert (hashtable.c:89)
+==2387==    by 0x10D4D1: game_addPlayer (game.c:281)
+==2387==    by 0x109BDD: handlePlayerConnect (server.c:351)
+==2387==    by 0x10AD2F: handleMessage (server.c:949)
+==2387==    by 0x10EF35: message_loop (message.c:387)
+==2387==    by 0x109536: main (server.c:97)
+==2387== 
+==2387== 76 bytes in 1 blocks are still reachable in loss record 10 of 17
+==2387==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2387==    by 0x10DEBC: mem_malloc (mem.c:69)
+==2387==    by 0x10B581: grid_new (grid.c:107)
+==2387==    by 0x109708: initializeGame (server.c:174)
+==2387==    by 0x109480: main (server.c:76)
+==2387== 
+==2387== 80 bytes in 2 blocks are still reachable in loss record 11 of 17
+==2387==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2387==    by 0x10DEBC: mem_malloc (mem.c:69)
+==2387==    by 0x10B4BC: grid_new (grid.c:87)
+==2387==    by 0x10CB1C: player_new (player.c:141)
+==2387==    by 0x109B9F: handlePlayerConnect (server.c:344)
+==2387==    by 0x10AD2F: handleMessage (server.c:949)
+==2387==    by 0x10EF35: message_loop (message.c:387)
+==2387==    by 0x109536: main (server.c:97)
+==2387== 
+==2387== 81 bytes in 1 blocks are still reachable in loss record 12 of 17
+==2387==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2387==    by 0x10D87D: file_readUntil (file.c:66)
+==2387==    by 0x10D800: file_readFile (file.c:45)
+==2387==    by 0x10B514: grid_new (grid.c:96)
+==2387==    by 0x109708: initializeGame (server.c:174)
+==2387==    by 0x109480: main (server.c:76)
+==2387== 
+==2387== 96 bytes in 2 blocks are still reachable in loss record 13 of 17
+==2387==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2387==    by 0x10CAAD: player_new (player.c:126)
+==2387==    by 0x109B9F: handlePlayerConnect (server.c:344)
+==2387==    by 0x10AD2F: handleMessage (server.c:949)
+==2387==    by 0x10EF35: message_loop (message.c:387)
+==2387==    by 0x109536: main (server.c:97)
+==2387== 
+==2387== 152 bytes in 2 blocks are still reachable in loss record 14 of 17
+==2387==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2387==    by 0x10DEBC: mem_malloc (mem.c:69)
+==2387==    by 0x10B581: grid_new (grid.c:107)
+==2387==    by 0x10CB1C: player_new (player.c:141)
+==2387==    by 0x109B9F: handlePlayerConnect (server.c:344)
+==2387==    by 0x10AD2F: handleMessage (server.c:949)
+==2387==    by 0x10EF35: message_loop (message.c:387)
+==2387==    by 0x109536: main (server.c:97)
+==2387== 
+==2387== 162 bytes in 2 blocks are still reachable in loss record 15 of 17
+==2387==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2387==    by 0x10D87D: file_readUntil (file.c:66)
+==2387==    by 0x10D800: file_readFile (file.c:45)
+==2387==    by 0x10B514: grid_new (grid.c:96)
+==2387==    by 0x10CB1C: player_new (player.c:141)
+==2387==    by 0x109B9F: handlePlayerConnect (server.c:344)
+==2387==    by 0x10AD2F: handleMessage (server.c:949)
+==2387==    by 0x10EF35: message_loop (message.c:387)
+==2387==    by 0x109536: main (server.c:97)
+==2387== 
+==2387== 200 bytes in 1 blocks are still reachable in loss record 16 of 17
+==2387==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2387==    by 0x10DEBC: mem_malloc (mem.c:69)
+==2387==    by 0x10D9B3: hashtable_new (hashtable.c:54)
+==2387==    by 0x10D226: game_new (game.c:178)
+==2387==    by 0x109805: initializeGame (server.c:197)
+==2387==    by 0x109480: main (server.c:76)
+==2387== 
+==2387== 200 bytes in 25 blocks are still reachable in loss record 17 of 17
+==2387==    at 0x4C31B0F: malloc (in /usr/lib/valgrind/vgpreload_memcheck-amd64-linux.so)
+==2387==    by 0x10DEBC: mem_malloc (mem.c:69)
+==2387==    by 0x10E04D: set_new (set.c:44)
+==2387==    by 0x10D9F2: hashtable_new (hashtable.c:62)
+==2387==    by 0x10D226: game_new (game.c:178)
+==2387==    by 0x109805: initializeGame (server.c:197)
+==2387==    by 0x109480: main (server.c:76)
+==2387== 
+==2387== LEAK SUMMARY:
+==2387==    definitely lost: 0 bytes in 0 blocks
+==2387==    indirectly lost: 0 bytes in 0 blocks
+==2387==      possibly lost: 0 bytes in 0 blocks
+==2387==    still reachable: 1,286 bytes in 49 blocks
+==2387==         suppressed: 0 bytes in 0 blocks
+==2387== 
+==2387== For counts of detected and suppressed errors, rerun with: -v
+==2387== ERROR SUMMARY: 0 errors from 0 contexts (suppressed: 0 from 0)
