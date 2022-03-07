@@ -8,6 +8,7 @@
 #include <stdbool.h>
 #include <string.h>
 #include <ncurses.h>
+#include <ctype.h>
 #include "file.h"
 #include "message.h"
 #include "player.h"
@@ -59,16 +60,16 @@ main(const int argc, char* argv[])
   // build server address
   const char* serverHost = argv[1];
   const char* serverPort = argv[2];
-  fprintf(stderr, "Port %s", serverPort); // log port number to stderr
+  fprintf(stderr, "Port %s\n", serverPort); // log port number to stderr
   addr_t server; // TODO is addr_t supposed to be opaque/unusable?
   if (!message_setAddr(serverHost, serverPort, &server)) {
     fprintf(stderr, "Failed to form address from %s %s\n", serverHost, serverPort);
     exit(4);
   }
-  player_setAddr(server); // player->address is address of SERVER
 
   // send either SPECTATE or PLAYER [playername] message to join game
   joinGame(server);
+  player_setAddr(player, server); // player->address is address of SERVER
 
   // loop, waiting for input or messages
   bool ok = message_loop(&server, 0, NULL, handleInput, handleMessage);
@@ -94,19 +95,19 @@ parseArgs(const int argc, char* argv[])
   // check arg count
   // if spectator
   if (argc == 3) {
-    player_t* player = player_new("spectator"); // spectator's player name is "spectator"
+    player = player_new("spectator"); // spectator's player name is "spectator"
     return 0;
   }
 
   // if player
   else if (argc == 4) {
-    const char* playername = argv[3];
+    char* playername = argv[3];
     // playername cannot be "spectator"
-    if (strcmp(playername, "spectator")) {
+    if ((strcmp(playername, "spectator")) == 0) {
       fprintf(stderr, "usage: Playername cannot be 'spectator'");
       exit(3);
     }
-    player_t* player = player_new(playername);
+    player = player_new(playername);
     return 0;
   }
 
@@ -125,7 +126,7 @@ static void joinGame(const addr_t to)
   const char* name = player_getName(player);
 
   // if spectator
-  if (strcmp("spectator", name)) {
+  if ((strcmp("spectator", name)) == 0) {
     message_send(to, "SPECTATE");
   }
 
@@ -165,23 +166,25 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
   // read first word and rest of message into separate strings
   char* first;
   char* remainder;
-  first = strtok_r(message, " ", &remainder);
+  char* messageCpy = malloc(strlen(message) + 1);
+  strcpy(messageCpy, message);
+  first = __strtok_r(messageCpy, " ", &remainder);
   
   //printf("%s", first); printf("%s", remainder); // checks that parsing is right
   
-  if (strcmp(first, "GRID")) {
+  if ((strcmp(first, "GRID")) == 0) {
     return initialGrid(remainder);
   }
 
-  if (strcmp(first, "QUIT")) {
+  if ((strcmp(first, "QUIT")) == 0) {
     return leaveGame(remainder);
   }
 
-  if (strcmp(first, "DISPLAY")) {
+  if ((strcmp(first, "DISPLAY")) == 0) {
     return renderMap(remainder);
   }
 
-  if (strcmp(first, "ERROR")) {
+  if ((strcmp(first, "ERROR")) == 0) {
     return handleError(remainder);
   }
 
@@ -198,7 +201,7 @@ static bool initialGrid(const char* gridInfo)
 {
   // store nrows and ncols
   int nrows, ncols;
-  sscanf(remainder, "%d %d", &nrows, &ncols);
+  sscanf(gridInfo, "%d %d", &nrows, &ncols);
 
   // start ncurses
   initCurses();
@@ -207,7 +210,7 @@ static bool initialGrid(const char* gridInfo)
   int uy, ux; 
   getmaxyx(stdscr, uy, ux);
   if ((ux < ncols) || (uy < nrows)) {
-    fprintf(stderr, "Window must be expanded to play Nuggets. Window is %d by %d and must be %d by %d.", &uy, &ux, &nrows, &ncols);
+    fprintf(stderr, "Window must be expanded to play Nuggets. Window is %d by %d and must be %d by %d.", uy, ux, nrows, ncols);
     return true;
   }
 
@@ -281,14 +284,14 @@ static bool handleError(const char* message)
 static bool updatePlayer(const char* message, const char* first)
 {
   // char* remainder;
-  if (strcmp(first, "OK")) {
+  if ((strcmp(first, "OK")) == 0) {
     // get first char of message
     char letter = message[0];
     player_setCharID(player, letter);
     return false;
   }
 
-  if (strcmp(first, "GOLD")) {
+  if ((strcmp(first, "GOLD")) == 0) {
     // store gold info
     int n, p, r;
     sscanf(message, "%d %d %d", &n, &p, &r);
@@ -296,7 +299,7 @@ static bool updatePlayer(const char* message, const char* first)
     const char* name = player_getName(player);
 
     // if spectator
-    if (strcmp("spectator", name)) {
+    if ((strcmp("spectator", name)) == 0) {
       mvprintw(0,0, "Spectator: %d nuggets unclaimed.", &r);
     }
 
@@ -304,7 +307,7 @@ static bool updatePlayer(const char* message, const char* first)
     else {
 
       // update player gold
-      player_setGold(player, &p);
+      player_setGold(player, p);
 
       char letter = player_getCharID(player); 
       // if player collected gold
@@ -335,11 +338,11 @@ static bool handleInput(void* arg)
 
   int c = getch();
   // I think I have to malloc for addr_t
-  addr_t to = malloc(sizeof(addr_t));
-  to = player_getAddr(player); // am I using the * and & right? TODO need to free later?
+  // addr_t to = malloc(sizeof(addr_t));
+  addr_t to = player_getAddr(player); // am I using the * and & right? TODO need to free later?
 
   // if spectator
-  if (strcmp("spectator", name)) {
+  if ((strcmp("spectator", player_getName(player))) == 0) {
     switch(c) {
     case 'q':  message_send(to, "KEY q"); break; 
     default: mvprintw(0, 50, "unknown keystroke               ");
