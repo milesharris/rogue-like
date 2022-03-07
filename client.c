@@ -21,7 +21,7 @@ static void initCurses();
 static bool handleMessage(void* arg, const addr_t from, const char* message);
 static bool initialGrid(const char* gridInfo);
 static bool renderMap(const char* mapString);
-static void joinGame(const addr_t to);
+static void joinGame();
 static bool leaveGame(const char* message);
 static bool handleError(const char* message);
 static bool updatePlayer(const char* message, const char* first);
@@ -30,19 +30,6 @@ static bool handleInput(void* arg);
 
 // static global variable, player
 static player_t* player; 
-
-
-
-/* NOTES 9:40 PM 3/6
- *
- * Def need to debug:
- * 1. memory (see notes)
- * 2. what display looks like (see notes)
- *    renderMap
- *    messages printed with big spaces/briefly displayed stuff
- * 3. make sure message is parsed correctly
- * 4. whether I'm using * and & correctly w the address in player
- */
 
 /********************* main ********************/
 int
@@ -61,16 +48,17 @@ main(const int argc, char* argv[])
   const char* serverHost = argv[1];
   const char* serverPort = argv[2];
   fprintf(stderr, "Port %s\n", serverPort); // log port number to stderr
-  addr_t server; // TODO is addr_t supposed to be opaque/unusable?
+  addr_t server; 
   if (!message_setAddr(serverHost, serverPort, &server)) {
     fprintf(stderr, "Failed to form address from %s %s\n", serverHost, serverPort);
     exit(4);
   }
 
-  // send either SPECTATE or PLAYER [playername] message to join game
-  joinGame(server);
   player_setAddr(player, server); // player->address is address of SERVER
 
+  // send either SPECTATE or PLAYER [playername] message to join game
+  joinGame(); 
+  
   // loop, waiting for input or messages
   bool ok = message_loop(&server, 0, NULL, handleInput, handleMessage);
 
@@ -121,13 +109,14 @@ parseArgs(const int argc, char* argv[])
 
 /******************** joinGame **********************/
 /* joins game by sending either SPECTATE or PLAYER [playername] messages to server */
-static void joinGame(const addr_t to)
+static void joinGame()
 {
   const char* name = player_getName(player);
 
   // if spectator
   if ((strcmp("spectator", name)) == 0) {
-    message_send(to, "SPECTATE");
+    message_send(player_getAddr(player), "SPECTATE");
+    fprintf(stderr, "SPECTATE message sent to server\n"); // log
   }
 
   // if player
@@ -136,12 +125,12 @@ static void joinGame(const addr_t to)
     char playMsg[strlen("PLAY ") + strlen(name) + 1];
     snprintf(playMsg, sizeof(playMsg), "PLAY %s", name);
     
-    message_send(to, playMsg);
+    message_send(player_getAddr(player), playMsg);
+
+    fprintf(stderr, "PLAYER message sent to server\n"); // log
   
-    // free playMsg? idt it is necessary, but idk why it isn't
   }
 
-  fprintf(stderr, "SPECTATE or PLAYER message sent to server");
 }
 
 /********************** initCurses ***************/
@@ -169,9 +158,11 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
   char* messageCpy = malloc(strlen(message) + 1);
   strcpy(messageCpy, message);
   first = __strtok_r(messageCpy, " ", &remainder);
-  
-  //printf("%s", first); printf("%s", remainder); // checks that parsing is right
-  
+  // free(messageCpy);
+
+  // put cursor at 0,0 
+  move(0,0);
+
   if ((strcmp(first, "GRID")) == 0) {
     return initialGrid(remainder);
   }
@@ -180,7 +171,8 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
     return leaveGame(remainder);
   }
 
-  if ((strcmp(first, "DISPLAY")) == 0) {
+  if ((strcmp(first, "DISPLAY\n")) == 0) {
+    mvprintw(1, 0, "%s", remainder);
     return renderMap(remainder);
   }
 
@@ -194,6 +186,7 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
   }  
 
 }
+
 
 /****************** initialGrid ******************/
 /* On reception of GRID message, start ncurses and check that display will fit grid. */
@@ -213,8 +206,8 @@ static bool initialGrid(const char* gridInfo)
     fprintf(stderr, "Window must be expanded to play Nuggets. Window is %d by %d and must be %d by %d.", uy, ux, nrows, ncols);
     return true;
   }
-
-  fprintf(stderr, "Game initialized successfully."); // log successful boot up
+ 
+  fprintf(stderr, "Game initialized successfully.\n"); // log successful boot up
   return false;
 
 }
@@ -224,24 +217,12 @@ static bool initialGrid(const char* gridInfo)
 static bool renderMap(const char* mapString)
 {
   // print map starting at 1, 0 (header starts at 0, 0)
-  mvprintw(1, 0, mapString); // TODO correct way to print it? Or should I do line by line like in life example
+  mvprintw(1, 0, mapString); 
   refresh();
+
   return false;
 
 }
-
-// I don't think this will work
-/*
- * int init_x, init_y, x, y;
- * getbegyx(stdscr, y, x);
- * y++;
- * move(y, x);
- * x = init_x;
- * y = init_y;
- *
- * char curr;
- * for (int i = 0; ...
- */
 
 /******************* leaveGame *******************/
 /* Close ncurses
@@ -256,7 +237,6 @@ static bool leaveGame(const char* message)
   endwin(); // close ncurses
   printf("%s", message);
   player_delete(player);
-  // nothing to free?
 
   fprintf(stderr, "Game ended without fatal error."); // log successful shutdown
   return true; // ends message loop
@@ -269,9 +249,8 @@ static bool leaveGame(const char* message)
  */
 static bool handleError(const char* message) 
 {
-  // prints at x = 50 because max length of normal status message is 50 char
-  // TODO also not sure if this will work well
-  mvprintw(0, 50, "%s                     ", message); 
+  // prints at x = 70 to make sure it is far over
+  mvprintw(0, 70, "%s                     ", message); 
   refresh();
   return false;
 
@@ -283,15 +262,15 @@ static bool handleError(const char* message)
  */
 static bool updatePlayer(const char* message, const char* first)
 {
-  // char* remainder;
-  if ((strcmp(first, "OK")) == 0) {
+
+  if (strcmp(first, "OK") == 0) {
     // get first char of message
     char letter = message[0];
     player_setCharID(player, letter);
     return false;
   }
 
-  if ((strcmp(first, "GOLD")) == 0) {
+  if (strcmp(first, "GOLD") == 0) {
     // store gold info
     int n, p, r;
     sscanf(message, "%d %d %d", &n, &p, &r);
@@ -300,7 +279,7 @@ static bool updatePlayer(const char* message, const char* first)
 
     // if spectator
     if ((strcmp("spectator", name)) == 0) {
-      mvprintw(0,0, "Spectator: %d nuggets unclaimed.", &r);
+      mvprintw(0,0, "Spectator: %d nuggets unclaimed.", r);
     }
 
     // if player
@@ -312,11 +291,13 @@ static bool updatePlayer(const char* message, const char* first)
       char letter = player_getCharID(player); 
       // if player collected gold
       if (n != 0) {
-        mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d", &letter, &p, &r, &n); // TODO check with the overlapping, etc. I think the new line might do it, but need to try some stuff
+        mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed). GOLD received: %d                                  ", letter, p, r, n);      
+        clrtoeol();
       }
       // if player did not collect any gold
       else {
-        mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed).                        ", letter, &p, &r);
+        mvprintw(0,0, "Player %c has %d nuggets (%d nuggets unclaimed).                        ", letter, p, r);
+        clrtoeol();
       }
     }
     refresh();
@@ -337,15 +318,13 @@ static bool handleInput(void* arg)
 {
 
   int c = getch();
-  // I think I have to malloc for addr_t
-  // addr_t to = malloc(sizeof(addr_t));
-  addr_t to = player_getAddr(player); // am I using the * and & right? TODO need to free later?
+  addr_t to = player_getAddr(player);
 
   // if spectator
   if ((strcmp("spectator", player_getName(player))) == 0) {
     switch(c) {
-    case 'q':  message_send(to, "KEY q"); break; 
-    default: mvprintw(0, 50, "unknown keystroke               ");
+    case 'Q':  message_send(to, "KEY Q"); break; 
+    default: mvprintw(0, 70, "unknown keystroke               ");
     }
   }
   
@@ -353,7 +332,7 @@ static bool handleInput(void* arg)
   else {
     // send char if valid keystroke
     switch(c) {
-    case 'q':   message_send(to, "KEY q"); break;
+    case 'Q':   message_send(to, "KEY Q"); break;
     case 'h':   message_send(to, "KEY h"); break;
     case 'H':   message_send(to, "KEY H"); break;
     case 'l':   message_send(to, "KEY l"); break;
@@ -371,7 +350,7 @@ static bool handleInput(void* arg)
     case 'n':   message_send(to, "KEY n"); break;
     case 'N':   message_send(to, "KEY N"); break;
     // if not valid, print error 
-    default: mvprintw(0, 50, "unknown keystroke               ");
+    default: mvprintw(0, 70, "unknown keystroke               ");
     }
   }
   
