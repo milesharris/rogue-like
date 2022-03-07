@@ -1,10 +1,10 @@
 START OF LOG
-client on port 41884
+client on port 54972
 interactive player mode; name 'one'
 GOLD message received: GOLD 0 0 250
 GRID message received: GRID 5 14
 displayStart
-wRows = 17
+wRows = 11
 wCols = 105
 OK message received: OK A
 DISPLAY message received
@@ -18,11 +18,24 @@ DISPLAY message received
 DISPLAY message received
 DISPLAY message received
 DISPLAY message received
-GOLD message received: GOLD 250 250 250
-GOLD message received: GOLD 0 250 0
 DISPLAY message received
 DISPLAY message received
-QUIT message received: QUIT GAME OVER:
-A       250 one
-
-END OF LOG
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
+DISPLAY message received
