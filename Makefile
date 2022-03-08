@@ -43,3 +43,4 @@ clean:
 	make -C libcs50 clean
 	make -C common clean
 	make -C support clean
+	rm -f testing.out
