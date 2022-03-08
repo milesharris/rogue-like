@@ -1011,7 +1011,11 @@ The player module is small enough that it does not require a seperate unit test.
 
 We will test the server using the provided miniclient to test the messages we send to the server, simply echoing them back to the client's console. 
 
+Then, we tested the server with the professor's provided client, named `profclient` in our repository. This was to ensure correct server behavior before attempting system testing. 
+
 Once we have a server that works we will test our client by connecting to our server and observing its behavior, testing whether it can send and receive messages. 
+
+Furthermore, we tested our client with the professor's provided server, which was never copied into this directory. It can be found in the `~/cs50-dev/shared` folder
 
 ### system testing
 
@@ -1023,4 +1027,6 @@ Then, we will test the complete product by connecting several player clients to 
 
 ## Limitations
 
-None as of inital specs, will potentially be filled in later.
+Our game does not allow two players with the same name to connect. It asks the 2nd player to input a new name and try again. 
+
+For client to properly display its graphics it has to be run with stderr redirected away from the terminal.
