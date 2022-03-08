@@ -1,0 +1,7 @@
+common.a
+grid.o
+gridtest
+player.o
+playertest
+game.o
+visiontest

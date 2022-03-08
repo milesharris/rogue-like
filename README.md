@@ -11,5 +11,5 @@ When all gold nuggets are collected, the game ends and a summary is printed.
 ## Materials provided
 
 See the [support library](support/README.md) for some useful modules.
-
 See the [maps](maps/README.md) for some draft maps.
+The profclient file in this directory is a copy of the professor's shared client. We copied it here so that we could more easily use it to test and redirect its output. It remains in the repository for transparency reasons, as we extensively made use of it to test. 
