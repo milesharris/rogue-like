@@ -162,15 +162,18 @@ static bool handleMessage(void* arg, const addr_t from, const char* message)
   // read first word and rest of message into separate strings
   char* first;
   char* remainder;
-  char* messageCpy = malloc(strlen(message) + 1);
+  char* messageCpy = mem_malloc_assert(strlen(message) + 1, 
+                                       "failed alloc in client handleMessage");
   strcpy(messageCpy, message);
+  
+  // TODO: refactor to not use strtok, it caused a memory leak lmfao
   first = __strtok_r(messageCpy, " ", &remainder);
-  // free(messageCpy);
 
   // put cursor at 0,0 
   move(0,0);
 
   if ((strcmp(first, "GRID")) == 0) {
+    
     return initialGrid(remainder);
   }
 
@@ -208,11 +211,12 @@ static bool initialGrid(const char* gridInfo)
   log_v("ncurses initialized");
   
   // check that display fits grid; return true if it does not, otherwise return false
+  // TODO: Prompt client to resize properly
   int uy, ux; 
   getmaxyx(stdscr, uy, ux);
   if ((ux < ncols) || (uy < nrows)) {
     // compiler error if this split into two lines
-    fprintf(stderr, "Window must be expanded to play Nuggets. Window is %d by %d and must be %d by %d.", uy, ux, nrows, ncols);
+    fprintf(stdout, "Window must be expanded to play Nuggets. Window is %d by %d and must be %d by %d.", uy, ux, nrows, ncols);
     return true;
   }
  
@@ -231,7 +235,6 @@ static bool renderMap(const char* mapString)
   refresh();
 
   return false;
-
 }
 
 /******************* leaveGame *******************/
@@ -250,7 +253,6 @@ static bool leaveGame(const char* message)
 
   log_v("Game ended without fatal error."); // log successful shutdown
   return true; // ends message loop
-
 }
 
 
