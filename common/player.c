@@ -1,6 +1,7 @@
 /*
- * Team - windows_us
- * A module for the player struct and its functions, used in the Nugget game, 
+ * A module for the player struct and its functions, used in the Rogue-like game
+ * Miles Harris, Summer 2022
+ * Miles Harris and Karsten Kleyensteuber, CS50, Winter 2022 - original Nuggets
  */
 
 

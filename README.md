@@ -1,6 +1,19 @@
 # Rogue-like
 This repository contains my best attempts at writing *Rogue*. It is based on Dartmouth's CS50 final project "nuggets", which is itself inspired by *Rogue*. For transparencies sake I will keep all documentation related to the original *Nuggets* implementation in relevant documents. Further details can be found in the design and implementation specs. 
 
+## To-do list
+
+ * 0. Debug original nuggets client, learn ncurses, etc. 
+ * 1. Make a multi-leveled dungeon, but keep everything else the same so just multi level nuggets
+ * 2. Implement the amulet and Rogue victory conditions, maybe basic inventory
+ * 3. Make it all turn-based (yikes)
+ * 4. Add monsters into the game without combat, make them random walkers
+ * 5. Make monsters hunt players in sight, but keep nuggets "bumping" rules
+ * 6. Combat, player stats, death
+ * 7. Full inventory w/ item pickups and potions and shit I guess
+ * 8. God even knows at this point I might be insane
+
+
 ## Nuggets
 
 This repository contains the code for the CS50 "Nuggets" game, in which players explore a set of rooms and passageways in search of gold nuggets.

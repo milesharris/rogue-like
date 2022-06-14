@@ -1,7 +1,7 @@
 /* 
- * server.c - defines implements the server for Nuggets game
+ * server.c - defines implements the server for rogue-like game
  * see design and implementation specs for more details
- * CS50, Winter 2022, team 1
+ * Miles Harris, Summer 2022
  */
 
 #include <stdio.h>
@@ -18,16 +18,33 @@
 #include "message.h"
 #include "log.h"
 
+/****************** TO-DO LIST *********************/
+/* 0. Debug original nuggets client, learn ncurses, etc. 
+ * 1. Make a multi-leveled dungeon, but keep everything else the same so just multi level nuggets
+ * 2. Implement the amulet and Rogue victory conditions, maybe basic inventory
+ * 3. Make it all turn-based (yikes)
+ * 4. Add monsters into the game without combat, make them random walkers
+ * 5. Make monsters hunt players in sight, but keep nuggets "bumping" rules
+ * 6. Combat, player stats, death
+ * 7. Full inventory w/ item pickups and potions and shit I guess
+ * 8. God even knows at this point I might be insane
+ */
+
+
 // global constants
 static const int goldMaxNumPiles = 30; // maximum number of gold piles
-static const int goldMinNumPiles = 10;  // minimum number of gold piles
+static const int goldMinNumPiles = 10; // minimum number of gold piles
 static const char ROOMTILE = '.';      // char representation of room floor
 static const char PASSAGETILE = '#';   // char representation of passage tile
 static const char GOLDTILE = '*';      // char representation of gold
 static const char PLAYERCHAR = '@';    // player's view of themself
+static const char ZOMBIECHAR = 'Z';    // representation of zombie on map
+static const char SKELETONCHAR = 'S';  // representation of skeleton on map
+static const char GHOULCHAR = 'G';     // representation of ghoul on map
+static const char AMULETCHAR = '$';    // representation of amulet on map
 static const int MaxNameLength = 50;   // max number of chars in playerName
-static const int MaxPlayers = 26;      // maximum number of players (and spectator)
-static const int GoldTotal = 250;      // amount of gold in the game
+static const int MaxPlayers = 5;       // maximum number of players (and spectator)
+static const int GoldTotal = 250;      // amount of gold per floor
 
 // global game state
 static game_t* game;
@@ -64,8 +81,7 @@ static void sendDisplay(player_t* player, char* displayString);
  * loops to receive messages until fatal error or game ends
  * exits 0 if game ends normally, non-zero if error
  */
-int
-main(const int argc, char* argv[])
+int main(const int argc, char* argv[])
 {
   char* filepathname = NULL;           // filepath of the map file
   // seed for random number gen, changed in parseArgs if applicable
@@ -76,7 +92,9 @@ main(const int argc, char* argv[])
   log_init(stderr);
 
   // validate arguments
-  parseArgs(argc, argv, &filepathname, &seed); log_v("parseargs passed\n");
+  parseArgs(argc, argv, &filepathname, &seed); 
+  log_v("Commandline arguments valid");
+
   // generate necessary data structures
   if (! initializeGame(filepathname, seed)) { 
     log_v("failed to initialize game, exiting non-zero");
@@ -177,11 +195,11 @@ static bool strToInt(const char string[], int* number)
  * allocates memory for the global game struct using game_new
  * which must later be free'd using game_delete
  */
-static bool
-initializeGame(char* filepathname, int seed)
+static bool initializeGame(char* filepathname, int seed)
 {
   grid_t* serverGrid = NULL;           // master grid held by server
   int numPiles;                        // number of gold piles generated
+  
   // create the grid
   if ((serverGrid = grid_new(filepathname)) == NULL) {
     log_v("err loading grid from file");

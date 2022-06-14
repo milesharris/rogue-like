@@ -1,11 +1,13 @@
 /*
- * Defines the player module for out group's nuggets game
+ * Defines the player module for my Rogue-like game
  * The player module stores necessary information relating to a player 
  * including current gold, position, name, and current vision.
+ * And perhaps eventually inventory
  * It also provides various functions for retrieving and altering this information 
- * as well as for creating and removing player's
+ * as well as for creating and removing players
  *
- * Winter 2022, CS50 Team 1
+ * Miles Harris, Summer 2022
+ * Miles Harris and Karsten Kleyensteuber, CS50, Winter 2022 - original Nuggets
  */
 
 #ifndef __PLAYER_H

@@ -1,6 +1,9 @@
 /* 
- * client.c - implements the client for Nuggets game, windows_us team
+ * client.c - implements the client for Rogue-like game
  * A client is used to connect to a server, where the server handles game logic
+ * 
+ * Miles Harris, Summer 2022
+ * Ethan Gearey, CS50, Winter 2022 - Original Nuggets client
  */
 
 #include <stdio.h>
@@ -40,7 +43,7 @@ main(const int argc, char* argv[])
   parseArgs(argc, argv);
 
   // if message module cannot be initialized
-  if (message_init(NULL) == 0) {
+  if (message_init(stderr) == 0) {
     log_v("could not initialize message module");
     exit(2); 
   }
