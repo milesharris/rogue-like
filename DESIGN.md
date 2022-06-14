@@ -1,3 +1,34 @@
+# Rogue-like
+## Design Spec
+### Miles Harris, Summer 2022
+
+Much like the Nuggets game this program will require both a client and a server. All game logic will be handled server-side, while the client will only be responsible for rendering the game world and sending commands to the server. 
+
+## Differences from *Rogue*
+
+My version of *Rogue* will differ from the original in a few regards due to the fact it is built on top of the *Nuggets* game, as well as personal design choices.
+
+### Multiplayer and real-time
+
+The biggest difference is, of course, that the game is multiplayer and operates in real-time. I may change this to turn-based as the combat system develops.
+
+### Victory conditions
+
+I will keep the gold system from nuggets and, instead of being the sole valuable treasure, the "Amulet of Yendor" will be a specially-marked gold pile of large size. Victory will be determined by taking the final tally of gold as soon as the player who collected the Amulet escapes the dungeon. Additionaly, monsters will drop gold piles. Hopefully this will create options for players, making rushing the amulet just as viable as farming mobs.
+
+### Combat
+
+I am currently fairly undecided about the nature of combat in this implementation. Currently I plan to change the game to work turn-based, then implement a basic health-damage system that scales based on player stats and items. Players and monsters will drop their gold when they die, including the Amulet of Yendor. If players die, they will respawn at the top level of the dungeon without their gold but will retain stat growth as a balancing mechanic. 
+
+### Monsters
+
+Monsters will come in a few different flavors represented by different letters on the map. The first few letters will be reserved for players (4-6, haven't decided yet), then Z for zombie, S for skeleton, etc. They will gain health and damage as the player progresses deeper into the dungeon. Initial monster AI will be random walking, but moving towards players and fighting them if they are in the same room as them. Monsters will have turns just like players. Currently I do not plan for monsters to respawn but this may change. 
+
+### Dungeons
+
+On first implementation the dungeons will not be procedural, and players will instead travel through a pre-determined (but random ordered and random number?) set of maps that were provided for the nuggets game. As with *Rogue*, the Amulet of Yendor will be found in the bottom level of the dungeon. The amulet holder will have to escape through a special stair in the top level of the dungeon for the game to end. 
+
+
 # CS50 Nuggets
 ## Design Spec
 ### Team 1: windows_us, Winter 2022

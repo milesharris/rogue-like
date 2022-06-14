@@ -1,6 +1,7 @@
-# Makefile for our Nuggets game
-# Adapted from top-level TSE Makefile
-# CS50, Winter 2022, team 1 
+# Makefile for my rouge-like
+# Adapted from Dartmouth College CS50 material
+# Miles Harris, Summer 2022
+
 C = ./common
 L = ./libcs50
 S = ./support

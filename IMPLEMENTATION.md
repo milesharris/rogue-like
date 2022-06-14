@@ -1,4 +1,26 @@
-# CS50 Nuggets Implementation 
+# Rogue-like
+## Implementation Spec
+### Miles Harris, Summer 2022
+
+## Client 
+
+### Data structures
+
+### Definition of function prototypes
+
+### Detailed pseudocode
+
+
+## Server 
+
+### Data structures
+
+### Definition of function prototypes
+
+### Detailed pseudocode
+
+
+ 
 # CS50 Nuggets
 ## Implementation Spec
 ### windows_us, Winter 2022
