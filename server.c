@@ -19,8 +19,7 @@
 #include "log.h"
 
 /****************** TO-DO LIST *********************/
-/* 0. Debug original nuggets client, learn ncurses, etc. 
- * 1. Make a multi-leveled dungeon, but keep everything else the same so just multi level nuggets
+/* 1. Make a multi-leveled dungeon, but keep everything else the same so just multi level nuggets
  * 2. Implement the amulet and Rogue victory conditions, maybe basic inventory
  * 3. Make it all turn-based (yikes)
  * 4. Add monsters into the game without combat, make them random walkers
@@ -594,8 +593,7 @@ static void gameOverHelper(void* arg, const char* key, void* item)
  * so that handleMessage can exit properly and the game can end
  * returns false if otherwise
  */
-static bool
-pickupGold(player_t* player)
+static bool pickupGold(player_t* player)
 {
   int* piles = game_getPiles(game);   // array of gold piles in game
 
@@ -682,8 +680,7 @@ moveIterateHelper(void* arg, const char* key, void* item)
  * returns true if, at any point in the "big move", the last gold is collected
  * false if otherwise
  */
-static bool
-repeatMovePlayerHelper(player_t* player, int directionValue)
+static bool repeatMovePlayerHelper(player_t* player, int directionValue)
 {
   bool gameOverFlag = false;           // set to true if last gold picked up
   grid_t* grid = game_getGrid(game);   // in-game grid
@@ -713,8 +710,7 @@ repeatMovePlayerHelper(player_t* player, int directionValue)
  * returns true if player picks up gold and there is no gold remaining
  * false if otherwise
  */
-static bool
-movePlayerHelper(player_t* player, int directionValue)
+static bool movePlayerHelper(player_t* player, int directionValue)
 {
   player_t* bumpedPlayer = NULL; // player that current "mover" "collides" with
   char bumpedPlayerCharID;       // that player's char representation on the map
@@ -799,8 +795,7 @@ movePlayerHelper(player_t* player, int directionValue)
  * and true if the last pile is collected or a critical error occurred
  * so that message_loop will stop looping and call gameOver()
  */ 
-static bool 
-movePlayer(player_t* player, char directionChar)
+static bool movePlayer(player_t* player, char directionChar)
 {
   bool gameOverFlag = false;           // set to true if all gold collected
   grid_t* grid = game_getGrid(game);   // game grid
@@ -954,7 +949,7 @@ static void updatePlayersVision()
  */
 static bool handleMessage(void* arg, const addr_t from, const char* message)
 {
-  //char key;                            // key input from key message
+  //char key;                          // key input from key message
   bool gameOverFlag = false;           // true if all gold collected
 
   // if invalid message (bad address or null string) log and continue looping
@@ -1091,6 +1086,7 @@ static void sendGrid(addr_t to)
   if ( ! message_isAddr(to)) {
     return;
   }
+
   grid = game_getGrid(game);
   // build message. allocs 2 ints, plus space for "GRID  \0"
   message = malloc((2 * sizeof(int)) + 7);
@@ -1120,6 +1116,7 @@ static void sendGold(player_t* player, int goldCollected)
   if (player == NULL) {
     return;
   }
+
   // extract variables into more readable form
   playerPurse = player_getGold(player);
   remainingGold = game_getRemainingGold(game);

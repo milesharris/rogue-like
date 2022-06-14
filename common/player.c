@@ -145,7 +145,7 @@ player_new(char* name, char* mapfile)
 
   for(int i = 0; i < mapLen; i++){
     if(active[i] != '\n'){
-      active[i] = ' ';
+       active[i] = ' ';
     }
   }
 

@@ -2,6 +2,10 @@
  * client.c - implements the client for Rogue-like game
  * A client is used to connect to a server, where the server handles game logic
  * 
+ * Usage: client takes 3 arguments on the command line: host, port, and name
+ * Name is optional, and if no name provided the client will be a spectator
+ * For proper rendering, stderr and ONLY stderr must be redirected
+ * 
  * Miles Harris, Summer 2022
  * Ethan Gearey, CS50, Winter 2022 - Original Nuggets client
  */
@@ -48,11 +52,12 @@ main(const int argc, char* argv[])
     exit(2); 
   }
 
-  // build server address
+  // build server address and log
   const char* serverHost = argv[1];
   const char* serverPort = argv[2];
-  log_s("Port %s\n", serverPort); // log port number to stderr
   addr_t server; 
+  log_s("Port %s\n", serverPort);
+
   if (!message_setAddr(serverHost, serverPort, &server)) {
     fprintf(stderr, "Failed to form address from %s %s\n", serverHost, serverPort);
     exit(4);
@@ -70,7 +75,6 @@ main(const int argc, char* argv[])
   message_done();
   log_done();
   return ok? 0 : 1; // return status depends on result of loop
-
 }
 
 /******************* parseArgs *****************/
@@ -80,8 +84,7 @@ main(const int argc, char* argv[])
  *
  * Assumes: playername cannot contain spaces
  */
-static int 
-parseArgs(const int argc, char* argv[])
+static int parseArgs(const int argc, char* argv[])
 {
 
   // check arg count
@@ -143,14 +146,12 @@ static void joinGame()
 /* initializes curses */
 static void initCurses()
 {
-
   initscr();
   cbreak();
   noecho();
   start_color();
   init_pair(1, COLOR_YELLOW, COLOR_BLACK);
   attron(COLOR_PAIR(1));
-  
 } 
   
 /******************** handleMessage *****************/
