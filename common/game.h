@@ -11,6 +11,7 @@
 #include "grid.h"
 #include "hashtable.h"
 #include "player.h"
+#include "floor.h"
 
 /**************** global types ****************/
 typedef struct game game_t; // opaque to users of the module
@@ -18,14 +19,14 @@ typedef struct game game_t; // opaque to users of the module
 /**************** functions **************/
 
 /**************** getters **************/
-grid_t *game_getGrid(game_t *game);
-int *game_getPiles(game_t *game);
 hashtable_t *game_getPlayers(game_t *game);
+floor_t **game_getFloors(game_t *game);
 int game_getRemainingGold(game_t *game);
 int game_getLastCharID(game_t *game);
 int game_getNumPlayers(game_t *game);
-char *game_getMapfile(game_t *game);
 int game_getNumPiles(game_t *game);
+int game_getNumFloors(game_t *game);
+player_t *game_getPlayer(game_t *game, char *playerName);
 
 /* finds the player in the game with the given address
  * returns NULL if player not found or bad parameters
@@ -34,13 +35,6 @@ int game_getNumPiles(game_t *game);
 player_t *game_getPlayerAtAddr(game_t *game, addr_t address);
 
 /**************** setters ***************/
-/* return false on failure, true on success */
-bool game_setRemainingGold(game_t *game, int gold);
-
-/* Note: the setGrid function calls grid_delete on the previous game->grid
- * to avoid memory leaks
- */
-bool game_setGrid(game_t *game, grid_t *grid);
 
 /* returns new value, or -1 if failure.
  * integer input constrained to range of capital letter ASCII codes, [65-90]
@@ -53,20 +47,15 @@ int game_setLastCharID(game_t *game, int charID);
  * */
 int game_setNumPlayers(game_t *game, int numPlayers);
 
-/* sets the number of gold piles in a game
- * returns the new number
- */
-int game_setNumPiles(game_t *game, int numPiles);
-
 /**************** game_new *****************/
 /* The game_new function allocates space for a new 'struct game'
  * it only malloc's space for itself. All other memory must be allocated before
- * for example, a `game` takes non-null `grids` as parameters
- * so grid_new must be called on a grid before passing it to `game`
- * All memory allocated by the game, its grid, and its int array
+ * for example, a `game` takes non-null `floors` as parameters
+ * so the floors array must exist before passing it to `game`
+ * All memory allocated by the game and its floors
  * are freed in game_delete
  */
-game_t *game_new(int *piles, grid_t *grid);
+game_t *game_new(int *piles, floor_t **floors);
 
 /*************** game_addPlayer **************/
 /* adds a struct player to the hashtable of players within a given game struct
@@ -90,13 +79,6 @@ char *game_buildSummary(game_t *game);
  * returns NULL if given string or game invalid, or if player not in hashtable
  */
 player_t *game_getPlayer(game_t *game, char *playerName);
-
-/*************** game_subtractGold ***********/
-/* Simple function to reduce a game's remaining gold by the given amount
- * returns -1 if game does not exist
- * returns the new value of game->remainingGold on success
- */
-int game_subtractGold(game_t *game, int gold);
 
 /************** game_delete ****************/
 /* free's all memory assosciated with a `game`

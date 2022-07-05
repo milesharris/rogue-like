@@ -11,6 +11,7 @@
 #include <ctype.h>
 #include <unistd.h>
 #include "file.h"
+#include "floor.h"
 #include "grid.h"
 #include "mem.h"
 #include "game.h"

@@ -122,6 +122,8 @@ floor_t *floor_new(grid_t *grid, int *piles)
   }
 
   floor->remainingGold = totalGold;
+
+  return floor;
 }
 
 /**************** floor_delete ***************/

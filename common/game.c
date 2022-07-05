@@ -1,5 +1,5 @@
 /*
- * game module implementation for CS50 nuggets game
+ * game module implementation for my rogue-like
  * stores all information about the current state of a game
  * used as a global variable in both server and client
  */
@@ -14,10 +14,13 @@
 #include "hashtable.h"
 #include "player.h"
 #include "log.h"
+#include "floor.h"
 
 // file-local constants (consistent with those in server)
 static const int MAXPLAYERS = 26; // max # players in game
 static const int MAXGOLD = 250;   // max # gold in game
+// TODO: will be changed, constant for initial test of floor system
+static const int NUMFLOORS = 5; // number of floors in game
 
 /**************** file-local functions ****************/
 static void game_getAtAddrHelper(void *arg, const char *key, void *item);
@@ -31,37 +34,16 @@ static void game_summaryHelper(void *arg, const char *key, void *item);
 
 typedef struct game
 {
-  int *piles;           // ptr to array of piles
   hashtable_t *players; // hashtable of player IDs
-  int remainingGold;    // gold left in the game
-  int numPiles;         // number of gold piles in game
-  grid_t *grid;         // current game grid
+  floor_t **floors;     // array of floors
+  int numFloors;        // number of floors in game
   int lastCharID;       // most recent 'player.charID'
   int numPlayers;       // number of players in a game
-  char *mapfile;        // filepath of the in-game map
+  int remainingGold;    // gold left in the game
+  int numPiles;         // number of gold piles in game
 } game_t;
 
 /**************** getters ****************/
-grid_t *game_getGrid(game_t *game)
-{
-  return game ? game->grid : NULL;
-}
-
-char *game_getMapfile(game_t *game)
-{
-  return game ? game->mapfile : NULL;
-}
-
-int *game_getPiles(game_t *game)
-{
-  return game ? game->piles : NULL;
-}
-
-int game_getNumPiles(game_t *game)
-{
-  return game ? game->numPiles : -1;
-}
-
 hashtable_t *game_getPlayers(game_t *game)
 {
   return game ? game->players : NULL;
@@ -70,6 +52,16 @@ hashtable_t *game_getPlayers(game_t *game)
 int game_getNumPlayers(game_t *game)
 {
   return game ? game->numPlayers : -1;
+}
+
+int game_getNumPiles(game_t *game)
+{
+  return game ? game->numPiles : -1;
+}
+
+int game_getNumFloors(game_t *game)
+{
+  return game ? game->numFloors : -1;
 }
 
 int game_getRemainingGold(game_t *game)
@@ -93,51 +85,12 @@ player_t *game_getPlayer(game_t *game, char *playerName)
   return hashtable_find(game->players, playerName);
 }
 
+floor_t **game_getFloors(game_t *game)
+{
+  return game ? game->floors : NULL;
+}
+
 /******************* setters *******************/
-
-/***** game_setRemainingGold *********************************/
-/* see game.h for details */
-bool game_setRemainingGold(game_t *game, int gold)
-{
-  if (game == NULL || gold < 0)
-  {
-    return false;
-  }
-  else
-  {
-    game->remainingGold = gold;
-    return true;
-  }
-}
-
-/**************** game_setNumPiles ******************/
-/* see header file for details */
-int game_setNumPiles(game_t *game, int numPiles)
-{
-  if (game == NULL)
-  {
-    return -1;
-  }
-  game->numPiles = numPiles;
-  return game->numPiles;
-}
-
-/******************* game_setGrid *******************/
-/* see game.h for details */
-bool game_setGrid(game_t *game, grid_t *grid)
-{
-  if (game == NULL || grid == NULL)
-  {
-    return false;
-  }
-  else
-  {
-    // free old grid before replacing with new
-    grid_delete(game->grid);
-    game->grid = grid;
-    return true;
-  }
-}
 
 int game_setLastCharID(game_t *game, int charID)
 {
@@ -169,7 +122,7 @@ int game_setNumPlayers(game_t *game, int numPlayers)
 /**************** game_new ***************/
 /* see game.h or details */
 game_t *
-game_new(int *piles, grid_t *grid)
+game_new(int *piles, floor_t **floors)
 {
   hashtable_t *players;         // stores players
   const int defaultCharID = 64; // ASCII for '@', 1st player gets default + 1
@@ -191,13 +144,12 @@ game_new(int *piles, grid_t *grid)
 
   // initialize attributes to default values or parameters
   game->players = players;
+  game->floors = floors;
+  game->numFloors = NUMFLOORS;
   game->numPlayers = 0;
   game->lastCharID = defaultCharID;
-  game->piles = piles;
   game->numPiles = -1;
   game->remainingGold = MAXGOLD;
-  game->grid = grid;
-  game->mapfile = grid_getMapfile(grid);
 
   return game;
 }
@@ -265,18 +217,6 @@ static void game_summaryHelper(void *arg, const char *key, void *item)
   strcat(summary, toAdd);
   gameSummary[0] = summary;
   free(toAdd);
-}
-
-/***************** game_subtractGold **************/
-/* see game.h for details */
-int game_subtractGold(game_t *game, int gold)
-{
-  if (game == NULL)
-  {
-    return -1;
-  }
-  game->remainingGold -= gold;
-  return game->remainingGold;
 }
 
 /************** game_addPlayer **************/
@@ -375,15 +315,17 @@ void game_delete(game_t *game)
 {
   if (game != NULL)
   {
-    // piles is a malloc'd int array
-    free(game->piles);
     // delete all players in game
     if (game->players != NULL)
     {
       // casts player_delete to satisfy hashtable_delete
       hashtable_delete(game->players, (void (*)(void *))player_delete);
     }
-    grid_delete(game->grid); // make sure not to free this memory twice
+    // delete all floors in the game
+    for (int i = 0; i < game->numFloors; i++)
+    {
+      floor_delete(game->floors[i]);
+    }
     free(game);
   }
 }

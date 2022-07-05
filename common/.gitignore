@@ -5,3 +5,4 @@ player.o
 playertest
 game.o
 visiontest
+floor.o
