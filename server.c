@@ -26,7 +26,8 @@
  * 5. Make monsters hunt players in sight, but keep nuggets "bumping" rules
  * 6. Combat, player stats, death
  * 7. Full inventory w/ item pickups and potions and shit I guess
- * 8. God even knows at this point I might be insane
+ * 8. Procedural map gen
+ * 9. God even knows at this point I might be insane
  */
 
 
