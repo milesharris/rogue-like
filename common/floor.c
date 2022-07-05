@@ -19,13 +19,11 @@
 /* see floor.h for details */
 typedef struct floor
 {
-  int *piles;           // array of gold piles
-  int remainingGold;    // gold left in the game
-  int numPiles;         // number of gold piles in game
-  hashtable_t *players; // hashtable of player IDs on the floor
-  int numPlayers;       // number of players on the floor
-  grid_t *grid;         // current floor grid
-  char *mapfile;        // filepath of the in-game map
+  int *piles;        // array of gold piles
+  int remainingGold; // gold left in the game
+  int numPiles;      // number of gold piles in game
+  grid_t *grid;      // current floor grid
+  char *mapfile;     // filepath of the in-game map
 } floor_t;
 
 /**************** getters ****************/
@@ -47,16 +45,6 @@ char *floor_getMapfile(floor_t *floor)
 int floor_getNumPiles(floor_t *floor)
 {
   return floor ? floor->numPiles : -1;
-}
-
-hashtable_t *floor_getPlayers(floor_t *floor)
-{
-  return floor ? floor->players : NULL;
-}
-
-int floor_getNumPlayers(floor_t *floor)
-{
-  return floor ? floor->numPlayers : -1;
 }
 
 int floor_getRemainingGold(floor_t *floor)
@@ -95,18 +83,6 @@ bool floor_setGrid(floor_t *floor, grid_t *grid)
   }
 }
 
-/************** floor_setNumPlayers **************/
-/* see floor.h for details */
-int floor_setNumPlayers(floor_t *floor, int numPlayers)
-{
-  if (floor == NULL)
-  {
-    return -1;
-  }
-  floor->numPlayers = numPlayers;
-  return floor->numPlayers;
-}
-
 /************** floor_setNumPiles **************/
 /* see floor.h for details */
 int floor_setNumPiles(floor_t *floor, int numPiles)
@@ -120,9 +96,56 @@ int floor_setNumPiles(floor_t *floor, int numPiles)
 }
 
 /*************** functions *****************/
+
+/**************** floor_new ***************/
+/* see floor.h or details */
 floor_t *floor_new(grid_t *grid, int *piles)
 {
-  hashtable_t *players; // tracks players on the floor
 
   // allocate space for floor and check
+  floor_t *floor = malloc(sizeof(floor_t));
+  if (floor == NULL)
+  {
+    return NULL;
+  }
+
+  // initialize default attributes
+  floor->piles = piles;
+  floor->grid = grid;
+  floor->numPiles = (sizeof(piles) / sizeof(*piles));
+  floor->mapfile = grid_getMapfile(grid);
+
+  int totalGold = 0;
+  for (int i = 0; i < floor->numPiles; i++)
+  {
+    totalGold += floor->piles[i];
+  }
+
+  floor->remainingGold = totalGold;
+}
+
+/**************** floor_delete ***************/
+/* see floor.h or details */
+void floor_delete(floor_t *floor)
+{
+  if (floor != NULL)
+  {
+    // piles was malloc'd on creation
+    free(floor->piles);
+    grid_delete(floor->grid);
+    free(floor);
+  }
+}
+
+/************* floor_subtractGold *************/
+/* see floor.h or details */
+int floor_subtractGold(floor_t *floor, int gold)
+{
+  if (floor == NULL)
+  {
+    return -1;
+  }
+
+  floor->remainingGold -= gold;
+  return floor->remainingGold;
 }

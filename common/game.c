@@ -341,7 +341,6 @@ player_t *game_getPlayerAtAddr(game_t *game, addr_t address)
   hashtable_iterate(players, container, game_getAtAddrHelper);
   // clean up and return
   player = container[1];
-  log_done();
   free(addrStrCpy);
   return player;
 }
